@@ -197,7 +197,6 @@ export default function ArtistProfilePage() {
 
     const [bio, setBio] = useState('');
     const [specialties, setSpecialties] = useState('');
-    const [portfolioLink, setPortfolioLink] = useState('');
 
     const [bookingInfoInput, setBookingInfoInput] = useState('');
     const [servicesInput, setServicesInput] = useState('');
@@ -238,7 +237,6 @@ export default function ArtistProfilePage() {
 
             setBio(data.bio ?? '');
             setSpecialties(data.specialties ?? '');
-            setPortfolioLink(data.portfolioLink ?? '');
 
             setBookingInfoInput(Array.isArray(data.bookingInfo) ? data.bookingInfo.join(', ') : '');
             setServicesInput(Array.isArray(data.services) ? data.services.join(', ') : '');
@@ -246,7 +244,7 @@ export default function ArtistProfilePage() {
         } else {
              setHeight(''); setWeight(''); setColor(''); setEthnicity(''); setAge(''); setOther('');
              setAddress(''); setCity(''); setState(''); setZipCode(''); setCountry(''); setPhone(''); setGender('');
-             setBio(''); setSpecialties(''); setPortfolioLink('');
+             setBio(''); setSpecialties('');
              setBookingInfoInput(''); setServicesInput(''); setAvailableLocationsInput('');
         }
     }, []);
@@ -587,7 +585,6 @@ export default function ArtistProfilePage() {
 
             bio: bio || null,
             specialties: specialties || null,
-            portfolioLink: portfolioLink || null,
 
             bookingInfo: bookingInfoArray.length > 0 ? bookingInfoArray : null,
             services: servicesArray.length > 0 ? servicesArray : null,
@@ -751,9 +748,6 @@ export default function ArtistProfilePage() {
                               <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
                                 <Link href="/profile/artist"><UserIcon className="mr-2 h-4 w-4" />View Profile</Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
-                                <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
-                              </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-[#2a2a2a]" />
                               <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-400 focus:bg-red-950 hover:!bg-red-800 hover:!text-red-400 cursor-pointer transition-colors">
                                 <LogOut className="mr-2 h-4 w-4" />Logout
@@ -912,10 +906,6 @@ export default function ArtistProfilePage() {
                                         <Label htmlFor="specialties" className="text-gray-400">Specialties (e.g., Bridal Makeup, Special Effects, Editorial)</Label>
                                         <Input id="specialties" placeholder="e.g., Bridal Makeup, Special Effects, Editorial" value={specialties} onChange={(e) => setSpecialties(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="portfolioLink" className="text-gray-400">Portfolio Link </Label>
-                                        <Input id="portfolioLink" type="url" placeholder="e.g., https://my.portfolio.com" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                    </div>
 
                                      <div className="space-y-2">
                                          <Label htmlFor="bookingInfo" className="text-gray-400">Booking Information (Optional - Separate with commas)</Label>
@@ -1028,7 +1018,7 @@ export default function ArtistProfilePage() {
                                        </div>
                                  </div>
 
-                                 {(userData.bio || userData.specialties || userData.portfolioLink || (Array.isArray(userData.bookingInfo) && userData.bookingInfo.length > 0) || (Array.isArray(userData.services) && userData.services.length > 0) || (Array.isArray(userData.availableLocations) && userData.availableLocations.length > 0)) && (
+                                 {(userData.bio || userData.specialties || (Array.isArray(userData.bookingInfo) && userData.bookingInfo.length > 0) || (Array.isArray(userData.services) && userData.services.length > 0) || (Array.isArray(userData.availableLocations) && userData.availableLocations.length > 0)) && (
                                       <>
                                         <Separator className="bg-[#2a2a2a]" />
                                         <div className="space-y-3 text-sm sm:text-base">
@@ -1038,7 +1028,6 @@ export default function ArtistProfilePage() {
                                                 <div className="space-y-2.5 text-gray-300 text-sm">
                                                     {userData.bio ? (<div className="flex items-start gap-2"><BookOpen className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Bio:</strong> <span className="text-gray-400 whitespace-pre-wrap">{userData.bio}</span></div></div>) : (<div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-gray-500" /> <strong>Bio:</strong> <span className="text-gray-400">N/A</span></div>)}
                                                     {userData.specialties ? (<div className="flex items-start gap-2"><Star className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Specialties:</strong> <span className="text-gray-400">{userData.specialties}</span></div></div>) : (<div className="flex items-center gap-2"><Star className="h-4 w-4 text-gray-500" /> <strong>Specialties:</strong> <span className="text-gray-400">N/A</span></div>)}
-                                                    {userData.portfolioLink ? (<div className="flex items-start gap-2"><LinkIcon className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Portfolio:</strong> <a href={userData.portfolioLink.startsWith('http') ? userData.portfolioLink : `https://${userData.portfolioLink}`} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline break-all">{userData.portfolioLink}</a></div></div>) : (<div className="flex items-center gap-2"><LinkIcon className="h-4 w-4 text-gray-500" /> <strong>Portfolio:</strong> <span className="text-gray-400">N/A</span></div>)}
                                                     {Array.isArray(userData.bookingInfo) && userData.bookingInfo.length > 0 ? (<div className="flex items-start gap-2"><Info className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Booking Info:</strong> <span className="text-gray-400">{userData.bookingInfo.join(', ')}</span></div></div>) : (<div className="flex items-center gap-2"><Info className="h-4 w-4 text-gray-500" /> <strong>Booking Info:</strong> <span className="text-gray-400">N/A</span></div>)}
                                                     {Array.isArray(userData.services) && userData.services.length > 0 ? (<div className="flex items-start gap-2"><Briefcase className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Services:</strong> <span className="text-gray-400">{userData.services.join(', ')}</span></div></div>) : (<div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-gray-500" /> <strong>Services:</strong> <span className="text-gray-400">N/A</span></div>)}
                                                     {Array.isArray(userData.availableLocations) && userData.availableLocations.length > 0 ? (<div className="flex items-start gap-2"><Map className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /><div><strong>Locations:</strong> <span className="text-gray-400">{userData.availableLocations.join(', ')}</span></div></div>) : (<div className="flex items-center gap-2"><Map className="h-4 w-4 text-gray-500" /> <strong>Locations:</strong> <span className="text-gray-400">N/A</span></div>)}

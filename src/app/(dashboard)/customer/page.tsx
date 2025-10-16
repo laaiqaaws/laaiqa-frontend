@@ -1990,9 +1990,6 @@ export default function CustomerDashboardPage() {
                                 <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
                                     <Link href="/profile/customer"><UserIcon className="mr-2 h-4 w-4" />Edit Profile</Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
-                                    <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
-                                </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-[#2a2a2a]" />
                                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-400 focus:bg-red-950 hover:!bg-red-800 hover:!text-red-400 cursor-pointer transition-colors">
                                     <LogOut className="mr-2 h-4 w-4" />Logout

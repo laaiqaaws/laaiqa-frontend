@@ -456,19 +456,26 @@ export default function AdminDashboardPage() {
         return filtered;
     }, [withdrawals, withdrawalFilterStatus]);
 
-    const isAnyActionInProgress = useMemo(() => {
+    const isCriticalActionInProgress = useMemo(() => {
         return !!isDeletingUser || !!isDeletingQuote || !!isDeletingReview || !!isDeletingDispute ||
-               viewingUserLoading || viewingQuoteLoading || viewingReviewLoading || viewingDisputeLoading ||
-               isSubmittingDisputeUpdate || usersLoading || quotesLoading || reviewsLoading || disputesLoading || 
-               isQuickResolving || isGeneratingPDF || withdrawalsLoading || walletStatsLoading ||
+               isSubmittingDisputeUpdate || isQuickResolving || isGeneratingPDF ||
                !!isProcessingWithdrawal || !!isCompletingWithdrawal || !!isFailingWithdrawal;
     }, [
         isDeletingUser, isDeletingQuote, isDeletingReview, isDeletingDispute,
-        viewingUserLoading, viewingQuoteLoading, viewingReviewLoading, viewingDisputeLoading,
-        isSubmittingDisputeUpdate, usersLoading, quotesLoading, reviewsLoading, disputesLoading, 
-        isQuickResolving, isGeneratingPDF, withdrawalsLoading, walletStatsLoading,
+        isSubmittingDisputeUpdate, isQuickResolving, isGeneratingPDF,
         isProcessingWithdrawal, isCompletingWithdrawal, isFailingWithdrawal
     ]);
+
+    const isBackgroundLoading = useMemo(() => {
+        return usersLoading || quotesLoading || reviewsLoading || disputesLoading || 
+               withdrawalsLoading || walletStatsLoading;
+    }, [usersLoading, quotesLoading, reviewsLoading, disputesLoading, withdrawalsLoading, walletStatsLoading]);
+
+    const isModalLoading = useMemo(() => {
+        return viewingUserLoading || viewingQuoteLoading || viewingReviewLoading || viewingDisputeLoading;
+    }, [viewingUserLoading, viewingQuoteLoading, viewingReviewLoading, viewingDisputeLoading]);
+
+    const isAnyActionInProgress = isCriticalActionInProgress;
 
     const isCsrfActionDisabled = !csrfToken && csrfFetchAttempted && (!user || user.role !== 'admin');
 
@@ -942,6 +949,12 @@ export default function AdminDashboardPage() {
             }
 
             sonnerToast.success("Dispute Updated", { description: `Dispute (ID: ${disputeId}) updated successfully.` });
+
+            // Refresh quotes data when dispute is resolved to sync quote status
+            if (payload.status === 'Resolved') {
+                fetchData('quotes', setQuotesLoading, setQuotesData, setQuotesErrorData);
+                console.log('Refreshing quotes data due to dispute resolution');
+            }
 
             if (isQuickResolve) {
                 setQuickResolveDisputeId(null);
@@ -1447,7 +1460,7 @@ export default function AdminDashboardPage() {
                     </div>
 
                      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                         <Select value={analyticsPeriod} onValueChange={setAnalyticsPeriod as any} disabled={isLoading || !!hasError || isAnyActionInProgress}>
+                         <Select value={analyticsPeriod} onValueChange={setAnalyticsPeriod as any} disabled={isLoading || !!hasError || isCriticalActionInProgress}>
                                <SelectTrigger className="w-full sm:w-[150px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-xs">
                                    <Filter className="mr-2 h-3.5 w-3.5 text-gray-500" />
                                    <SelectValue placeholder="Select Period" />
@@ -1467,7 +1480,7 @@ export default function AdminDashboardPage() {
                                           id="date"
                                          variant={"outline"}
                                          className={`justify-start text-left font-normal w-full sm:w-[200px] bg-[#181818] border-[#3a3a3a] text-gray-200 hover:bg-[#1c1c1c] focus:ring-pink-500 focus:border-pink-500 text-xs ${!analyticsDateRange?.from && "text-gray-500"}`}
-                                           disabled={!!isLoading || !!hasError || !!isAnyActionInProgress}
+                                           disabled={!!isLoading || !!hasError || !!isCriticalActionInProgress}
                                      >
                                          <CalendarIconLucide className="mr-2 h-3.5 w-3.5 text-gray-500" />
                                          {analyticsDateRange?.from ? (
@@ -1498,11 +1511,11 @@ export default function AdminDashboardPage() {
                              </Popover>
                           )}
 
-                         <Button variant="ghost" size="icon" onClick={handleRefreshData} disabled={isLoading || isAnyActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-pink-500 transition-colors ${isLoading || isAnyActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Refresh Data">
+                         <Button variant="ghost" size="icon" onClick={handleRefreshData} disabled={isLoading || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-pink-500 transition-colors ${isLoading || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Refresh Data">
                             {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-pink-500"></div> : <RefreshCw className="h-4 w-4" />}
                              <span className="sr-only">Refresh Data</span>
                          </Button>
-                         <Button variant="ghost" size="icon" onClick={handleDownloadPDF} disabled={isLoading || !!hasError || isGeneratingPDF || isAnyActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-green-500 transition-colors ${isLoading || !!hasError || isGeneratingPDF || isAnyActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Download Analytics as PDF">
+                         <Button variant="ghost" size="icon" onClick={handleDownloadPDF} disabled={isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-green-500 transition-colors ${isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Download Analytics as PDF">
                              {isGeneratingPDF ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-green-500"></div> : <Download className="h-4 w-4" />}
                              <span className="sr-only">Download Analytics as PDF</span>
                          </Button>
@@ -1718,13 +1731,13 @@ export default function AdminDashboardPage() {
                                       });
                                   }}
                                   className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
-                                  disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                  disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
                           <Select
                               value={userFilterRole}
                               onValueChange={setUserFilterRole}
-                              disabled={isLoading || !!hasError || isAnyActionInProgress}
+                              disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                           >
                               <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
                                   <SelectValue placeholder="Filter by role..." />
@@ -1762,7 +1775,7 @@ export default function AdminDashboardPage() {
                                <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No users found in the system.</p>
                           )
                      ) : (
-                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full whitespace-nowrap rounded-md">
+                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[640px] text-sm text-left text-gray-400">
                                  <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10">
                                      <tr>
@@ -1801,7 +1814,7 @@ export default function AdminDashboardPage() {
                                                        <Button variant="outline" size="sm"
                                                           className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
                                                           onClick={() => setViewingUserId(userItem.id)}
-                                                          disabled={isAnyActionInProgress}
+                                                          disabled={isCriticalActionInProgress}
                                                           aria-label={`View details for ${userItem.email}`}
                                                        >
                                                            <Eye className="mr-1.5 h-3.5 w-3.5" /> View
@@ -1848,13 +1861,13 @@ export default function AdminDashboardPage() {
                                        });
                                    }}
                                    className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
-                                   disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                   disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                                />
                            </div>
                            <Select
                                 value={quoteFilterStatus}
                                 onValueChange={setQuoteFilterStatus}
-                                disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                            >
                                 <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
                                     <SelectValue placeholder="Filter by Status..." />
@@ -1891,7 +1904,7 @@ export default function AdminDashboardPage() {
                             <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No quotes found in the system.</p>
                          )
                     ) : (
-                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full whitespace-nowrap rounded-md">
+                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[720px] text-sm text-left text-gray-400">
                                 <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                         <th scope="col" className="px-3 py-3 rounded-tl-md">Quote ID</th>
@@ -1928,7 +1941,7 @@ export default function AdminDashboardPage() {
                                                       <Button variant="outline" size="sm"
                                                          className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
                                                           onClick={() => setViewingQuoteId(quoteItem.id)}
-                                                          disabled={isAnyActionInProgress}
+                                                          disabled={isCriticalActionInProgress}
                                                           aria-label={`View details for quote ${quoteItem.id}`}
                                                        >
                                                           <Eye className="mr-1.5 h-3.5 w-3.5" /> View
@@ -1975,13 +1988,13 @@ export default function AdminDashboardPage() {
                                        });
                                   }}
                                   className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
-                                  disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                  disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
                             <Select
                                 value={reviewFilterRating}
                                 onValueChange={setReviewFilterRating}
-                                disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                             >
                                  <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
                                       <SelectValue placeholder="Filter by Rating..." />
@@ -2013,7 +2026,7 @@ export default function AdminDashboardPage() {
                                <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No reviews found in the system.</p>
                           )
                      ) : (
-                         <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full whitespace-nowrap rounded-md">
+                         <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[720px] text-sm text-left text-gray-400">
                                  <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                          <th scope="col" className="px-3 py-3 rounded-tl-md">Review ID</th>
@@ -2042,7 +2055,7 @@ export default function AdminDashboardPage() {
                                                       <Button variant="outline" size="sm"
                                                          className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
                                                          onClick={() => setViewingReviewId(reviewItem.id)}
-                                                         disabled={isAnyActionInProgress}
+                                                         disabled={isCriticalActionInProgress}
                                                          aria-label={`View details for review ${reviewItem.id}`}>
                                                           <Eye className="mr-1.5 h-3.5 w-3.5" /> View
                                                       </Button>
@@ -2088,13 +2101,13 @@ export default function AdminDashboardPage() {
                                        });
                                   }}
                                   className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
-                                  disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                  disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
                            <Select
                                 value={disputeFilterStatus}
                                 onValueChange={setDisputeFilterStatus}
-                                disabled={isLoading || !!hasError || isAnyActionInProgress}
+                                disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                            >
                                 <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
                                     <SelectValue placeholder="Filter by Status..." />
@@ -2131,7 +2144,7 @@ export default function AdminDashboardPage() {
                             <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No disputes found in the system.</p>
                         )
                    ) : (
-                       <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full whitespace-nowrap rounded-md">
+                       <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                             <table className="w-full min-w-[800px] text-sm text-left text-gray-400">
                                <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                        <th scope="col" className="px-3 py-3 rounded-tl-md">Dispute ID</th>
@@ -2171,7 +2184,7 @@ export default function AdminDashboardPage() {
                                                      <Button variant="outline" size="sm"
                                                         className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
                                                         onClick={() => setViewingDisputeId(disputeItem.id)}
-                                                        disabled={isAnyActionInProgress}
+                                                        disabled={isCriticalActionInProgress}
                                                         aria-label={`View details for dispute ${disputeItem.id}`}>
                                                          <Eye className="mr-1.5 h-3.5 w-3.5" /> View
                                                      </Button>
@@ -2184,7 +2197,7 @@ export default function AdminDashboardPage() {
                                                                 setQuickResolveDisputeId(disputeItem.id);
                                                                 setQuickResolveNotes(disputeItem.resolution || "");
                                                             }}
-                                                            disabled={isAnyActionInProgress || isCsrfActionDisabled}
+                                                            disabled={isCriticalActionInProgress || isCsrfActionDisabled}
                                                             aria-label={`Quick resolve dispute ${disputeItem.id}`}
                                                         >
                                                             <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Resolve
@@ -2223,13 +2236,13 @@ export default function AdminDashboardPage() {
                             ref={withdrawalSearchInputRef}
                             placeholder="Filter by user name, email, or amount..."
                             className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                            disabled={isLoading || !!hasError || isAnyActionInProgress}
+                            disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                         />
                     </div>
                     <Select
                         value={withdrawalFilterStatus}
                         onValueChange={setWithdrawalFilterStatus}
-                        disabled={isLoading || !!hasError || isAnyActionInProgress}
+                        disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                     >
                         <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-purple-500 focus:border-purple-500 text-sm">
                             <SelectValue placeholder="Filter by Status..." />
@@ -2266,7 +2279,7 @@ export default function AdminDashboardPage() {
                         <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No pending withdrawals found.</p>
                     )
                 ) : (
-                    <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full whitespace-nowrap rounded-md">
+                    <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                         <table className="w-full min-w-[800px] text-sm text-left text-gray-400">
                             <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10">
                                 <tr>
@@ -2320,7 +2333,7 @@ export default function AdminDashboardPage() {
                                                         size="sm"
                                                         className="border-blue-600/70 bg-blue-900/20 text-blue-400 hover:bg-blue-700/30 hover:text-blue-300 transition-colors h-8 px-3 text-xs"
                                                         onClick={() => handleApproveWithdrawal(withdrawal.id)}
-                                                        disabled={isProcessingWithdrawal === withdrawal.id || isAnyActionInProgress}
+                                                        disabled={isProcessingWithdrawal === withdrawal.id || isCriticalActionInProgress}
                                                     >
                                                         {isProcessingWithdrawal === withdrawal.id ? (
                                                             <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-blue-400 mr-1"></div>
@@ -2336,7 +2349,7 @@ export default function AdminDashboardPage() {
                                                         size="sm"
                                                         className="border-green-600/70 bg-green-900/20 text-green-400 hover:bg-green-700/30 hover:text-green-300 transition-colors h-8 px-3 text-xs"
                                                         onClick={() => handleCompleteWithdrawal(withdrawal.id)}
-                                                        disabled={isCompletingWithdrawal === withdrawal.id || isAnyActionInProgress}
+                                                        disabled={isCompletingWithdrawal === withdrawal.id || isCriticalActionInProgress}
                                                     >
                                                         {isCompletingWithdrawal === withdrawal.id ? (
                                                             <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-green-400 mr-1"></div>
@@ -2355,7 +2368,7 @@ export default function AdminDashboardPage() {
                                                             setWithdrawalFailureReason("");
                                                             handleFailWithdrawal(withdrawal.id);
                                                         }}
-                                                        disabled={isFailingWithdrawal === withdrawal.id || isAnyActionInProgress}
+                                                        disabled={isFailingWithdrawal === withdrawal.id || isCriticalActionInProgress}
                                                     >
                                                         {isFailingWithdrawal === withdrawal.id ? (
                                                             <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-red-400 mr-1"></div>
@@ -2706,7 +2719,7 @@ export default function AdminDashboardPage() {
                                    <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="destructive" size="sm"
-                                                disabled={isDeletingUser === viewingUser.id || isCsrfActionDisabled || isAnyActionInProgress}
+                                                disabled={isDeletingUser === viewingUser.id || isCsrfActionDisabled || isCriticalActionInProgress}
                                                  className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-4 text-xs">
                                                     <UserMinus className="mr-1.5 h-4 w-4" />
                                                    {isDeletingUser === viewingUser.id ? <span className="animate-pulse">Deleting...</span> : 'Delete This User'}
@@ -2736,7 +2749,7 @@ export default function AdminDashboardPage() {
                                    </Button>
                                )}
                                <DialogClose asChild>
-                                    <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isAnyActionInProgress}>Close</Button>
+                                    <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isCriticalActionInProgress}>Close</Button>
                                 </DialogClose>
                            </DialogFooter>
                        </DialogContent>
@@ -2885,7 +2898,7 @@ export default function AdminDashboardPage() {
                           <AlertDialog>
                              <AlertDialogTrigger asChild>
                                  <Button variant="destructive" size="sm"
-                                     disabled={!viewingQuoteId || isDeletingQuote === viewingQuoteId || isCsrfActionDisabled || isAnyActionInProgress}
+                                     disabled={!viewingQuoteId || isDeletingQuote === viewingQuoteId || isCsrfActionDisabled || isCriticalActionInProgress}
                                       className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-4 text-xs">
                                        {isDeletingQuote === viewingQuoteId ? <span className="animate-pulse">Deleting...</span> : <><Trash2 className="mr-1.5 h-4 w-4" />Delete Quote</>}
                                    </Button>
@@ -2908,7 +2921,7 @@ export default function AdminDashboardPage() {
                              </AlertDialogContent>
                          </AlertDialog>
                          <DialogClose asChild>
-                              <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isAnyActionInProgress}>Close</Button>
+                              <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isCriticalActionInProgress}>Close</Button>
                           </DialogClose>
                      </DialogFooter>
                 </DialogContent>
@@ -2974,7 +2987,7 @@ export default function AdminDashboardPage() {
                           <AlertDialog>
                              <AlertDialogTrigger asChild>
                                  <Button variant="destructive" size="sm"
-                                     disabled={!viewingReviewId || isDeletingReview === viewingReviewId || isCsrfActionDisabled || isAnyActionInProgress}
+                                     disabled={!viewingReviewId || isDeletingReview === viewingReviewId || isCsrfActionDisabled || isCriticalActionInProgress}
                                       className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-4 text-xs">
                                        {isDeletingReview === viewingReviewId ? <span className="animate-pulse">Deleting...</span> : <><Trash2 className="mr-1.5 h-4 w-4" />Delete Review</>}
                                    </Button>
@@ -2996,7 +3009,7 @@ export default function AdminDashboardPage() {
                              </AlertDialogContent>
                          </AlertDialog>
                          <DialogClose asChild>
-                             <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isAnyActionInProgress}>Close</Button>
+                             <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isCriticalActionInProgress}>Close</Button>
                          </DialogClose>
                     </DialogFooter>
                 </DialogContent>
@@ -3092,7 +3105,7 @@ export default function AdminDashboardPage() {
                                                 <Select
                                                      value={disputeStatusInput}
                                                      onValueChange={(value: FrontendDispute['status']) => setDisputeStatusInput(value)}
-                                                     disabled={isSubmittingDisputeUpdate || isAnyActionInProgress || isCsrfActionDisabled}
+                                                     disabled={isSubmittingDisputeUpdate || isCriticalActionInProgress || isCsrfActionDisabled}
                                                 >
                                                      <SelectTrigger className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
                                                          <SelectValue placeholder="Select status..." />
@@ -3108,7 +3121,7 @@ export default function AdminDashboardPage() {
                                                  <Label htmlFor="resolutionInput" className="block text-xs font-medium text-gray-500 mb-1 flex items-center justify-between">
                                                      Resolution Notes
                                                       {resolutionInput && (
-                                                          <Button variant="ghost" size="sm" onClick={() => setResolutionInput('')} className="h-auto p-0 text-gray-500 hover:text-gray-300 text-xs" disabled={isSubmittingDisputeUpdate || isAnyActionInProgress || isCsrfActionDisabled}>
+                                                          <Button variant="ghost" size="sm" onClick={() => setResolutionInput('')} className="h-auto p-0 text-gray-500 hover:text-gray-300 text-xs" disabled={isSubmittingDisputeUpdate || isCriticalActionInProgress || isCsrfActionDisabled}>
                                                               <XCircle className="h-3 w-3 mr-1" /> Clear
                                                           </Button>
                                                       )}
@@ -3119,7 +3132,7 @@ export default function AdminDashboardPage() {
                                                     onChange={(e) => setResolutionInput(e.target.value)}
                                                     placeholder="Enter resolution details here..."
                                                     className="bg-[#181818] border-[#3a3a3a] text-gray-200 mt-1 min-h-[100px] focus:ring-pink-500 focus:border-pink-500 text-sm"
-                                                    disabled={isSubmittingDisputeUpdate || isAnyActionInProgress || isCsrfActionDisabled}
+                                                    disabled={isSubmittingDisputeUpdate || isCriticalActionInProgress || isCsrfActionDisabled}
                                                 />
                                             </div>
                                             <div className="flex flex-col sm:flex-row gap-2 mt-3">
@@ -3128,7 +3141,7 @@ export default function AdminDashboardPage() {
                                                     disabled={
                                                         isSubmittingDisputeUpdate ||
                                                         isCsrfActionDisabled ||
-                                                        isAnyActionInProgress ||
+                                                        isCriticalActionInProgress ||
                                                         (resolutionInput.trim() === (viewingDispute.resolution || "") && disputeStatusInput === viewingDispute.status)
                                                     }
                                                     className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 text-sm w-full sm:flex-1"
@@ -3157,7 +3170,7 @@ export default function AdminDashboardPage() {
                                                             isSubmittingDisputeUpdate ||
                                                             isQuickResolving ||
                                                             isCsrfActionDisabled ||
-                                                            isAnyActionInProgress
+                                                            isCriticalActionInProgress
                                                         }
                                                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm w-full sm:flex-1"
                                                         size="sm"
@@ -3186,7 +3199,7 @@ export default function AdminDashboardPage() {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" size="sm"
-                                    disabled={!viewingDisputeId || isDeletingDispute === viewingDisputeId || isCsrfActionDisabled || isAnyActionInProgress}
+                                    disabled={!viewingDisputeId || isDeletingDispute === viewingDisputeId || isCsrfActionDisabled || isCriticalActionInProgress}
                                      className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-4 text-xs">
                                       {isDeletingDispute === viewingDisputeId ? <span className="animate-pulse">Deleting...</span> : <><Trash2 className="mr-1.5 h-4 w-4" />Delete Dispute</>}
                                   </Button>
@@ -3240,7 +3253,7 @@ export default function AdminDashboardPage() {
                                 onChange={(e) => setQuickResolveNotes(e.target.value)}
                                 placeholder="Enter final resolution details here..."
                                 className="bg-[#181818] border-[#3a3a3a] text-gray-200 min-h-[100px] focus:ring-green-500 focus:border-green-500 text-sm"
-                                disabled={isQuickResolving || isAnyActionInProgress || isCsrfActionDisabled}
+                                disabled={isQuickResolving || isCriticalActionInProgress || isCsrfActionDisabled}
                             />
                             {!quickResolveNotes.trim() && (
                                 <p className="text-xs text-red-500 mt-1">Resolution notes are required to resolve a dispute.</p>
@@ -3249,7 +3262,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <DialogFooter className="pt-4 border-t border-[#2a2a2a]">
                         <DialogClose asChild>
-                            <Button variant="ghost" className="text-gray-400 hover:bg-gray-700 hover:text-white" disabled={isQuickResolving || isAnyActionInProgress}>
+                            <Button variant="ghost" className="text-gray-400 hover:bg-gray-700 hover:text-white" disabled={isQuickResolving || isCriticalActionInProgress}>
                                 Cancel
                             </Button>
                         </DialogClose>
@@ -3270,7 +3283,7 @@ export default function AdminDashboardPage() {
                                 !quickResolveNotes.trim() ||
                                 isQuickResolving ||
                                 isCsrfActionDisabled ||
-                                isAnyActionInProgress
+                                isCriticalActionInProgress
                             }
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >

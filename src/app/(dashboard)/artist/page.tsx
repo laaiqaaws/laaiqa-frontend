@@ -2520,9 +2520,6 @@ export default function ArtistDashboardPage() {
                   <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
                     <Link href="/profile/artist"><UserIcon className="mr-2 h-4 w-4" />Edit Profile</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="focus:bg-gray-800 focus:text-pink-600 hover:!bg-gray-700 hover:!text-pink-500 cursor-pointer transition-colors">
-                    <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-[#2a2a2a]" />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-400 focus:bg-red-950 hover:!bg-red-800 hover:!text-red-400 cursor-pointer transition-colors">
                     <LogOut className="mr-2 h-4 w-4" />Logout
@@ -2863,29 +2860,8 @@ export default function ArtistDashboardPage() {
 }
 
 const renderPortfolioSection = () => {
-     return (
-         <Card className="bg-[#161616] border-[#2a2a2a]">
-              <CardHeader className="px-4 py-3 sm:p-6 border-b border-[#2a2a2a]">
-                <CardTitle className="text-lg sm:text-xl text-pink-600">Your Portfolio</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 sm:p-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((item) => (
-                    <div key={item} className="flex flex-col group">
-                      <div className="aspect-square bg-[#2a2a2a] rounded-md flex items-center justify-center mb-2 border border-[#4a4a4a] group-hover:border-pink-600 transition-all">
-                        <Palette className="h-10 w-10 text-gray-600 group-hover:text-pink-600 transition-all" />
-                      </div>
-                      <h3 className="font-medium text-sm text-white truncate">Artwork Example {item}</h3>
-                      <p className="text-xs text-gray-500">Details or link placeholder</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500 mt-4 text-center">
-                  Showcase your best work here. <Link href="/profile/artist#portfolio" className="text-pink-500 hover:underline">Manage Portfolio</Link>
-                </p>
-              </CardContent>
-            </Card>
-     );
+     // Portfolio section removed - non-functional dummy feature
+     return null;
 }
 
 type MobileNavigationItem = {

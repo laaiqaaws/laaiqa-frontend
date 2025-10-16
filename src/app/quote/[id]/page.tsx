@@ -347,9 +347,28 @@ export default function IndividualQuotePage() {
           }
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: async function () {
+            // Call backend to revert quote status when payment is cancelled
+            try {
+              const cancelResponse = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/cancel-payment`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+              });
+              
+              if (cancelResponse.ok) {
+                const cancelData = await cancelResponse.json();
+                updateQuoteStateAfterAction(cancelData.quote);
+                sonnerToast.info("Payment Cancelled", { description: "Quote reverted to pending status. You can try again when ready." });
+              } else {
+                console.error('Failed to cancel payment on backend');
+                sonnerToast.warning("Payment Cancelled", { description: "Payment was cancelled but there may be a status inconsistency. Please refresh the page." });
+              }
+            } catch (err) {
+              console.error('Error cancelling payment:', err);
+              sonnerToast.warning("Payment Cancelled", { description: "Payment was cancelled but there may be a status inconsistency. Please refresh the page." });
+            }
             setIsAccepting(false);
-            sonnerToast.info("Payment Cancelled", { description: "You can try again when ready." });
           }
         },
         prefill: {
