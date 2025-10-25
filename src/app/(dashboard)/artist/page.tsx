@@ -2574,13 +2574,13 @@ export default function ArtistDashboardPage() {
                 Fill details to create a quote. Share the link for customers to accept.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="productType" className="text-right text-gray-400">Type</Label>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="productType" className="text-gray-400">Product Type</Label>
                 <Select onValueChange={(value) => {
                     setNewQuoteProductType(value); if (value !== 'Other') setNewQuoteOtherProductType('');
                 }} value={newQuoteProductType} disabled={isCreatingQuote}>
-                  <SelectTrigger id="productType" className="col-span-3 bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600">
+                  <SelectTrigger id="productType" className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600">
                     <SelectValue placeholder="Select product type" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#2a2a2a] text-gray-300 border-[#4a4a3a] border py-1">
@@ -2598,34 +2598,34 @@ export default function ArtistDashboardPage() {
               </div>
 
               {newQuoteProductType === 'Other' && (
-                   <div className="grid grid-cols-4 items-center gap-4">
-                       <Label htmlFor="otherProductType" className="text-right text-gray-400">Specify</Label>
+                   <div className="space-y-2">
+                       <Label htmlFor="otherProductType" className="text-gray-400">Specify Product Type</Label>
                        <Input id="otherProductType" value={newQuoteOtherProductType}
                            onChange={(e) => setNewQuoteOtherProductType(e.target.value)}
-                           className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
+                           className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
                            placeholder="e.g., Custom Design" disabled={isCreatingQuote} />
                    </div>
               )}
 
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="details" className="text-right text-gray-400">Details</Label>
+              <div className="space-y-2">
+                <Label htmlFor="details" className="text-gray-400">Details</Label>
                 <Textarea id="details" value={newQuoteDetails} onChange={(e) => setNewQuoteDetails(e.target.value)}
-                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[80px]"
+                  className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[80px]"
                   placeholder="Describe the service or artwork..." disabled={isCreatingQuote} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right text-gray-400">Price (₹)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="price" className="text-gray-400">Price (₹)</Label>
                 <Input id="price" type="number" value={newQuotePrice}
                   onChange={(e) => setNewQuotePrice(e.target.value)}
-                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
+                  className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
                   placeholder="e.g., 1500" min="0" step="0.01" disabled={isCreatingQuote} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="serviceDate" className="text-right text-gray-400">Date</Label>
+              <div className="space-y-2">
+                <Label htmlFor="serviceDate" className="text-gray-400">Service Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant={"outline"}
-                      className={`col-span-3 justify-start text-left font-normal bg-[#2a2a2a] border-[#4a4a4a] text-white focus:border-pink-600 focus:ring-pink-600 hover:bg-[#383838] hover:text-white ${!newQuoteServiceDate && "text-gray-500"}`}
+                      className={`w-full justify-start text-left font-normal bg-[#2a2a2a] border-[#4a4a4a] text-white focus:border-pink-600 focus:ring-pink-600 hover:bg-[#383838] hover:text-white ${!newQuoteServiceDate && "text-gray-500"}`}
                       disabled={isCreatingQuote}>
                       <CalendarDays className="mr-2 h-4 w-4 text-pink-600" />
                       {newQuoteServiceDate ? format(newQuoteServiceDate, "PPP") : <span>Pick a date</span>}
@@ -2641,16 +2641,20 @@ export default function ArtistDashboardPage() {
 </PopoverContent>
                 </Popover>
               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="serviceTime" className="text-right text-gray-400">Time</Label>
-                <Input id="serviceTime" type="text" value={newQuoteServiceTime}
+               <div className="space-y-2">
+                <Label htmlFor="serviceTime" className="text-gray-400">Service Time</Label>
+                <Input 
+                  id="serviceTime" 
+                  type="time" 
+                  value={newQuoteServiceTime}
                   onChange={(e) => setNewQuoteServiceTime(e.target.value)}
-                  placeholder="e.g., 10:00 AM or 14:30"
-                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isCreatingQuote}/>
+                  className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark] cursor-pointer hover:bg-[#333333] transition-colors" 
+                  disabled={isCreatingQuote}
+                />
               </div>
 
               {createQuoteError && (
-                  <div className="col-span-4 text-red-500 text-sm text-center p-2 bg-red-900/20 rounded-md border border-red-800/50">{createQuoteError}</div>
+                  <div className="text-red-500 text-sm text-center p-3 bg-red-900/20 rounded-md border border-red-800/50">{createQuoteError}</div>
               )}
             </div>
             <DialogFooter className="border-t border-[#2a2a2a] pt-4">
