@@ -1229,7 +1229,7 @@ export default function CustomerDashboardPage() {
                                         {analyticsDateRange?.from ? (analyticsDateRange.to ? (<>{format(analyticsDateRange.from, "LLL dd, y")} - {format(analyticsDateRange.to, "LLL dd, y")}</>) : (format(analyticsDateRange.from, "LLL dd, y") + ' - ...')) : (<span>Pick a date range</span>)}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-[#161616] border-[#2a2a2a] text-gray-200" align="end">
+                                <PopoverContent className="w-auto p-0 bg-[#1a1a1a] border-[#3a3a3a]" align="end">
                                     <Calendar initialFocus mode="range" defaultMonth={analyticsDateRange?.from} selected={analyticsDateRange} onSelect={setAnalyticsDateRange} numberOfMonths={2} />
                                 </PopoverContent>
                             </Popover>
@@ -2041,7 +2041,7 @@ export default function CustomerDashboardPage() {
                     resetDisputeForm();
                 }
             }}>
-                <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
+                <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
                     <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                         <DialogTitle className="text-red-500 text-xl flex items-center gap-2">
                             <TriangleAlert className="h-5 w-5" /> Raise a Dispute
@@ -2084,7 +2084,7 @@ export default function CustomerDashboardPage() {
                 setIsViewDisputeDialogOpen(isOpen);
                 if (!isOpen && !isLoadingDisputeDetails) setViewDisputeDetails(null);
             }}>
-                <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a]">
+                <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
                     <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                         <DialogTitle className="text-orange-500 text-xl flex items-center gap-2">
                             <Eye className="h-5 w-5" /> Dispute Details

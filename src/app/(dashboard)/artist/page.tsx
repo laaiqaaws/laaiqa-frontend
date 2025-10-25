@@ -2567,7 +2567,7 @@ export default function ArtistDashboardPage() {
            setIsCreateQuoteDialogOpen(isOpen);
            if (!isOpen) resetCreateQuoteForm();
         }}>
-          <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
+          <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
             <DialogHeader className="border-b border-[#2a2a2a] pb-4">
               <DialogTitle className="text-pink-500 text-xl">Create New Quote</DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -2631,30 +2631,22 @@ export default function ArtistDashboardPage() {
                       {newQuoteServiceDate ? format(newQuoteServiceDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-<PopoverContent className="w-auto p-0 bg-[#161616] border-[#4a4a4a]">
+<PopoverContent className="w-auto p-0 bg-[#1a1a1a] border-[#3a3a3a]">
     <Calendar 
         mode="single" 
         selected={newQuoteServiceDate} 
         onSelect={setNewQuoteServiceDate}
         initialFocus
-        // *** ADDED min-w-[300px] and ensured proper cell sizing visibility ***
-        className="text-white [&_button]:text-white [&_button:hover]:bg-[#383838] [&_button:hover]:text-pink-600 [&_button:focus]:bg-[#3a3a3a] [&_button[aria-selected]]:bg-pink-600 [&_button[aria-selected]]:text-white min-w-[300px]"
-        classNames={{
-            day_today: "border border-pink-600 text-pink-500",
-            // Add a critical override to ensure the table row doesn't collapse if the container is weird
-            week: "flex justify-between w-full",
-            // Added day_cell: to ensure the day wrapper doesn't have explicit padding or margin issue
-            day: "p-0", 
-        }}
     />
 </PopoverContent>
                 </Popover>
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceTime" className="text-right text-gray-400">Time</Label>
-                <Input id="serviceTime" type="time" value={newQuoteServiceTime}
+                <Input id="serviceTime" type="text" value={newQuoteServiceTime}
                   onChange={(e) => setNewQuoteServiceTime(e.target.value)}
-                  className="col-span-3 bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark]" disabled={isCreatingQuote}/>
+                  placeholder="e.g., 10:00 AM or 14:30"
+                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isCreatingQuote}/>
               </div>
 
               {createQuoteError && (
@@ -2678,7 +2670,7 @@ export default function ArtistDashboardPage() {
                resetDisputeForm();
            }
         }}>
-             <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
+             <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
                <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                  <DialogTitle className="text-red-500 text-xl flex items-center gap-2">
                      <TriangleAlert className="h-5 w-5" /> Raise a Dispute
@@ -2721,7 +2713,7 @@ export default function ArtistDashboardPage() {
             setIsViewDisputeDialogOpen(isOpen);
             if (!isOpen && !isLoadingDisputeDetails) setViewDisputeDetails(null);
         }}>
-            <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a]">
+            <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                     <DialogTitle className="text-orange-500 text-xl flex items-center gap-2">
                         <Info className="h-5 w-5" /> Dispute Details
