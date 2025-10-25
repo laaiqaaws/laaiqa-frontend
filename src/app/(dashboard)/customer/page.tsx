@@ -267,6 +267,11 @@ export default function CustomerDashboardPage() {
     const [isLoadingDisputeDetails, setIsLoadingDisputeDetails] = useState(false);
     const [loadingDisputeVewButtonId, setLoadingDisputeVewButtonId] = useState<string | null>(null);
 
+    // Helper function to check if a dispute is active (Open or Under Review)
+    const isDisputeActive = (dispute: FrontendDispute) => {
+        return dispute.status === 'Open' || dispute.status === 'Under Review';
+    };
+
     const [communicationHistory, setCommunicationHistory] = useState<CommunicationAlert[]>([]);
     const [isCommunicationLoading, setIsCommunicationLoading] = useState(true);
 
@@ -678,7 +683,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
+        if (quoteToComplete.disputes && quoteToComplete.disputes.some(isDisputeActive)) {
             sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
             return;
         }
@@ -758,7 +763,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
+        if (quoteToCancel.disputes && quoteToCancel.disputes.some(isDisputeActive)) {
             sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
             return;
         }
@@ -821,7 +826,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
+        if (quote.disputes && quote.disputes.some(isDisputeActive)) {
             sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
             return;
         }
@@ -1663,7 +1668,7 @@ export default function CustomerDashboardPage() {
                                                 </AlertDialog>
                                             )}
 
-                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(d => d.status !== 'Closed') && (
+                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(isDisputeActive) && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -1674,7 +1679,7 @@ export default function CustomerDashboardPage() {
                                                     <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                                 </Button>
                                             )}
-                                            {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
+                                            {quote.disputes && quote.disputes.some(isDisputeActive) && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

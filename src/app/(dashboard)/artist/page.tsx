@@ -289,7 +289,12 @@ export default function ArtistDashboardPage() {
   const [isViewDisputeDialogOpen, setIsViewDisputeDialogOpen] = useState(false);
   const [viewDisputeDetails, setViewDisputeDetails] = useState<FrontendDisputeDetail | null>(null);
   const [isLoadingDisputeDetails, setIsLoadingDisputeDetails] = useState(false);
-  const [loadingDisputeVewButtonId, setLoadingDisputeVewButtonId] = useState<string | null>(null);
+  const [loadingDisputeViewButtonId, setLoadingDisputeViewButtonId] = useState<string | null>(null);
+
+  // Helper function to check if a dispute is active (Open or Under Review)
+  const isDisputeActive = (dispute: FrontendDispute) => {
+    return dispute.status === 'Open' || dispute.status === 'Under Review';
+  };
 
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [csrfFetchAttempted, setCsrfFetchAttempted] = useState(false);
@@ -932,7 +937,7 @@ export default function ArtistDashboardPage() {
          return;
      }
 
-     if (quoteToDelete.disputes && quoteToDelete.disputes.some(d => d.status !== 'Closed')) {
+     if (quoteToDelete.disputes && quoteToDelete.disputes.some(isDisputeActive)) {
          sonnerToast.error("Deletion Failed", { description: "Cannot delete quote with active disputes. Please resolve or delete disputes first." });
          return;
      }
@@ -990,7 +995,7 @@ export default function ArtistDashboardPage() {
            return;
       }
 
-      if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
+      if (quoteToComplete.disputes && quoteToComplete.disputes.some(isDisputeActive)) {
         sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
         return;
       }
@@ -1052,7 +1057,7 @@ export default function ArtistDashboardPage() {
             return;
        }
 
-       if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
+       if (quoteToCancel.disputes && quoteToCancel.disputes.some(isDisputeActive)) {
            sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
            return;
        }
@@ -1111,7 +1116,7 @@ export default function ArtistDashboardPage() {
             return;
         }
 
-         if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
+         if (quote.disputes && quote.disputes.some(isDisputeActive)) {
              sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
              return;
          }
@@ -1354,7 +1359,7 @@ export default function ArtistDashboardPage() {
              return;
          }
          
-         setLoadingDisputeVewButtonId(disputeId);
+         setLoadingDisputeViewButtonId(disputeId);
          setIsLoadingDisputeDetails(true);
          setViewDisputeDetails(null); 
          setIsViewDisputeDialogOpen(true);
@@ -1377,7 +1382,7 @@ export default function ArtistDashboardPage() {
              setIsViewDisputeDialogOpen(false); 
          } finally {
              setIsLoadingDisputeDetails(false);
-             setLoadingDisputeVewButtonId(null);
+             setLoadingDisputeViewButtonId(null);
          }
      };
 
@@ -1676,7 +1681,7 @@ export default function ArtistDashboardPage() {
        }
        const isSecurityReady = !!csrfToken;
        const isAnyActionInProgress = isCreatingQuote || !!isDeletingQuote || !!isCompletingQuote || !!isCancellingQuote || 
-                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeVewButtonId || isRefreshingData;
+                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeViewButtonId || isRefreshingData;
 
        return (
             <Card className="bg-[#161616] border-[#2a2a2a]">
@@ -1785,7 +1790,7 @@ export default function ArtistDashboardPage() {
 
       const isSecurityReady = !!csrfToken;
       const isAnyActionInProgress = isCreatingQuote || !!isDeletingQuote || !!isCompletingQuote || !!isCancellingQuote || 
-                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeVewButtonId || isRefreshingData;
+                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeViewButtonId || isRefreshingData;
 
       return (
           <>
@@ -1913,9 +1918,9 @@ export default function ArtistDashboardPage() {
                                                              size="sm"
                                                              onClick={() => handleViewDisputeDetails(dispute.id)}
                                                              className="border-gray-500 text-gray-400 bg-transparent hover:bg-gray-800/50 hover:text-white transition-colors flex items-center gap-1 h-7 px-2 text-xs"
-                                                             disabled={loadingDisputeVewButtonId === dispute.id || isAnyActionInProgress}
+                                                             disabled={loadingDisputeViewButtonId === dispute.id || isAnyActionInProgress}
                                                          >
-                                                             {loadingDisputeVewButtonId === dispute.id ? <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-gray-400 mr-1"></div> : <Info className="h-3 w-3" />}
+                                                             {loadingDisputeViewButtonId === dispute.id ? <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-gray-400 mr-1"></div> : <Info className="h-3 w-3" />}
                                                               View Details
                                                          </Button>
 
@@ -2071,7 +2076,7 @@ export default function ArtistDashboardPage() {
                                   </AlertDialog>
                               )}
 
-                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(d => d.status !== 'Closed') && (
+                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(isDisputeActive) && (
                                  <Button
                                      variant="outline"
                                      size="sm"
@@ -2082,7 +2087,7 @@ export default function ArtistDashboardPage() {
                                      <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                  </Button>
                              )}
-                              {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
+                              {quote.disputes && quote.disputes.some(isDisputeActive) && (
                                    <Button
                                        variant="outline"
                                        size="sm"
@@ -2643,14 +2648,24 @@ export default function ArtistDashboardPage() {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="serviceTime" className="text-gray-400">Service Time</Label>
-                <Input 
-                  id="serviceTime" 
-                  type="time" 
-                  value={newQuoteServiceTime}
-                  onChange={(e) => setNewQuoteServiceTime(e.target.value)}
-                  className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark] cursor-pointer hover:bg-[#333333] transition-colors" 
-                  disabled={isCreatingQuote}
-                />
+                <div 
+                  className="relative cursor-pointer"
+                  onClick={(e) => {
+                    const input = e.currentTarget.querySelector('input');
+                    if (input && !isCreatingQuote) {
+                      input.showPicker?.();
+                    }
+                  }}
+                >
+                  <Input 
+                    id="serviceTime" 
+                    type="time" 
+                    value={newQuoteServiceTime}
+                    onChange={(e) => setNewQuoteServiceTime(e.target.value)}
+                    className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark] cursor-pointer hover:bg-[#333333] transition-colors" 
+                    disabled={isCreatingQuote}
+                  />
+                </div>
               </div>
 
               {createQuoteError && (

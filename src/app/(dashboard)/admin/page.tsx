@@ -938,6 +938,19 @@ export default function AdminDashboardPage() {
                 prevDisputes.map(d => (d.id === disputeId ? responseData : d))
             );
 
+            // Update quotes list to reflect dispute status change
+            setQuotesData(prevQuotes =>
+                prevQuotes.map(q => {
+                    if (q.disputes && q.disputes.some(d => d.id === disputeId)) {
+                        return {
+                            ...q,
+                            disputes: q.disputes.map(d => d.id === disputeId ? responseData : d)
+                        };
+                    }
+                    return q;
+                })
+            );
+
             if (viewingQuote && viewingQuote.disputes.some(d => d.id === disputeId)) {
                 setViewingQuote(prevQuote => {
                     if (!prevQuote) return null;
@@ -950,12 +963,6 @@ export default function AdminDashboardPage() {
 
             sonnerToast.success("Dispute Updated", { description: `Dispute (ID: ${disputeId}) updated successfully.` });
 
-            // Refresh quotes data when dispute is resolved to sync quote status
-            if (payload.status === 'Resolved') {
-                fetchData('quotes', setQuotesLoading, setQuotesData, setQuotesErrorData);
-                console.log('Refreshing quotes data due to dispute resolution');
-            }
-
             if (isQuickResolve) {
                 setQuickResolveDisputeId(null);
                 setQuickResolveNotes("");
@@ -966,7 +973,7 @@ export default function AdminDashboardPage() {
                 sonnerToast.error("Update Error", { description: err.message || "An error occurred during update." });
              }
         } finally {
-             if (isQuickResolving) setIsQuickResolving(false);
+             if (isQuickResolve) setIsQuickResolving(false);
              else setIsSubmittingDisputeUpdate(false);
         }
     };
