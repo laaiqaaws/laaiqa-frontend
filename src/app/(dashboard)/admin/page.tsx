@@ -16,7 +16,7 @@ import {
     Trash2,
     Info,
     UserCog,
-    DollarSignIcon,
+    IndianRupee,
     Package,
     CheckSquare,
     AlertCircle,
@@ -938,19 +938,6 @@ export default function AdminDashboardPage() {
                 prevDisputes.map(d => (d.id === disputeId ? responseData : d))
             );
 
-            // Update quotes list to reflect dispute status change
-            setQuotesData(prevQuotes =>
-                prevQuotes.map(q => {
-                    if (q.disputes && q.disputes.some(d => d.id === disputeId)) {
-                        return {
-                            ...q,
-                            disputes: q.disputes.map(d => d.id === disputeId ? responseData : d)
-                        };
-                    }
-                    return q;
-                })
-            );
-
             if (viewingQuote && viewingQuote.disputes.some(d => d.id === disputeId)) {
                 setViewingQuote(prevQuote => {
                     if (!prevQuote) return null;
@@ -963,6 +950,12 @@ export default function AdminDashboardPage() {
 
             sonnerToast.success("Dispute Updated", { description: `Dispute (ID: ${disputeId}) updated successfully.` });
 
+            // Refresh quotes data when dispute is resolved to sync quote status
+            if (payload.status === 'Resolved') {
+                fetchData('quotes', setQuotesLoading, setQuotesData, setQuotesErrorData);
+                console.log('Refreshing quotes data due to dispute resolution');
+            }
+
             if (isQuickResolve) {
                 setQuickResolveDisputeId(null);
                 setQuickResolveNotes("");
@@ -973,7 +966,7 @@ export default function AdminDashboardPage() {
                 sonnerToast.error("Update Error", { description: err.message || "An error occurred during update." });
              }
         } finally {
-             if (isQuickResolve) setIsQuickResolving(false);
+             if (isQuickResolving) setIsQuickResolving(false);
              else setIsSubmittingDisputeUpdate(false);
         }
     };
@@ -1504,7 +1497,7 @@ export default function AdminDashboardPage() {
                                          )}
                                      </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-[#1a1a1a] border-[#3a3a3a]" align="end">
+                                <PopoverContent className="w-auto p-0 bg-[#161616] border-[#2a2a2a] text-gray-200" align="end">
                                      <Calendar
                                          initialFocus
                                         mode="range"
@@ -1512,6 +1505,7 @@ export default function AdminDashboardPage() {
                                         selected={analyticsDateRange}
                                         onSelect={setAnalyticsDateRange}
                                         numberOfMonths={2}
+                                        className="calendar-dark-theme"
                                      />
                                 </PopoverContent>
                              </Popover>
@@ -1520,6 +1514,10 @@ export default function AdminDashboardPage() {
                          <Button variant="ghost" size="icon" onClick={handleRefreshData} disabled={isLoading || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-pink-500 transition-colors ${isLoading || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Refresh Data">
                             {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-pink-500"></div> : <RefreshCw className="h-4 w-4" />}
                              <span className="sr-only">Refresh Data</span>
+                         </Button>
+                         <Button variant="ghost" size="icon" onClick={handleDownloadPDF} disabled={isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-green-500 transition-colors ${isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Download Analytics as PDF">
+                             {isGeneratingPDF ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-green-500"></div> : <Download className="h-4 w-4" />}
+                             <span className="sr-only">Download Analytics as PDF</span>
                          </Button>
                      </div>
                 </CardHeader>
@@ -1581,9 +1579,9 @@ export default function AdminDashboardPage() {
                                 </Card>
                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-green-500/10 hover:border-green-700/50 transition-all duration-200">
                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2">
-                                        <DollarSignIcon className="h-4 w-4 text-green-400" /> Total Revenue
+                                        <IndianRupee className="h-4 w-4 text-green-400" /> Total Revenue
                                     </CardTitle>
-                                    <CardContent className="p-0 text-3xl font-bold text-green-500">${totalRevenueInPeriod.toFixed(2)}</CardContent>
+                                    <CardContent className="p-0 text-3xl font-bold text-green-500">₹{totalRevenueInPeriod.toFixed(2)}</CardContent>
                                      <p className="text-xs text-gray-400 mt-1">
                                         From {completedQuotesInPeriod.length} completed quotes.
                                     </p>
@@ -2599,7 +2597,7 @@ export default function AdminDashboardPage() {
             </main>
 
             <Dialog open={!!viewingUserId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-4rem)] md:max-h-[85vh)]">
                       <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
                           <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
                               <Info className="h-5 w-5" /> User Details
@@ -2608,7 +2606,7 @@ export default function AdminDashboardPage() {
                               Viewing: {viewingUserLoading ? 'Loading...' : (viewingUser?.name || viewingUser?.email || viewingUserId || 'N/A')}
                           </DialogDescription>
                       </DialogHeader>
-                        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-2">
+                        <div className="flex-1 min-h-0 overflow-hidden">
                        {viewingUserLoading ? (
                              <div className="flex flex-col items-center justify-center h-full py-12">
                                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2620,19 +2618,20 @@ export default function AdminDashboardPage() {
                                   <p className="font-semibold">Error: {viewingUserError}</p>
                              </div>
                          ) : viewingUser ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm pb-4">
-                                <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
-                                    <Avatar className="h-20 w-20 text-3xl shrink-0">
-                                        <AvatarImage src={viewingUser.image || undefined} alt={viewingUser.name || "User Avatar"} />
-                                        <AvatarFallback className="bg-pink-700/50 text-pink-200 border border-pink-600">{getInitials(viewingUser.name)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="space-y-0.5">
-                                        <p className="text-xl font-semibold text-gray-100 truncate max-w-full sm:max-w-sm">{viewingUser.name || 'N/A'}</p>
-                                        <p className="text-gray-400 flex items-center gap-1.5"><Mail className="h-4 w-4 text-gray-500" /> <span className="truncate max-w-full sm:max-w-sm">{viewingUser.email}</span></p>
-                                        <p className="text-gray-400 flex items-center gap-1.5"><UserCog className="h-4 w-4 text-gray-500" /> {viewingUser.role}</p>
+                            <ScrollArea className="h-full w-full pr-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                                    <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
+                                        <Avatar className="h-20 w-20 text-3xl shrink-0">
+                                            <AvatarImage src={viewingUser.image || undefined} alt={viewingUser.name || "User Avatar"} />
+                                            <AvatarFallback className="bg-pink-700/50 text-pink-200 border border-pink-600">{getInitials(viewingUser.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-0.5">
+                                            <p className="text-xl font-semibold text-gray-100 truncate max-w-full sm:max-w-sm">{viewingUser.name || 'N/A'}</p>
+                                            <p className="text-gray-400 flex items-center gap-1.5"><Mail className="h-4 w-4 text-gray-500" /> <span className="truncate max-w-full sm:max-w-sm">{viewingUser.email}</span></p>
+                                            <p className="text-gray-400 flex items-center gap-1.5"><UserCog className="h-4 w-4 text-gray-500" /> {viewingUser.role}</p>
                                                 <p className="text-gray-500 flex items-center gap-1.5 text-xs font-mono mt-1"><Info className="h-3.5 w-3.5" /> ID: {viewingUser.id}</p>
+                                        </div>
                                     </div>
-                                </div>
                                         <div>
                                             <h5 className="text-sm font-semibold text-gray-300 flex items-center gap-1.5 mb-1"><Info className="h-4 w-4" /> Basic Information</h5>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-xs">
@@ -2640,7 +2639,7 @@ export default function AdminDashboardPage() {
                                                     { icon: CalendarIconLucide, label: "Created At", value: formatDateSafely(viewingUser.createdAt, 'PPPp') },
                                                     { icon: Phone, label: "Phone", value: viewingUser.phone },
                                                     { icon: UserRound, label: "Gender", value: viewingUser.gender },
-                                                    { icon: UserRound, label: "Sex", value: viewingUser.sex },
+
                                                     { icon: CalendarIconLucide, label: "Age", value: viewingUser.age != null ? `${viewingUser.age} years` : null },
                                                     { icon: Ruler, label: "Height", value: viewingUser.height != null ? `${viewingUser.height} cm` : null },
                                                     { icon: Weight, label: "Weight", value: viewingUser.weight != null ? `${viewingUser.weight} kg` : null },
@@ -2710,6 +2709,7 @@ export default function AdminDashboardPage() {
                                         </>
                                     )}
                                 </div>
+                            </ScrollArea>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No user data to display or user not found.</div>
                             )}
@@ -2756,7 +2756,7 @@ export default function AdminDashboardPage() {
                   </Dialog>
 
             <Dialog open={!!viewingQuoteId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl overflow-y-auto max-h-90vh">
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl overflow-hidden flex flex-col max-h-[calc(100dvh-4rem)] md:max-h-[85vh)]">
                     <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
                         <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
                             <FileText className="h-5 w-5" /> Quote Details
@@ -2765,7 +2765,7 @@ export default function AdminDashboardPage() {
                             Viewing: Quote ID {viewingQuoteLoading ? 'Loading...' : (viewingQuote?.id || viewingQuoteId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-2">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                     {viewingQuoteLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2777,7 +2777,8 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingQuoteError}</p>
                         </div>
                     ) : viewingQuote ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm pb-4">
+                        <ScrollArea className="h-full w-full pr-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                      <div className="flex items-center gap-2 text-pink-400 shrink-0 text-xl">
                                         <FileText className="h-6 w-6" />
@@ -2790,8 +2791,8 @@ export default function AdminDashboardPage() {
                                      </div>
                                 </div>
                                    <div>
-                                       <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><DollarSignIcon className="h-3.5 w-3.5" />Price</Label>
-                                       <p className="text-gray-200 text-base font-semibold">${parseFloat(viewingQuote.price).toFixed(2)}</p>
+                                       <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><IndianRupee className="h-3.5 w-3.5" />Price</Label>
+                                       <p className="text-gray-200 text-base font-semibold">₹{parseFloat(viewingQuote.price).toFixed(2)}</p>
                                    </div>
                                    <div>
                                         <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5" />Status</Label>
@@ -2820,7 +2821,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                      {viewingQuote.razorpayOrderId && (
                                          <div className="sm:col-span-2 mt-2">
-                                             <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><DollarSignIcon className="h-3.5 w-3.5" />Payment Info</Label>
+                                             <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><IndianRupee className="h-3.5 w-3.5" />Payment Info</Label>
                                              <p className="text-gray-200 text-xs">Order ID: {viewingQuote.razorpayOrderId}</p>
                                              {viewingQuote.razorpayPaymentId && <p className="text-gray-200 text-xs">Payment ID: {viewingQuote.razorpayPaymentId}</p>}
                                          </div>
@@ -2888,7 +2889,8 @@ export default function AdminDashboardPage() {
                                           </div>
                                       )}
                                 </div>
-                            ) : (
+                            </ScrollArea>
+                    ) : (
                          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No quote data to display or quote not found.</div>
                     )}
                     </div>
@@ -2926,7 +2928,7 @@ export default function AdminDashboardPage() {
             </Dialog>
 
              <Dialog open={!!viewingReviewId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg overflow-y-auto max-h-90vh">
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg overflow-hidden flex flex-col max-h-[calc(100dvh-4rem)] md:max-h-[85vh)]">
                     <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
                         <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
                             <Star className="h-5 w-5" /> Review Details
@@ -2935,7 +2937,7 @@ export default function AdminDashboardPage() {
                             Viewing review ID: {viewingReviewLoading ? 'Loading...' : (viewingReview?.id || viewingReviewId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-2">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                     {viewingReviewLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2947,7 +2949,8 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingReviewError}</p>
                         </div>
                     ) : viewingReview ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm pb-4">
+                        <ScrollArea className="h-full w-full pr-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                  <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                       <div className="flex items-center gap-2 text-yellow-400 shrink-0 text-xl">
                                          <Star className="h-6 w-6" />
@@ -2975,9 +2978,10 @@ export default function AdminDashboardPage() {
                                         <p className="text-gray-300 whitespace-pre-wrap text-xs leading-relaxed bg-[#181818] p-2 rounded-md border border-[#2a2a2a]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(viewingReview.comment ?? '') }} />
                                      </div>
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No review data to display or review not found.</div>
-                            )}
+                            </ScrollArea>
+                       ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No review data to display or review not found.</div>
+                       )}
                        </div>
                     <DialogFooter className="pt-4 mt-0 border-t border-[#2a2a2a] shrink-0">
                           <AlertDialog>
@@ -3012,7 +3016,7 @@ export default function AdminDashboardPage() {
            </Dialog>
 
             <Dialog open={!!viewingDisputeId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl overflow-y-auto max-h-90vh">
+               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl overflow-hidden flex flex-col max-h-[calc(100dvh-4rem)] md:max-h-[85vh)]">
                    <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
                        <DialogTitle className="text-red-500 flex items-center gap-2 text-xl">
                            <TriangleAlert className="h-5 w-5" /> Dispute Details
@@ -3021,10 +3025,10 @@ export default function AdminDashboardPage() {
                            Viewing dispute ID: {viewingDisputeLoading ? 'Loading...' : (viewingDispute?.id || viewingDisputeId || 'N/A')}
                        </DialogDescription>
                    </DialogHeader>
-                   <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-2">
+                   <div className="flex-1 min-h-0 overflow-hidden">
                    {viewingDisputeLoading ? (
                        <div className="flex flex-col items-center justify-center h-full py-12">
-                          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-500 mb-3"></div>
                           <p className="text-gray-400">Loading dispute details...</p>
                        </div>
                    ) : viewingDisputeError ? (
@@ -3033,22 +3037,23 @@ export default function AdminDashboardPage() {
                            <p className="font-semibold">Error: {viewingDisputeError}</p>
                        </div>
                    ) : viewingDispute ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm pb-4">
-                            <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
-                                <div className="flex items-center gap-2 text-red-400 shrink-0 text-xl">
-                                    <TriangleAlert className="h-6 w-6" />
-                                    <span className="font-semibold">{viewingDispute.reason}</span>
+                        <ScrollArea className="h-full w-full pr-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                                <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
+                                    <div className="flex items-center gap-2 text-red-400 shrink-0 text-xl">
+                                        <TriangleAlert className="h-6 w-6" />
+                                        <span className="font-semibold">{viewingDispute.reason}</span>
+                                    </div>
+                                    <div className="space-y-0.5">
+                                        <p className="text-gray-400 flex items-center gap-1.5 text-sm">Status:
+                                             <Badge variant="outline" className={`ml-1 text-sm font-medium ${getDisputeStatusColorClasses(viewingDispute.status)}`}>
+                                                  {viewingDispute.status}
+                                             </Badge>
+                                        </p>
+                                         <p className="text-gray-400 flex items-center gap-1.5 text-sm"><CalendarIconLucide className="h-4 w-4 text-gray-500" /> Created: {formatDateSafely(viewingDispute.createdAt, 'PPPp')}</p>
+                                         <p className="text-gray-500 flex items-center gap-1.5 text-xs font-mono mt-1"><Info className="h-3.5 w-3.5" /> ID: {viewingDispute.id}</p>
+                                    </div>
                                 </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-gray-400 flex items-center gap-1.5 text-sm">Status:
-                                         <Badge variant="outline" className={`ml-1 text-sm font-medium ${getDisputeStatusColorClasses(viewingDispute.status)}`}>
-                                              {viewingDispute.status}
-                                         </Badge>
-                                    </p>
-                                    <p className="text-gray-400 flex items-center gap-1.5 text-sm"><CalendarIconLucide className="h-4 w-4 text-gray-500" /> Created: {formatDateSafely(viewingDispute.createdAt, 'PPPp')}</p>
-                                    <p className="text-gray-500 flex items-center gap-1.5 text-xs font-mono mt-1"><Info className="h-3.5 w-3.5" /> ID: {viewingDispute.id}</p>
-                                </div>
-                            </div>
                                   <div className="sm:col-span-2">
                                       <Label className="text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" />Involved Parties</Label>
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-xs">
@@ -3185,10 +3190,11 @@ export default function AdminDashboardPage() {
                                         </div>
                                      </div>
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No dispute data to display or dispute not found.</div>
-                            )}
-                        </div>
+                           </ScrollArea>
+                      ) : (
+                           <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No dispute data to display or dispute not found.</div>
+                      )}
+                      </div>
                    <DialogFooter className="pt-4 mt-0 border-t border-[#2a2a2a] shrink-0">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

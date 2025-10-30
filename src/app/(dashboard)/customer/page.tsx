@@ -14,7 +14,7 @@ import {
     FileText,
     CheckCircle,
     Clock,
-    DollarSign,
+    IndianRupee,
     CalendarDays,
     Clock4,
     Package,
@@ -266,11 +266,6 @@ export default function CustomerDashboardPage() {
     const [viewDisputeDetails, setViewDisputeDetails] = useState<FrontendDisputeDetail | null>(null);
     const [isLoadingDisputeDetails, setIsLoadingDisputeDetails] = useState(false);
     const [loadingDisputeVewButtonId, setLoadingDisputeVewButtonId] = useState<string | null>(null);
-
-    // Helper function to check if a dispute is active (Open or Under Review)
-    const isDisputeActive = (dispute: FrontendDispute) => {
-        return dispute.status === 'Open' || dispute.status === 'Under Review';
-    };
 
     const [communicationHistory, setCommunicationHistory] = useState<CommunicationAlert[]>([]);
     const [isCommunicationLoading, setIsCommunicationLoading] = useState(true);
@@ -683,7 +678,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToComplete.disputes && quoteToComplete.disputes.some(isDisputeActive)) {
+        if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
             sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
             return;
         }
@@ -763,7 +758,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToCancel.disputes && quoteToCancel.disputes.some(isDisputeActive)) {
+        if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
             sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
             return;
         }
@@ -826,7 +821,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quote.disputes && quote.disputes.some(isDisputeActive)) {
+        if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
             sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
             return;
         }
@@ -1234,7 +1229,7 @@ export default function CustomerDashboardPage() {
                                         {analyticsDateRange?.from ? (analyticsDateRange.to ? (<>{format(analyticsDateRange.from, "LLL dd, y")} - {format(analyticsDateRange.to, "LLL dd, y")}</>) : (format(analyticsDateRange.from, "LLL dd, y") + ' - ...')) : (<span>Pick a date range</span>)}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-[#1a1a1a] border-[#3a3a3a]" align="end">
+                                <PopoverContent className="w-auto p-0 bg-[#161616] border-[#2a2a2a] text-gray-200" align="end">
                                     <Calendar initialFocus mode="range" defaultMonth={analyticsDateRange?.from} selected={analyticsDateRange} onSelect={setAnalyticsDateRange} numberOfMonths={2} />
                                 </PopoverContent>
                             </Popover>
@@ -1265,7 +1260,7 @@ export default function CustomerDashboardPage() {
                                     <p className="text-xs text-gray-400 mt-1">Total quotes received in this period.</p>
                                 </Card>
                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-green-500/10 hover:border-green-700/50 transition-all">
-                                    <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2"><DollarSign className="h-4 w-4 text-green-400" /> Total Spent</CardTitle>
+                                    <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2"><IndianRupee className="h-4 w-4 text-green-400" /> Total Spent</CardTitle>
                                     <CardContent className="p-0 text-3xl font-bold text-green-500">{CURRENCY_SYMBOL}{totalSpentInPeriod.toFixed(2)}</CardContent>
                                     <p className="text-xs text-gray-400 mt-1">From completed quotes in this period.</p>
                                 </Card>
@@ -1606,7 +1601,7 @@ export default function CustomerDashboardPage() {
                                         <p className="text-sm text-gray-300 mb-2 whitespace-pre-wrap break-words">{quote.details}</p>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-300 mb-3">
                                             <div className="flex items-center gap-1">
-                                                <DollarSign className="h-4 w-4 text-gray-500" />
+                                                <IndianRupee className="h-4 w-4 text-gray-500" />
                                                 <strong>Price:</strong> {CURRENCY_SYMBOL}{quote.price || '0.00'}
                                             </div>
                                             <div className="flex items-center gap-1">
@@ -1668,7 +1663,7 @@ export default function CustomerDashboardPage() {
                                                 </AlertDialog>
                                             )}
 
-                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(isDisputeActive) && (
+                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(d => d.status !== 'Closed') && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -1679,7 +1674,7 @@ export default function CustomerDashboardPage() {
                                                     <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                                 </Button>
                                             )}
-                                            {quote.disputes && quote.disputes.some(isDisputeActive) && (
+                                            {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -2046,7 +2041,7 @@ export default function CustomerDashboardPage() {
                     resetDisputeForm();
                 }
             }}>
-                <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
                     <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                         <DialogTitle className="text-red-500 text-xl flex items-center gap-2">
                             <TriangleAlert className="h-5 w-5" /> Raise a Dispute
@@ -2089,7 +2084,7 @@ export default function CustomerDashboardPage() {
                 setIsViewDisputeDialogOpen(isOpen);
                 if (!isOpen && !isLoadingDisputeDetails) setViewDisputeDetails(null);
             }}>
-                <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a]">
                     <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                         <DialogTitle className="text-orange-500 text-xl flex items-center gap-2">
                             <Eye className="h-5 w-5" /> Dispute Details

@@ -9,7 +9,7 @@ import {
   FileText,
   CheckCircle,
   Clock,
-  DollarSign,
+  IndianRupee,
   CalendarDays,
   Clock4,
   Package,
@@ -752,7 +752,7 @@ export default function IndividualQuotePage() {
              </div>
              {canViewCustomerDetails && (
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-gray-400">
-                     {quote.customerSex && <div><strong>Sex:</strong> {quote.customerSex}</div>}
+
                      {quote.customerAge !== null && quote.customerAge !== undefined && <div><strong>Age:</strong> {quote.customerAge}</div>}
                      {quote.customerColor && <div><strong>Color:</strong> {quote.customerColor}</div>}
                      {quote.customerEthnicity && <div><strong>Ethnicity:</strong> {quote.customerEthnicity}</div>}
@@ -764,8 +764,8 @@ export default function IndividualQuotePage() {
 
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1">
                 <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <strong className="text-gray-300">Price:</strong> <span className="text-gray-100">${quote.price}</span>
+                    <IndianRupee className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <strong className="text-gray-300">Price:</strong> <span className="text-gray-100">₹{quote.price}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <CalendarDays className="h-4 w-4 text-gray-400 flex-shrink-0" />

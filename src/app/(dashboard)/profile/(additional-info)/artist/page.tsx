@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
+import { validateProfileCompletion, isFieldRequired } from '@/lib/profileValidation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -130,47 +131,10 @@ interface FrontendQuote extends ApiQuoteData {
 }
 
 
-const importantArtistKeys: Array<keyof ArtistProfileData> = [
-    'bio',
-    'specialties',
-    'bookingInfo',
-    'services',
-    'availableLocations',
-    'phone',
-    'city',
-    'gender',
-    'height',
-    'weight',
-    'color',
-    'ethnicity',
-    'age',
-    'other',
-];
-
-
-const isProfileIncomplete = (user: ArtistProfileData | null, keysToCheck: Array<keyof ArtistProfileData>): boolean => {
+const isProfileIncomplete = (user: ArtistProfileData | null): boolean => {
     if (!user) return true;
-
-    for (const key of keysToCheck) {
-        const value = user[key];
-
-        if (value == null) {
-            return true;
-        }
-
-        if (typeof value === 'string' && value.trim() === '') {
-             return true;
-        }
-
-        if (Array.isArray(value) && value.length === 0) {
-             return true;
-        }
-
-         if (typeof value === 'number' && (isNaN(value) || value <= 0)) {
-              return true;
-         }
-    }
-    return false;
+    const validation = validateProfileCompletion(user);
+    return !validation.isComplete;
 };
 
 
@@ -180,20 +144,13 @@ export default function ArtistProfilePage() {
     const [initialError, setInitialError] = useState('');
     const [incompleteProfileMessage, setIncompleteProfileMessage] = useState<string | null>(null);
 
-    const [height, setHeight] = useState('');
-    const [weight, setWeight] = useState('');
-    const [color, setColor] = useState('');
-    const [ethnicity, setEthnicity] = useState('');
-    const [age, setAge] = useState('');
-    const [other, setOther] = useState('');
-
+    // Artist-specific fields only
     const [address, setAddress] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [zipCode, setZipCode] = useState('');
     const [country, setCountry] = useState('');
     const [phone, setPhone] = useState('');
-    const [gender, setGender] = useState<string>('');
 
     const [bio, setBio] = useState('');
     const [specialties, setSpecialties] = useState('');
@@ -220,20 +177,12 @@ export default function ArtistProfilePage() {
 
     const populateFormStates = useCallback((data: ArtistProfileData | null) => {
         if (data) {
-            setHeight(data.height?.toString() ?? '');
-            setWeight(data.weight?.toString() ?? '');
-            setColor(data.color ?? '');
-            setEthnicity(data.ethnicity ?? '');
-            setAge(data.age?.toString() ?? '');
-            setOther(data.other ?? '');
-
             setAddress(data.address ?? '');
             setCity(data.city ?? '');
             setState(data.state ?? '');
             setZipCode(data.zipCode ?? '');
             setCountry(data.country ?? '');
             setPhone(data.phone ?? '');
-            setGender(data.gender ?? '');
 
             setBio(data.bio ?? '');
             setSpecialties(data.specialties ?? '');
@@ -242,8 +191,7 @@ export default function ArtistProfilePage() {
             setServicesInput(Array.isArray(data.services) ? data.services.join(', ') : '');
             setAvailableLocationsInput(Array.isArray(data.availableLocations) ? data.availableLocations.join(', ') : '');
         } else {
-             setHeight(''); setWeight(''); setColor(''); setEthnicity(''); setAge(''); setOther('');
-             setAddress(''); setCity(''); setState(''); setZipCode(''); setCountry(''); setPhone(''); setGender('');
+             setAddress(''); setCity(''); setState(''); setZipCode(''); setCountry(''); setPhone('');
              setBio(''); setSpecialties('');
              setBookingInfoInput(''); setServicesInput(''); setAvailableLocationsInput('');
         }
@@ -323,7 +271,7 @@ export default function ArtistProfilePage() {
 
                 setUserData(data.user);
 
-                const needsEditing = isProfileIncomplete(data.user, importantArtistKeys);
+                const needsEditing = isProfileIncomplete(data.user);
                 setIsEditing(needsEditing);
 
                 if (needsEditing) {
@@ -346,7 +294,7 @@ export default function ArtistProfilePage() {
         };
 
         fetchUserData();
-    }, [router, populateFormStates, importantArtistKeys]);
+    }, [router, populateFormStates]);
 
 
     const fetchCsrfToken = useCallback(async (): Promise<string | null> => {
@@ -508,7 +456,7 @@ export default function ArtistProfilePage() {
     const handleCancelClick = () => {
         if (userData) {
             populateFormStates(userData);
-            const needsEditing = isProfileIncomplete(userData, importantArtistKeys);
+            const needsEditing = isProfileIncomplete(userData);
             if (needsEditing) {
                 setIncompleteProfileMessage("Please complete your profile details below so customers can learn about your work.");
             } else {
@@ -529,26 +477,6 @@ export default function ArtistProfilePage() {
         setSuccessMessage('');
         setIsSaving(true);
 
-        const parsedHeight = height === '' ? null : parseFloat(height);
-        const parsedWeight = weight === '' ? null : parseFloat(weight);
-        const parsedAge = age === '' ? null : parseInt(age, 10);
-
-        if (height !== '' && (isNaN(parsedHeight as any) || parsedHeight! < 0)) {
-            setActionError('Please enter a valid non-negative number for Height.');
-            setIsSaving(false);
-            return;
-        }
-        if (weight !== '' && (isNaN(parsedWeight as any) || parsedWeight! < 0)) {
-            setActionError('Please enter a valid non-negative number for Weight.');
-            setIsSaving(false);
-            return;
-        }
-        if (age !== '' && (isNaN(parsedAge as any) || parsedAge! < 0)) {
-            setActionError('Please enter a valid non-negative whole number for Age.');
-            setIsSaving(false);
-            return;
-        }
-
          let token = csrfToken;
           if (!token && !csrfFetchAttempted) {
               sonnerToast.info("Attempting to refresh security token...");
@@ -562,26 +490,17 @@ export default function ArtistProfilePage() {
              return;
         }
 
-
         const bookingInfoArray = bookingInfoInput.split(',').map(item => item.trim()).filter(Boolean);
         const servicesArray = servicesInput.split(',').map(item => item.trim()).filter(Boolean);
         const availableLocationsArray = availableLocationsInput.split(',').map(item => item.trim()).filter(Boolean);
 
         const dataToSend = {
-            height: parsedHeight,
-            weight: parsedWeight,
-            color: color || null,
-            ethnicity: ethnicity || null,
-            age: parsedAge,
-            other: other || null,
-
             address: address || null,
             city: city || null,
             state: state || null,
             zipCode: zipCode || null,
             country: country || null,
             phone: phone || null,
-            gender: gender === '' ? null : gender,
 
             bio: bio || null,
             specialties: specialties || null,
@@ -614,13 +533,12 @@ export default function ArtistProfilePage() {
                     bookingInfo: bookingInfoArray,
                     services: servicesArray,
                     availableLocations: availableLocationsArray,
-                    gender: gender === '' ? null : gender,
                     ...(responseData.user || {}),
                 } as ArtistProfileData;
 
                 setUserData(updatedUser);
 
-                const needsEditingAfterSave = isProfileIncomplete(updatedUser, importantArtistKeys);
+                const needsEditingAfterSave = isProfileIncomplete(updatedUser);
                 if (!needsEditingAfterSave) {
                    setIncompleteProfileMessage(null);
                 }
@@ -825,8 +743,10 @@ export default function ArtistProfilePage() {
 
                                  <>
                                      <div className="space-y-2">
-                                        <Label htmlFor="phone" className="text-gray-400">Phone Number</Label>
-                                        <Input id="phone" type="tel" placeholder="e.g., +1 555 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
+                                        <Label htmlFor="phone" className="text-gray-400">
+                                            Phone Number <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input id="phone" type="tel" placeholder="e.g., +91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                     </div>
                                      <div className="space-y-2">
                                         <Label htmlFor="address" className="text-gray-400">Address</Label>
@@ -849,61 +769,22 @@ export default function ArtistProfilePage() {
                                         </div>
                                          <div className="space-y-2">
                                             <Label htmlFor="country" className="text-gray-400">Country</Label>
-                                            <Input id="country" placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
+                                            <Input id="country" placeholder="India" value={country} onChange={(e) => setCountry(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="gender" className="text-gray-400">Gender</Label>
-                                         <Select value={gender} onValueChange={setGender} disabled={isSaving}>
-                                             <SelectTrigger id="gender" className="bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600">
-                                                 <SelectValue placeholder="Select gender" />
-                                             </SelectTrigger>
-                                             <SelectContent className="bg-[#2a2a2a] text-white border-[#4a4a4a]">
-                                                 <SelectItem value="male" className="hover:bg-[#4a4a4a] focus:bg-[#3a3a3a]">Male</SelectItem>
-                                                 <SelectItem value="female" className="hover:bg-[#4a4a4a] focus:bg-[#3a3a3a]">Female</SelectItem>
-                                                 <SelectItem value="non_binary" className="hover:bg-[#4a4a4a] focus:bg-[#3a3a3a]">Non-binary</SelectItem>
-                                                 <SelectItem value="prefer_not_to_say" className="hover:bg-[#4a4a4a] focus:bg-[#3a3a3a]">Prefer not to say</SelectItem>
-                                                  <SelectItem value="other" className="hover:bg-[#4a4a4a] focus:bg-[#3a3a3a]">Other</SelectItem>
-                                             </SelectContent>
-                                         </Select>
-                                     </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="height" className="text-gray-400">Height (cm)</Label>
-                                            <Input id="height" type="number" placeholder="e.g., 170" value={height} onChange={(e) => setHeight(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="weight" className="text-gray-400">Weight (kg)</Label>
-                                            <Input id="weight" type="number" placeholder="e.g., 65" value={weight} onChange={(e) => setWeight(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="color" className="text-gray-400">Skin Color</Label>
-                                        <Input id="color" placeholder="e.g., Fair, Brown" value={color} onChange={(e) => setColor(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ethnicity" className="text-gray-400">Ethnicity</Label>
-                                        <Input id="ethnicity" placeholder="e.g., Asian, Caucasian" value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label htmlFor="age" className="text-gray-400">Age</Label>
-                                        <Input id="age" type="number" placeholder="e.g., 25" value={age} onChange={(e) => setAge(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label htmlFor="other" className="text-gray-400">Other Details </Label>
-                                        <Textarea id="other" placeholder="Any other relevant details about yourself (e.g., physical traits, allergies, specific needs)" value={other} onChange={(e) => setOther(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[100px]" disabled={isSaving}/>
                                     </div>
 
                                     <Separator className="my-6 bg-[#2a2a2a]" />
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="bio" className="text-gray-400">Bio</Label>
+                                        <Label htmlFor="bio" className="text-gray-400">
+                                            Bio <span className="text-red-500">*</span>
+                                        </Label>
                                         <Textarea id="bio" placeholder="Tell us about yourself as an artist, your style, and your passion..." value={bio} onChange={(e) => setBio(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[100px]" disabled={isSaving}/>
                                     </div>
                                      <div className="space-y-2">
-                                        <Label htmlFor="specialties" className="text-gray-400">Specialties (e.g., Bridal Makeup, Special Effects, Editorial)</Label>
+                                        <Label htmlFor="specialties" className="text-gray-400">
+                                            Specialties <span className="text-red-500">*</span>
+                                        </Label>
                                         <Input id="specialties" placeholder="e.g., Bridal Makeup, Special Effects, Editorial" value={specialties} onChange={(e) => setSpecialties(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                     </div>
 
@@ -911,7 +792,7 @@ export default function ArtistProfilePage() {
                                          <Label htmlFor="bookingInfo" className="text-gray-400">Booking Information (Optional - Separate with commas)</Label>
                                          <Input
                                             id="bookingInfo"
-                                            placeholder="e.g., Min booking 2 hours, Travel fee $50"
+                                            placeholder="e.g., Min booking 2 hours, Travel fee ₹500"
                                             value={bookingInfoInput}
                                             onChange={(e) => setBookingInfoInput(e.target.value)}
                                             className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
@@ -933,7 +814,7 @@ export default function ArtistProfilePage() {
                                          <Label htmlFor="availableLocations" className="text-gray-400">Available Locations (Optional - Separate with commas)</Label>
                                           <Input
                                              id="availableLocations"
-                                             placeholder="e.g., New York, NY, Los Angeles, CA"
+                                             placeholder="e.g., Mumbai, Delhi, Bangalore, Chennai"
                                              value={availableLocationsInput}
                                              onChange={(e) => setAvailableLocationsInput(e.target.value)}
                                              className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
@@ -983,16 +864,10 @@ export default function ArtistProfilePage() {
 
                                  <div className="space-y-3 text-sm sm:text-base">
                                      <h3 className="text-lg font-semibold text-pink-500 flex items-center gap-2">
-                                         <UserIcon className="h-5 w-5" /> Personal Details
+                                         <UserIcon className="h-5 w-5" /> Contact Details
                                      </h3>
                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-gray-300 text-sm">
                                           <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-gray-500" /> <strong>Phone:</strong> <span className="text-gray-400">{userData.phone || 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><UserCog className="h-4 w-4 text-gray-500" /> <strong>Gender:</strong> <span className="text-gray-400">{(userData.gender && userData.gender !== '') ? userData.gender : 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><Ruler className="h-4 w-4 text-gray-500" /> <strong>Height:</strong> <span className="text-gray-400">{userData.height ? `${userData.height} cm` : 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><Weight className="h-4 w-4 text-gray-500" /> <strong>Weight:</strong> <span className="text-gray-400">{userData.weight ? `${userData.weight} kg` : 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><Droplet className="h-4 w-4 text-gray-500" /> <strong>Skin Color:</strong> <span className="text-gray-400">{userData.color || 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><Users className="h-4 w-4 text-gray-500" /> <strong>Ethnicity:</strong> <span className="text-gray-400">{userData.ethnicity || 'N/A'}</span></div>
-                                           <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> <strong>Age:</strong> <span className="text-gray-400">{userData.age ? `${userData.age} years` : 'N/A'}</span></div>
                                             {(userData.address || userData.city || userData.state || userData.zipCode || userData.country) ? (
                                                 <div className="flex items-start gap-2 col-span-full text-gray-300 text-sm">
                                                      <HomeIcon className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /> <div><strong>Address:</strong> <span className="text-gray-400">
@@ -1006,15 +881,6 @@ export default function ArtistProfilePage() {
                                                            <HomeIcon className="h-4 w-4 text-gray-500" /> <strong>Address:</strong> <span className="text-gray-400">N/A</span>
                                                       </div>
                                                 )}
-                                            {userData.other ? (
-                                                  <div className="flex items-start gap-2 col-span-full text-gray-300 text-sm">
-                                                      <Tag className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" /> <div><strong>Other Info:</strong> <span className="text-gray-400 whitespace-pre-wrap">{userData.other}</span></div>
-                                                  </div>
-                                             ) : (
-                                                   <div className="flex items-center gap-2 col-span-full text-gray-300 text-sm">
-                                                       <Tag className="h-4 w-4 text-gray-500" /> <strong>Other Info:</strong> <span className="text-gray-400">N/A</span>
-                                                   </div>
-                                             )}
                                        </div>
                                  </div>
 

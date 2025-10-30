@@ -30,17 +30,15 @@ export default function AuthCallback() {
               let isAdditionalInfoRequired = false;
 
               if (user.role === 'customer') {
-                  // Check required fields for customer profile completion
-                  if (!user.age || !user.height || !user.color || !user.phone) {
+                  // Check required fields for customer profile completion - simplified
+                  if (!user.phone || !user.age || !user.height || !user.color) {
                       isAdditionalInfoRequired = true;
                   }
-                  // You might add checks for other fields here based on your backend's checkProfileComplete
               } else if (user.role === 'artist') {
-                  // Check required fields for artist profile completion
-                  if (!user.bio || !user.specialties || !user.phone || !Array.isArray(user.services) || user.services.length === 0 || !Array.isArray(user.availableLocations) || user.availableLocations.length === 0) {
+                  // Check required fields for artist profile completion - removed optional fields
+                  if (!user.bio || !user.specialties || !user.phone) {
                       isAdditionalInfoRequired = true;
                   }
-                   // You might add checks for other fields here
               }
 
               if (isAdditionalInfoRequired) {

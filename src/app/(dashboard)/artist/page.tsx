@@ -19,7 +19,7 @@ import {
   Clock,
   CalendarDays,
   Clock4,
-  DollarSign,
+  IndianRupee,
   Package,
   FileText,
   Trash2,
@@ -289,12 +289,7 @@ export default function ArtistDashboardPage() {
   const [isViewDisputeDialogOpen, setIsViewDisputeDialogOpen] = useState(false);
   const [viewDisputeDetails, setViewDisputeDetails] = useState<FrontendDisputeDetail | null>(null);
   const [isLoadingDisputeDetails, setIsLoadingDisputeDetails] = useState(false);
-  const [loadingDisputeViewButtonId, setLoadingDisputeViewButtonId] = useState<string | null>(null);
-
-  // Helper function to check if a dispute is active (Open or Under Review)
-  const isDisputeActive = (dispute: FrontendDispute) => {
-    return dispute.status === 'Open' || dispute.status === 'Under Review';
-  };
+  const [loadingDisputeVewButtonId, setLoadingDisputeVewButtonId] = useState<string | null>(null);
 
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [csrfFetchAttempted, setCsrfFetchAttempted] = useState(false);
@@ -937,7 +932,7 @@ export default function ArtistDashboardPage() {
          return;
      }
 
-     if (quoteToDelete.disputes && quoteToDelete.disputes.some(isDisputeActive)) {
+     if (quoteToDelete.disputes && quoteToDelete.disputes.some(d => d.status !== 'Closed')) {
          sonnerToast.error("Deletion Failed", { description: "Cannot delete quote with active disputes. Please resolve or delete disputes first." });
          return;
      }
@@ -995,7 +990,7 @@ export default function ArtistDashboardPage() {
            return;
       }
 
-      if (quoteToComplete.disputes && quoteToComplete.disputes.some(isDisputeActive)) {
+      if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
         sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
         return;
       }
@@ -1057,7 +1052,7 @@ export default function ArtistDashboardPage() {
             return;
        }
 
-       if (quoteToCancel.disputes && quoteToCancel.disputes.some(isDisputeActive)) {
+       if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
            sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
            return;
        }
@@ -1116,7 +1111,7 @@ export default function ArtistDashboardPage() {
             return;
         }
 
-         if (quote.disputes && quote.disputes.some(isDisputeActive)) {
+         if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
              sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
              return;
          }
@@ -1359,7 +1354,7 @@ export default function ArtistDashboardPage() {
              return;
          }
          
-         setLoadingDisputeViewButtonId(disputeId);
+         setLoadingDisputeVewButtonId(disputeId);
          setIsLoadingDisputeDetails(true);
          setViewDisputeDetails(null); 
          setIsViewDisputeDialogOpen(true);
@@ -1382,7 +1377,7 @@ export default function ArtistDashboardPage() {
              setIsViewDisputeDialogOpen(false); 
          } finally {
              setIsLoadingDisputeDetails(false);
-             setLoadingDisputeViewButtonId(null);
+             setLoadingDisputeVewButtonId(null);
          }
      };
 
@@ -1572,7 +1567,7 @@ export default function ArtistDashboardPage() {
                                      <p className="text-xs text-gray-400 mt-1">Quotes marked as finished in this period.</p>
                                  </Card>
                                  <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-green-500/10 hover:border-green-700/50 transition-all">
-                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2"><DollarSign className="h-4 w-4 text-green-400" /> Gross Revenue</CardTitle>
+                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2"><IndianRupee className="h-4 w-4 text-green-400" /> Gross Revenue</CardTitle>
                                      <CardContent className="p-0 text-3xl font-bold text-green-500">₹{totalRevenueInPeriod.toFixed(2)}</CardContent>
                                      <p className="text-xs text-gray-400 mt-1">Total price of completed quotes.</p>
                                  </Card>
@@ -1681,7 +1676,7 @@ export default function ArtistDashboardPage() {
        }
        const isSecurityReady = !!csrfToken;
        const isAnyActionInProgress = isCreatingQuote || !!isDeletingQuote || !!isCompletingQuote || !!isCancellingQuote || 
-                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeViewButtonId || isRefreshingData;
+                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeVewButtonId || isRefreshingData;
 
        return (
             <Card className="bg-[#161616] border-[#2a2a2a]">
@@ -1790,7 +1785,7 @@ export default function ArtistDashboardPage() {
 
       const isSecurityReady = !!csrfToken;
       const isAnyActionInProgress = isCreatingQuote || !!isDeletingQuote || !!isCompletingQuote || !!isCancellingQuote || 
-                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeViewButtonId || isRefreshingData;
+                                  isRaisingDispute || !!isDeletingDispute || isLoadingDisputeDetails || !!isClosingDispute || !!loadingDisputeVewButtonId || isRefreshingData;
 
       return (
           <>
@@ -1918,9 +1913,9 @@ export default function ArtistDashboardPage() {
                                                              size="sm"
                                                              onClick={() => handleViewDisputeDetails(dispute.id)}
                                                              className="border-gray-500 text-gray-400 bg-transparent hover:bg-gray-800/50 hover:text-white transition-colors flex items-center gap-1 h-7 px-2 text-xs"
-                                                             disabled={loadingDisputeViewButtonId === dispute.id || isAnyActionInProgress}
+                                                             disabled={loadingDisputeVewButtonId === dispute.id || isAnyActionInProgress}
                                                          >
-                                                             {loadingDisputeViewButtonId === dispute.id ? <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-gray-400 mr-1"></div> : <Info className="h-3 w-3" />}
+                                                             {loadingDisputeVewButtonId === dispute.id ? <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-gray-400 mr-1"></div> : <Info className="h-3 w-3" />}
                                                               View Details
                                                          </Button>
 
@@ -1994,7 +1989,7 @@ export default function ArtistDashboardPage() {
 
                         <p className="text-sm text-gray-300 mb-2 whitespace-pre-wrap">{quote.details}</p>
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-300 mb-3">
-                             <div className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-gray-500" /><strong>Price:</strong> ₹{quote.price}</div>
+                             <div className="flex items-center gap-1"><IndianRupee className="h-4 w-4 text-gray-500" /><strong>Price:</strong> ₹{quote.price}</div>
                              <div className="flex items-center gap-1"><CalendarDays className="h-4 w-4 text-gray-500" /><strong>Date:</strong> {formatDateSafely(quote.serviceDate)}</div>
                              <div className="flex items-center gap-1"><Clock4 className="h-4 w-4 text-gray-500" /><strong>Time:</strong> {quote.serviceTime || 'N/A'}</div>
                              <div className="flex items-center gap-1 col-span-1 sm:col-span-2 flex-wrap">
@@ -2076,7 +2071,7 @@ export default function ArtistDashboardPage() {
                                   </AlertDialog>
                               )}
 
-                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(isDisputeActive) && (
+                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(d => d.status !== 'Closed') && (
                                  <Button
                                      variant="outline"
                                      size="sm"
@@ -2087,7 +2082,7 @@ export default function ArtistDashboardPage() {
                                      <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                  </Button>
                              )}
-                              {quote.disputes && quote.disputes.some(isDisputeActive) && (
+                              {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
                                    <Button
                                        variant="outline"
                                        size="sm"
@@ -2572,20 +2567,20 @@ export default function ArtistDashboardPage() {
            setIsCreateQuoteDialogOpen(isOpen);
            if (!isOpen) resetCreateQuoteForm();
         }}>
-          <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
             <DialogHeader className="border-b border-[#2a2a2a] pb-4">
               <DialogTitle className="text-pink-500 text-xl">Create New Quote</DialogTitle>
               <DialogDescription className="text-gray-400">
                 Fill details to create a quote. Share the link for customers to accept.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="productType" className="text-gray-400">Product Type</Label>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="productType" className="text-right text-gray-400">Type</Label>
                 <Select onValueChange={(value) => {
                     setNewQuoteProductType(value); if (value !== 'Other') setNewQuoteOtherProductType('');
                 }} value={newQuoteProductType} disabled={isCreatingQuote}>
-                  <SelectTrigger id="productType" className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600">
+                  <SelectTrigger id="productType" className="col-span-3 bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600">
                     <SelectValue placeholder="Select product type" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#2a2a2a] text-gray-300 border-[#4a4a3a] border py-1">
@@ -2603,73 +2598,67 @@ export default function ArtistDashboardPage() {
               </div>
 
               {newQuoteProductType === 'Other' && (
-                   <div className="space-y-2">
-                       <Label htmlFor="otherProductType" className="text-gray-400">Specify Product Type</Label>
+                   <div className="grid grid-cols-4 items-center gap-4">
+                       <Label htmlFor="otherProductType" className="text-right text-gray-400">Specify</Label>
                        <Input id="otherProductType" value={newQuoteOtherProductType}
                            onChange={(e) => setNewQuoteOtherProductType(e.target.value)}
-                           className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
+                           className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
                            placeholder="e.g., Custom Design" disabled={isCreatingQuote} />
                    </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="details" className="text-gray-400">Details</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="details" className="text-right text-gray-400">Details</Label>
                 <Textarea id="details" value={newQuoteDetails} onChange={(e) => setNewQuoteDetails(e.target.value)}
-                  className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[80px]"
+                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[80px]"
                   placeholder="Describe the service or artwork..." disabled={isCreatingQuote} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-gray-400">Price (₹)</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right text-gray-400">Price (₹)</Label>
                 <Input id="price" type="number" value={newQuotePrice}
                   onChange={(e) => setNewQuotePrice(e.target.value)}
-                  className="w-full bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
+                  className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
                   placeholder="e.g., 1500" min="0" step="0.01" disabled={isCreatingQuote} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="serviceDate" className="text-gray-400">Service Date</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="serviceDate" className="text-right text-gray-400">Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant={"outline"}
-                      className={`w-full justify-start text-left font-normal bg-[#2a2a2a] border-[#4a4a4a] text-white focus:border-pink-600 focus:ring-pink-600 hover:bg-[#383838] hover:text-white ${!newQuoteServiceDate && "text-gray-500"}`}
+                      className={`col-span-3 justify-start text-left font-normal bg-[#2a2a2a] border-[#4a4a4a] text-white focus:border-pink-600 focus:ring-pink-600 hover:bg-[#383838] hover:text-white ${!newQuoteServiceDate && "text-gray-500"}`}
                       disabled={isCreatingQuote}>
                       <CalendarDays className="mr-2 h-4 w-4 text-pink-600" />
                       {newQuoteServiceDate ? format(newQuoteServiceDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-<PopoverContent className="w-auto p-0 bg-[#1a1a1a] border-[#3a3a3a]">
+<PopoverContent className="w-auto p-0 bg-[#161616] border-[#4a4a4a]">
     <Calendar 
         mode="single" 
         selected={newQuoteServiceDate} 
         onSelect={setNewQuoteServiceDate}
         initialFocus
+        // *** ADDED min-w-[300px] and ensured proper cell sizing visibility ***
+        className="text-white [&_button]:text-white [&_button:hover]:bg-[#383838] [&_button:hover]:text-pink-600 [&_button:focus]:bg-[#3a3a3a] [&_button[aria-selected]]:bg-pink-600 [&_button[aria-selected]]:text-white min-w-[300px]"
+        classNames={{
+            day_today: "border border-pink-600 text-pink-500",
+            // Add a critical override to ensure the table row doesn't collapse if the container is weird
+            week: "flex justify-between w-full",
+            // Added day_cell: to ensure the day wrapper doesn't have explicit padding or margin issue
+            day: "p-0", 
+        }}
     />
 </PopoverContent>
                 </Popover>
               </div>
-               <div className="space-y-2">
-                <Label htmlFor="serviceTime" className="text-gray-400">Service Time</Label>
-                <div 
-                  className="relative cursor-pointer"
-                  onClick={(e) => {
-                    const input = e.currentTarget.querySelector('input');
-                    if (input && !isCreatingQuote) {
-                      input.showPicker?.();
-                    }
-                  }}
-                >
-                  <Input 
-                    id="serviceTime" 
-                    type="time" 
-                    value={newQuoteServiceTime}
-                    onChange={(e) => setNewQuoteServiceTime(e.target.value)}
-                    className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark] cursor-pointer hover:bg-[#333333] transition-colors" 
-                    disabled={isCreatingQuote}
-                  />
-                </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="serviceTime" className="text-right text-gray-400">Time</Label>
+                <Input id="serviceTime" type="time" value={newQuoteServiceTime}
+                  onChange={(e) => setNewQuoteServiceTime(e.target.value)}
+                  className="col-span-3 bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark]" disabled={isCreatingQuote}/>
               </div>
 
               {createQuoteError && (
-                  <div className="text-red-500 text-sm text-center p-3 bg-red-900/20 rounded-md border border-red-800/50">{createQuoteError}</div>
+                  <div className="col-span-4 text-red-500 text-sm text-center p-2 bg-red-900/20 rounded-md border border-red-800/50">{createQuoteError}</div>
               )}
             </div>
             <DialogFooter className="border-t border-[#2a2a2a] pt-4">
@@ -2689,7 +2678,7 @@ export default function ArtistDashboardPage() {
                resetDisputeForm();
            }
         }}>
-             <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
+             <DialogContent className="sm:max-w-md bg-[#101010] text-white border-[#2a2a2a]">
                <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                  <DialogTitle className="text-red-500 text-xl flex items-center gap-2">
                      <TriangleAlert className="h-5 w-5" /> Raise a Dispute
@@ -2732,7 +2721,7 @@ export default function ArtistDashboardPage() {
             setIsViewDisputeDialogOpen(isOpen);
             if (!isOpen && !isLoadingDisputeDetails) setViewDisputeDetails(null);
         }}>
-            <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-lg bg-[#101010] text-white border-[#2a2a2a]">
                 <DialogHeader className="border-b border-[#2a2a2a] pb-4">
                     <DialogTitle className="text-orange-500 text-xl flex items-center gap-2">
                         <Info className="h-5 w-5" /> Dispute Details

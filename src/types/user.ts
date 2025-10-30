@@ -11,7 +11,7 @@ export interface User {
     zipCode?: string | null;
     country?: string | null;
     phone?: string | null;
-    dob?: Date | string | null;
+
     gender?: string | null;
 
     height?: number | null;
@@ -19,7 +19,6 @@ export interface User {
     color?: string | null;
     ethnicity?: string | null;
     age?: number | null;
-    sex?: string | null;
     other?: string | null;
 
     bio?: string | null;
