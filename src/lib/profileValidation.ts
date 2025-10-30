@@ -34,13 +34,12 @@ export interface UserProfile {
 // Define required and optional fields for each role
 export const PROFILE_FIELD_CONFIG = {
   artist: {
-    required: ['bio', 'specialties', 'phone'] as string[],
-    // Removed personal attributes like height, weight, color, ethnicity, age, gender - these are customer-specific
-    optional: ['services', 'availableLocations', 'bookingInfo', 'address', 'city', 'state', 'zipCode', 'country', 'portfolioLink'] as string[]
+    required: ['bio', 'specialties', 'phone', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
+    optional: ['services', 'availableLocations', 'bookingInfo', 'portfolioLink'] as string[]
   },
   customer: {
-    required: ['phone', 'age', 'height', 'color'] as string[],
-    optional: ['weight', 'ethnicity', 'other', 'address', 'city', 'state', 'zipCode', 'country', 'gender', 'bookingPreferences', 'preferredArtists'] as string[]
+    required: ['phone', 'age', 'height', 'color', 'ethnicity', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
+    optional: ['weight', 'other', 'gender', 'bookingPreferences', 'preferredArtists'] as string[]
   },
   admin: {
     required: [] as string[],
@@ -99,8 +98,9 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
   const allRequiredFields = [...basicRequiredFields, ...roleConfig.required];
   const missingFields = allRequiredFields.filter(field => {
     const value = user[field];
-    return !value || (typeof value === 'string' && value.trim() === '') || 
-           (typeof value === 'number' && (isNaN(value) || value <= 0));
+    return value === null || value === undefined || 
+           (typeof value === 'string' && value.trim() === '') || 
+           (typeof value === 'number' && isNaN(value));
   });
 
   return {
@@ -140,4 +140,40 @@ export function getAllowedFields(role: string): string[] {
   if (!roleConfig) return basicFields;
   
   return [...basicFields, ...roleConfig.required, ...roleConfig.optional];
+}
+
+/**
+ * Get user-friendly field names for display in error messages
+ */
+export const FIELD_DISPLAY_NAMES: Record<string, string> = {
+  name: 'Full Name',
+  email: 'Email Address',
+  phone: 'Phone Number',
+  age: 'Age',
+  height: 'Height',
+  weight: 'Weight',
+  color: 'Skin Color',
+  ethnicity: 'Ethnicity',
+  bio: 'Bio',
+  specialties: 'Specialties',
+  address: 'Street Address',
+  city: 'City',
+  state: 'State',
+  zipCode: 'ZIP Code',
+  country: 'Country',
+  gender: 'Gender',
+  other: 'Additional Information',
+  services: 'Services Offered',
+  availableLocations: 'Available Locations',
+  bookingInfo: 'Booking Information',
+  portfolioLink: 'Portfolio Link',
+  bookingPreferences: 'Booking Preferences',
+  preferredArtists: 'Preferred Artists'
+};
+
+/**
+ * Get user-friendly names for missing fields
+ */
+export function getMissingFieldNames(missingFields: string[]): string[] {
+  return missingFields.map(field => FIELD_DISPLAY_NAMES[field] || field);
 }

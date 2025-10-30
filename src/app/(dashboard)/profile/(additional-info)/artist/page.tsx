@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
-import { validateProfileCompletion, isFieldRequired } from '@/lib/profileValidation';
+import { validateProfileCompletion, isFieldRequired, getMissingFieldNames, FIELD_DISPLAY_NAMES } from '@/lib/profileValidation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -477,6 +477,37 @@ export default function ArtistProfilePage() {
         setSuccessMessage('');
         setIsSaving(true);
 
+        // Validate required fields before processing
+        const requiredFields = {
+            bio: bio?.trim(),
+            specialties: specialties?.trim(),
+            phone: phone?.trim(),
+            address: address?.trim(),
+            city: city?.trim(),
+            state: state?.trim(),
+            zipCode: zipCode?.trim(),
+            country: country?.trim()
+        };
+
+        const missingFields: string[] = [];
+        Object.entries(requiredFields).forEach(([field, value]) => {
+            if (!value || value === '') {
+                missingFields.push(field);
+            }
+        });
+
+        if (missingFields.length > 0) {
+            const missingFieldNames = getMissingFieldNames(missingFields);
+            const errorMessage = `Please fill in the following required fields: ${missingFieldNames.join(', ')}`;
+            setActionError(errorMessage);
+            setIsSaving(false);
+            sonnerToast.error("Required Fields Missing", { 
+                description: `Please complete: ${missingFieldNames.join(', ')}`,
+                duration: 5000
+            });
+            return;
+        }
+
          let token = csrfToken;
           if (!token && !csrfFetchAttempted) {
               sonnerToast.info("Attempting to refresh security token...");
@@ -541,9 +572,16 @@ export default function ArtistProfilePage() {
                 const needsEditingAfterSave = isProfileIncomplete(updatedUser);
                 if (!needsEditingAfterSave) {
                    setIncompleteProfileMessage(null);
+                   // Profile is now complete, redirect to dashboard
+                   sonnerToast.success("Profile Complete!", { 
+                       description: "Your profile has been completed successfully. Redirecting to dashboard..." 
+                   });
+                   setTimeout(() => {
+                       router.push('/dashboard/artist');
+                   }, 2000);
+                } else {
+                   setIsEditing(false);
                 }
-
-                setIsEditing(false);
 
             } else if (response.status === 401 || response.status === 403) {
                  setActionError(responseData.message || 'Authentication required. Please log in again.');
@@ -749,26 +787,36 @@ export default function ArtistProfilePage() {
                                         <Input id="phone" type="tel" placeholder="e.g., +91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                     </div>
                                      <div className="space-y-2">
-                                        <Label htmlFor="address" className="text-gray-400">Address</Label>
+                                        <Label htmlFor="address" className="text-gray-400">
+                                            Address <span className="text-red-500">*</span>
+                                        </Label>
                                         <Input id="address" placeholder="Street Address" value={address} onChange={(e) => setAddress(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="city" className="text-gray-400">City</Label>
+                                            <Label htmlFor="city" className="text-gray-400">
+                                                City <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="city" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="state" className="text-gray-400">State/Province</Label>
+                                            <Label htmlFor="state" className="text-gray-400">
+                                                State/Province <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="state" placeholder="State or Province" value={state} onChange={(e) => setState(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                         </div>
                                     </div>
                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                          <div className="space-y-2">
-                                            <Label htmlFor="zipCode" className="text-gray-400">Zip/Postal Code</Label>
+                                            <Label htmlFor="zipCode" className="text-gray-400">
+                                                Zip/Postal Code <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="zipCode" placeholder="Zip or Postal Code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                         </div>
                                          <div className="space-y-2">
-                                            <Label htmlFor="country" className="text-gray-400">Country</Label>
+                                            <Label htmlFor="country" className="text-gray-400">
+                                                Country <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="country" placeholder="India" value={country} onChange={(e) => setCountry(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving}/>
                                         </div>
                                     </div>

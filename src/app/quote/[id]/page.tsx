@@ -597,9 +597,9 @@ export default function IndividualQuotePage() {
       case "Pending": return "bg-blue-900/70 text-blue-300 border-blue-700/50";
       case "Completed": return "bg-purple-900/70 text-purple-300 border-purple-500";
       case "Cancelled": return "bg-neutral-700/70 text-neutral-400 border-neutral-600/50";
-      case "Date Reached": return "bg-orange-900/70 text-orange-300 border-orange-700/50";
-      case "Overdue": return "bg-red-900/70 text-red-300 border-red-500";
-      default: return "bg-gray-700/70 text-gray-300 border-gray-600/50";
+      case "Date Reached": return "bg-[#F5DE78]/20 text-[#F5DE78] border-[#F5DE78]/30";
+      case "Overdue": return "bg-[#D00416]/20 text-[#D00416] border-[#D00416]/30";
+      default: return "bg-[#3A3438]/70 text-[#A0A0A0] border-[#2A2428]";
     }
   };
 
@@ -622,56 +622,56 @@ export default function IndividualQuotePage() {
 
   if (loading || isUserLoading) {
      return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black p-4 text-white">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-4 text-white">
         <div className="w-full max-w-md">
-            <Skeleton className="h-10 w-3/4 mb-6 bg-[#2a2a2a]" />
-            <Skeleton className="h-6 w-1/2 mb-3 bg-[#2a2a2a]" />
-            <Skeleton className="h-4 w-full mb-2 bg-[#2a2a2a]" />
-            <Skeleton className="h-4 w-full mb-2 bg-[#2a2a2a]" />
-            <Skeleton className="h-4 w-3/4 mb-6 bg-[#2a2a2a]" />
+            <Skeleton className="h-10 w-3/4 mb-6 bg-[#2A2428]" />
+            <Skeleton className="h-6 w-1/2 mb-3 bg-[#2A2428]" />
+            <Skeleton className="h-4 w-full mb-2 bg-[#2A2428]" />
+            <Skeleton className="h-4 w-full mb-2 bg-[#2A2428]" />
+            <Skeleton className="h-4 w-3/4 mb-6 bg-[#2A2428]" />
             <div className="flex justify-center mb-6">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C40F5A]"></div>
             </div>
-            <Skeleton className="h-10 w-full mb-3 bg-[#2a2a2a]" />
-            <Skeleton className="h-10 w-full bg-[#2a2a2a]" />
+            <Skeleton className="h-10 w-full mb-3 bg-[#2A2428]" />
+            <Skeleton className="h-10 w-full bg-[#2A2428]" />
         </div>
-        <p className="mt-4 text-gray-400">Loading Quote Details...</p>
+        <p className="mt-4 text-[#A0A0A0]">Loading Quote Details...</p>
       </div>
     );
   }
 
   if (quoteErrorType) {
      return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black p-6 text-center">
-        <Card className="w-full max-w-md bg-[#161616] border-[#2a2a2a] p-6">
-            {quoteErrorType === 'not-found' && <FileText className="h-12 w-12 text-gray-500 mx-auto mb-4" />}
-            {(quoteErrorType === 'permission-denied' || quoteErrorType === 'auth-required' || quoteErrorType === 'generic-error') && <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />}
-            <CardTitle className={`text-2xl mb-2 ${quoteErrorType === 'not-found' ? 'text-gray-300' : 'text-red-500'}`}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-6 text-center">
+        <Card className="w-full max-w-md bg-[#1A1518] border-[#2A2428] p-6">
+            {quoteErrorType === 'not-found' && <FileText className="h-12 w-12 text-[#A0A0A0] mx-auto mb-4" />}
+            {(quoteErrorType === 'permission-denied' || quoteErrorType === 'auth-required' || quoteErrorType === 'generic-error') && <AlertCircle className="h-12 w-12 text-[#D00416] mx-auto mb-4" />}
+            <CardTitle className={`text-2xl mb-2 ${quoteErrorType === 'not-found' ? 'text-[#E5E5E5]' : 'text-[#D00416]'}`}>
                 {quoteErrorType === 'not-found' && 'Quote Not Found'}
                 {quoteErrorType === 'permission-denied' && 'Access Denied'}
                 {quoteErrorType === 'auth-required' && 'Authentication Required'}
                 {quoteErrorType === 'generic-error' && 'Error Loading Quote'}
             </CardTitle>
-             <CardDescription className={`mb-6 ${quoteErrorType === 'not-found' ? 'text-gray-400' : 'text-red-400'}`}>
+             <CardDescription className={`mb-6 ${quoteErrorType === 'not-found' ? 'text-[#A0A0A0]' : 'text-[#D00416]'}`}>
                  {errorMessage}
              </CardDescription>
             {quoteErrorType === 'auth-required' && (
-                 <Button onClick={() => router.push('/login')} className="w-full mt-3 bg-pink-600 hover:bg-pink-700 text-white transition-colors">
+                 <Button onClick={() => router.push('/login')} className="w-full mt-3 bg-[#C40F5A] hover:bg-[#A00D4A] text-white transition-colors">
                     Login
                  </Button>
              )}
              {quoteErrorType !== 'auth-required' && (
-                 <Button onClick={() => router.back()} className="w-full bg-pink-600 hover:bg-pink-700 text-white transition-colors">
+                 <Button onClick={() => router.back()} className="w-full bg-[#C40F5A] hover:bg-[#A00D4A] text-white transition-colors">
                      <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
                  </Button>
              )}
              {currentUser && (
-                 <Button onClick={() => router.push(getDashboardLink())} className="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white transition-colors">
+                 <Button onClick={() => router.push(getDashboardLink())} className="w-full mt-3 bg-[#F46CA4] hover:bg-[#E55B93] text-white transition-colors">
                     Go to My Dashboard
                  </Button>
              )}
              {quoteErrorType === 'auth-required' && !currentUser && (
-                  <Button onClick={() => router.push('/signup-options')} className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                  <Button onClick={() => router.push('/signup-options')} className="w-full mt-3 bg-[#0063E4] hover:bg-[#0052C1] text-white transition-colors">
                       Sign Up
                   </Button>
              )}
@@ -683,12 +683,12 @@ export default function IndividualQuotePage() {
   if (!quote) {
        console.error("Quote state is null but no errorType is set.");
        return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-black p-6 text-center">
-            <Card className="w-full max-w-md bg-[#161616] text-gray-400 border-[#2a2a2a] p-6">
-                <FileText className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                <CardTitle className="text-2xl mb-2 text-gray-300">Quote Unavailable</CardTitle>
-                <CardDescription className="text-gray-400 mb-6">The quote details could not be loaded.</CardDescription>
-                 <Button onClick={() => router.push(getDashboardLink())} className="w-full bg-pink-600 hover:bg-pink-700 text-white transition-colors">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-6 text-center">
+            <Card className="w-full max-w-md bg-[#1A1518] text-[#A0A0A0] border-[#2A2428] p-6">
+                <FileText className="h-12 w-12 text-[#A0A0A0] mx-auto mb-4" />
+                <CardTitle className="text-2xl mb-2 text-[#E5E5E5]">Quote Unavailable</CardTitle>
+                <CardDescription className="text-[#A0A0A0] mb-6">The quote details could not be loaded.</CardDescription>
+                 <Button onClick={() => router.push(getDashboardLink())} className="w-full bg-[#C40F5A] hover:bg-[#A00D4A] text-white transition-colors">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Go to Dashboard
                 </Button>
             </Card>
@@ -704,11 +704,11 @@ export default function IndividualQuotePage() {
   const showCancelButton = (quote.status === 'Pending' || quote.status === 'Accepted' || quote.status === 'Booked') && canCancel;
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-lg mx-auto bg-[#161616] text-white border-[#2a2a2a] shadow-xl">
-        <CardHeader className="px-4 py-4 sm:px-6 sm:py-5 border-b border-[#2a2a2a]">
+    <div className="min-h-screen bg-[#100D0F] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-lg mx-auto bg-[#1A1518] text-white border-[#2A2428] shadow-xl">
+        <CardHeader className="px-4 py-4 sm:px-6 sm:py-5 border-b border-[#2A2428]">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-xl sm:text-2xl flex items-center gap-2.5 text-pink-500">
+            <CardTitle className="text-xl sm:text-2xl flex items-center gap-2.5 text-[#C40F5A]">
                 <FileText className="h-6 w-6" /> Quote Details
             </CardTitle>
             <span title={`Status: ${displayStatusString}`}
@@ -725,33 +725,33 @@ export default function IndividualQuotePage() {
           </div>
         </CardHeader>
         <CardContent className="px-4 py-4 sm:p-6 space-y-5">
-          <div className="flex items-center gap-2 text-lg font-semibold text-purple-400">
-              <Package className="h-5 w-5 text-purple-500 flex-shrink-0" />
+          <div className="flex items-center gap-2 text-lg font-semibold text-[#F46CA4]">
+              <Package className="h-5 w-5 text-[#C40F5A] flex-shrink-0" />
               <span className="break-all">{quote.productType}</span>
           </div>
 
           {quote.artistName && (
-              <div className="flex items-center gap-2 text-gray-300 text-sm">
-                  <Paintbrush className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                  Artist: <strong className="text-gray-100">{quote.artistName}</strong>
+              <div className="flex items-center gap-2 text-[#E5E5E5] text-sm">
+                  <Paintbrush className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                  Artist: <strong className="text-white">{quote.artistName}</strong>
               </div>
           )}
            {canViewCustomerDetails && quote.customerName && (
-               <div className="flex items-center gap-2 text-gray-300 text-sm">
-                   <UserCircle2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                   For Customer: <strong className="text-gray-100">{quote.customerName}</strong>
+               <div className="flex items-center gap-2 text-[#E5E5E5] text-sm">
+                   <UserCircle2 className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                   For Customer: <strong className="text-white">{quote.customerName}</strong>
                </div>
            )}
 
-           <Separator className="bg-[#2a2a2a]" />
+           <Separator className="bg-[#2A2428]" />
 
           <div className="space-y-3 text-sm">
              <div>
-                 <strong className="text-gray-300 block mb-0.5">Details:</strong>
-                 <p className="text-gray-400 whitespace-pre-wrap">{quote.details}</p>
+                 <strong className="text-[#E5E5E5] block mb-0.5">Details:</strong>
+                 <p className="text-[#A0A0A0] whitespace-pre-wrap">{quote.details}</p>
              </div>
              {canViewCustomerDetails && (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-gray-400">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-[#A0A0A0]">
 
                      {quote.customerAge !== null && quote.customerAge !== undefined && <div><strong>Age:</strong> {quote.customerAge}</div>}
                      {quote.customerColor && <div><strong>Color:</strong> {quote.customerColor}</div>}
@@ -764,33 +764,33 @@ export default function IndividualQuotePage() {
 
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1">
                 <div className="flex items-center gap-1.5">
-                    <IndianRupee className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <strong className="text-gray-300">Price:</strong> <span className="text-gray-100">₹{quote.price}</span>
+                    <IndianRupee className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                    <strong className="text-[#E5E5E5]">Price:</strong> <span className="text-white">₹{quote.price}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <CalendarDays className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <strong className="text-gray-300">Date:</strong> <span className="text-gray-100">{formatDateSafely(quote.serviceDate)}</span>
+                    <CalendarDays className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                    <strong className="text-[#E5E5E5]">Date:</strong> <span className="text-white">{formatDateSafely(quote.serviceDate)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 col-span-1 sm:col-span-2">
-                    <Clock4 className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <strong className="text-gray-300">Time:</strong> <span className="text-gray-100">{quote.serviceTime || 'N/A'}</span>
+                    <Clock4 className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                    <strong className="text-[#E5E5E5]">Time:</strong> <span className="text-white">{quote.serviceTime || 'N/A'}</span>
                 </div>
              </div>
           </div>
 
            {actionError && (
-                <Alert variant="destructive" className="mb-4 bg-red-900/30 text-red-300 border-red-700/50">
-                    <AlertCircle className="h-4 w-4 text-red-400" />
-                    <AlertTitle className="font-semibold text-red-400">Action Failed</AlertTitle>
+                <Alert variant="destructive" className="mb-4 bg-[#D00416]/20 text-[#D00416] border-[#D00416]/30">
+                    <AlertCircle className="h-4 w-4 text-[#D00416]" />
+                    <AlertTitle className="font-semibold text-[#D00416]">Action Failed</AlertTitle>
                     <AlertDescription>{actionError}</AlertDescription>
                 </Alert>
            )}
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 mt-5 pt-4 border-t border-[#2a2a2a]">
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-5 pt-4 border-t border-[#2A2428]">
               {quote.status === "Pending" && currentUser?.role === 'customer' && (
                 <Button
                     onClick={handleAcceptQuote}
-                    className="w-full sm:flex-1 bg-pink-600 hover:bg-pink-700 text-white h-11 text-base transition-colors"
+                    className="w-full sm:flex-1 bg-[#C40F5A] hover:bg-[#A00D4A] text-white h-11 text-base transition-colors"
                     disabled={disableActions}
                 >
                     {isAccepting ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div> : <CheckCircle className="mr-2 h-5 w-5" />}

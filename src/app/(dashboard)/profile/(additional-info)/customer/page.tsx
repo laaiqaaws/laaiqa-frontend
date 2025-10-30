@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
-import { validateProfileCompletion, isFieldRequired } from '@/lib/profileValidation';
+import { validateProfileCompletion, isFieldRequired, getMissingFieldNames, FIELD_DISPLAY_NAMES } from '@/lib/profileValidation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -333,6 +333,39 @@ export default function CustomerProfilePage() {
         setSuccessMessage('');
         setIsSaving(true);
 
+        // Validate required fields before processing
+        const requiredFields = {
+            phone: phone?.trim(),
+            age: age?.trim(),
+            height: height?.trim(),
+            color: color?.trim(),
+            ethnicity: ethnicity?.trim(),
+            address: address?.trim(),
+            city: city?.trim(),
+            state: state?.trim(),
+            zipCode: zipCode?.trim(),
+            country: country?.trim()
+        };
+
+        const missingFields: string[] = [];
+        Object.entries(requiredFields).forEach(([field, value]) => {
+            if (!value || value === '') {
+                missingFields.push(field);
+            }
+        });
+
+        if (missingFields.length > 0) {
+            const missingFieldNames = getMissingFieldNames(missingFields);
+            const errorMessage = `Please fill in the following required fields: ${missingFieldNames.join(', ')}`;
+            setActionError(errorMessage);
+            setIsSaving(false);
+            sonnerToast.error("Required Fields Missing", { 
+                description: `Please complete: ${missingFieldNames.join(', ')}`,
+                duration: 5000
+            });
+            return;
+        }
+
         const parsedHeight = height === '' ? null : parseFloat(height);
         const parsedWeight = weight === '' ? null : parseFloat(weight);
         const parsedAge = age === '' ? null : parseInt(age, 10);
@@ -423,10 +456,16 @@ export default function CustomerProfilePage() {
                 const needsEditingAfterSave = isProfileIncomplete(updatedUser);
                 if (!needsEditingAfterSave) {
                     setIncompleteProfileMessage(null);
+                    // Profile is now complete, redirect to dashboard
+                    sonnerToast.success("Profile Complete!", { 
+                        description: "Your profile has been completed successfully. Redirecting to dashboard..." 
+                    });
+                    setTimeout(() => {
+                        router.push('/dashboard/customer');
+                    }, 2000);
+                } else {
+                    setIsEditing(false);
                 }
-
-
-                setIsEditing(false);
 
             } else if (response.status === 401 || response.status === 403) {
                 setActionError(responseData.message || 'Authentication required. Please log in again.');
@@ -456,19 +495,19 @@ export default function CustomerProfilePage() {
 
     if (initialError && !userData) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-black p-4 text-white">
-                <Card className="w-full max-w-lg shadow-lg bg-[#161616] border-[#2a2a2a] text-center p-6">
-                    <Alert variant="destructive" className="mb-4 bg-red-900 text-red-200 border-red-700">
+            <div className="flex items-center justify-center min-h-screen bg-[#100D0F] p-4 text-white">
+                <Card className="w-full max-w-lg shadow-lg bg-[#1A1518] border-[#2A2428] text-center p-6">
+                    <Alert variant="destructive" className="mb-4 bg-[#D00416]/20 text-[#D00416] border-[#D00416]/30">
                         <Terminal className="h-4 w-4" />
                         <AlertTitle>Error Loading Profile</AlertTitle>
                         <AlertDescription>{initialError || "Could not load profile data."}</AlertDescription>
                     </Alert>
                     {initialError.includes("Authentication") || initialError.includes("log in again") || initialError.includes("Access denied") ? (
-                        <Button onClick={() => router.push('/login')} className="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white">
+                        <Button onClick={() => router.push('/login')} className="w-full mt-4 bg-[#C40F5A] hover:bg-[#A00D4A] text-white">
                             Go to Login
                         </Button>
                     ) :
-                        <Button onClick={() => window.location.reload()} className="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white">
+                        <Button onClick={() => window.location.reload()} className="w-full mt-4 bg-[#C40F5A] hover:bg-[#A00D4A] text-white">
                             Retry Loading
                         </Button>
                     }
@@ -651,26 +690,36 @@ export default function CustomerProfilePage() {
                                         <Input id="phone" type="tel" placeholder="e.g., +91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="address" className="text-gray-400">Address</Label>
+                                        <Label htmlFor="address" className="text-gray-400">
+                                            Address <span className="text-red-500">*</span>
+                                        </Label>
                                         <Input id="address" placeholder="Street Address" value={address} onChange={(e) => setAddress(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="city" className="text-gray-400">City</Label>
+                                            <Label htmlFor="city" className="text-gray-400">
+                                                City <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="city" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="state" className="text-gray-400">State/Province</Label>
+                                            <Label htmlFor="state" className="text-gray-400">
+                                                State/Province <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="state" placeholder="State or Province" value={state} onChange={(e) => setState(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="zipCode" className="text-gray-400">Zip/Postal Code</Label>
+                                            <Label htmlFor="zipCode" className="text-gray-400">
+                                                Zip/Postal Code <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="zipCode" placeholder="Zip or Postal Code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="country" className="text-gray-400">Country</Label>
+                                            <Label htmlFor="country" className="text-gray-400">
+                                                Country <span className="text-red-500">*</span>
+                                            </Label>
                                             <Input id="country" placeholder="India" value={country} onChange={(e) => setCountry(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                         </div>
                                     </div>
@@ -711,7 +760,9 @@ export default function CustomerProfilePage() {
                                         <Input id="color" placeholder="e.g., Fair, Brown" value={color} onChange={(e) => setColor(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="ethnicity" className="text-gray-400">Ethnicity</Label>
+                                        <Label htmlFor="ethnicity" className="text-gray-400">
+                                            Ethnicity <span className="text-red-500">*</span>
+                                        </Label>
                                         <Input id="ethnicity" placeholder="e.g., Asian, Caucasian" value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">

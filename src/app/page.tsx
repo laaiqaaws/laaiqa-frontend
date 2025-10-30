@@ -37,8 +37,8 @@ export default async function Home() {
   else redirect("/login");
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black">
-      <p className="text-gray-300">Loading...</p>
+    <div className="flex items-center justify-center min-h-screen bg-[#100D0F]">
+      <p className="text-[#E5E5E5]">Loading...</p>
     </div>
   );
 }

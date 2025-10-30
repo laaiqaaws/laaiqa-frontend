@@ -30,7 +30,7 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn(
         // Dark theme calendar styling
-        "bg-[#1a1a1a] group/calendar p-4 rounded-xl shadow-lg border border-[#3a3a3a] [--cell-size:2.5rem] min-w-[280px]",
+        "bg-[#1A1518] group/calendar p-4 rounded-xl shadow-lg border border-[#2A2428] [--cell-size:2.5rem] min-w-[280px]",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -54,12 +54,12 @@ function Calendar({
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 text-gray-300 hover:text-pink-500 hover:bg-[#2a2a2a]",
+          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 text-[#E5E5E5] hover:text-[#C40F5A] hover:bg-[#2A2428]",
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 text-gray-300 hover:text-pink-500 hover:bg-[#2a2a2a]",
+          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 text-[#E5E5E5] hover:text-[#C40F5A] hover:bg-[#2A2428]",
           defaultClassNames.button_next
         ),
         month_caption: cn(
@@ -71,15 +71,15 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "has-focus:border-pink-500 border-[#3a3a3a] shadow-xs has-focus:ring-pink-500/50 has-focus:ring-[3px] relative rounded-md border bg-[#2a2a2a]",
+          "has-focus:border-[#C40F5A] border-[#2A2428] shadow-xs has-focus:ring-[#C40F5A]/50 has-focus:ring-[3px] relative rounded-md border bg-[#1A1518]",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn("absolute inset-0 opacity-0", defaultClassNames.dropdown),
         caption_label: cn(
-          "select-none font-medium text-gray-200",
+          "select-none font-medium text-[#E5E5E5]",
           captionLayout === "label"
             ? "text-sm"
-            : "[&>svg]:text-gray-400 flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
+            : "[&>svg]:text-[#A0A0A0] flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
         
@@ -91,7 +91,7 @@ function Calendar({
         
         // FIX: Weekday header (TH element) must be equally distributed
         weekday: cn(
-          "text-gray-400 flex-1 select-none rounded-md text-[0.8rem] font-normal h-[--cell-size] flex items-center justify-center",
+          "text-[#A0A0A0] flex-1 select-none rounded-md text-[0.8rem] font-normal h-[--cell-size] flex items-center justify-center",
           defaultClassNames.weekday
         ),
         
@@ -132,11 +132,11 @@ function Calendar({
         ),
         
         outside: cn(
-          "text-gray-600 aria-selected:text-gray-600",
+          "text-[#3A3438] aria-selected:text-[#3A3438]",
           defaultClassNames.outside
         ),
         disabled: cn(
-          "text-gray-600 opacity-50",
+          "text-[#3A3438] opacity-50",
           defaultClassNames.disabled
         ),
         hidden: cn("invisible", defaultClassNames.hidden),
@@ -224,23 +224,23 @@ function CalendarDayButton({
       
       className={cn(
         // Ensure the button fills the container and respects --cell-size for centering
-        "h-[--cell-size] w-full p-0 flex flex-col justify-center items-center text-sm text-gray-200 hover:bg-[#2a2a2a] hover:text-white transition-colors", 
+        "h-[--cell-size] w-full p-0 flex flex-col justify-center items-center text-sm text-[#E5E5E5] hover:bg-[#2A2428] hover:text-white transition-colors", 
         
         "flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none [&>span]:text-xs [&>span]:opacity-70",
         
         defaultClassNames.day,
         
-        // Selection Styles - Pink theme
-        "data-[selected-single=true]:bg-pink-600 data-[selected-single=true]:text-white data-[selected-single=true]:rounded-md data-[selected-single=true]:hover:bg-pink-700",
-        "data-[range-middle=true]:bg-pink-600/30 data-[range-middle=true]:text-white data-[range-middle=true]:rounded-none",
-        "data-[range-start=true]:bg-pink-600 data-[range-start=true]:text-white data-[range-start=true]:rounded-l-md data-[range-start=true]:rounded-r-none data-[range-start=true]:hover:bg-pink-700",
-        "data-[range-end=true]:bg-pink-600 data-[range-end=true]:text-white data-[range-end=true]:rounded-r-md data-[range-end=true]:rounded-l-none data-[range-end=true]:hover:bg-pink-700",
+        // Selection Styles - Primary Pink theme
+        "data-[selected-single=true]:bg-[#C40F5A] data-[selected-single=true]:text-white data-[selected-single=true]:rounded-md data-[selected-single=true]:hover:bg-[#A00D4A]",
+        "data-[range-middle=true]:bg-[#C40F5A]/30 data-[range-middle=true]:text-white data-[range-middle=true]:rounded-none",
+        "data-[range-start=true]:bg-[#C40F5A] data-[range-start=true]:text-white data-[range-start=true]:rounded-l-md data-[range-start=true]:rounded-r-none data-[range-start=true]:hover:bg-[#A00D4A]",
+        "data-[range-end=true]:bg-[#C40F5A] data-[range-end=true]:text-white data-[range-end=true]:rounded-r-md data-[range-end=true]:rounded-l-none data-[range-end=true]:hover:bg-[#A00D4A]",
         
-        // Today Styles - Pink accent
-        "data-[today=true]:border data-[today=true]:border-pink-500 data-[today=true]:text-pink-400 data-[selected=false][data-today=true]:bg-pink-900/20",
+        // Today Styles - Primary Pink accent
+        "data-[today=true]:border data-[today=true]:border-[#C40F5A] data-[today=true]:text-[#F46CA4] data-[selected=false][data-today=true]:bg-[#C40F5A]/20",
         
-        // Focus styles - Pink ring
-        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:border-pink-500 group-data-[focused=true]/day:ring-pink-500/50",
+        // Focus styles - Primary Pink ring
+        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:border-[#C40F5A] group-data-[focused=true]/day:ring-[#C40F5A]/50",
         
         className
       )}
