@@ -2539,30 +2539,30 @@ export default function AdminDashboardPage() {
             </main>
 
             <Dialog open={!!viewingUserId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col max-h-[90vh]">
-                      <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
-                          <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
-                              <Info className="h-5 w-5" /> User Details
+                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+                      <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
+                          <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                              <Info className="h-4 w-4 sm:h-5 sm:w-5" /> User Details
                           </DialogTitle>
-                          <DialogDescription className="text-gray-400">
+                          <DialogDescription className="text-gray-400 text-sm">
                               Viewing: {viewingUserLoading ? 'Loading...' : (viewingUser?.name || viewingUser?.email || viewingUserId || 'N/A')}
                           </DialogDescription>
                       </DialogHeader>
-                        <div className="flex-1 min-h-0">
+                        <div className="flex-1 min-h-0 overflow-hidden">
                        {viewingUserLoading ? (
-                             <div className="flex flex-col items-center justify-center h-full py-12">
-                                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
-                                <p className="text-gray-400">Loading user details...</p>
+                             <div className="flex flex-col items-center justify-center h-full py-8 px-4">
+                                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                                <p className="text-gray-400 text-sm">Loading user details...</p>
                              </div>
                         ) : viewingUserError ? (
-                             <div className="flex flex-col items-center justify-center h-full text-center text-red-400 py-10 bg-red-900/20 p-4 rounded-md">
-                                  <AlertCircle className="mx-auto h-8 w-8 text-red-500 mb-2"/>
-                                  <p className="font-semibold">Error: {viewingUserError}</p>
+                             <div className="flex flex-col items-center justify-center h-full text-center text-red-400 py-8 px-4">
+                                  <AlertCircle className="mx-auto h-6 w-6 text-red-500 mb-2"/>
+                                  <p className="font-semibold text-sm">Error: {viewingUserError}</p>
                              </div>
                          ) : viewingUser ? (
-                            <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
-                                <div className="p-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                            <div className="h-full overflow-y-auto">
+                                <div className="p-4 sm:p-6 pb-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                     <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                         <Avatar className="h-20 w-20 text-3xl shrink-0">
                                             <AvatarImage src={viewingUser.image || undefined} alt={viewingUser.name || "User Avatar"} />
@@ -2653,20 +2653,19 @@ export default function AdminDashboardPage() {
                                     )}
                                 </div>
                                 </div>
-                                <ScrollBar orientation="vertical" className="w-3 bg-[#2A2428] hover:bg-[#3A3438]" />
-                            </ScrollArea>
+                            </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No user data to display or user not found.</div>
                             )}
                         </div>
-                         <DialogFooter className="pt-4 mt-0 border-t border-[#2a2a2a] shrink-0">
+                         <DialogFooter className="pt-3 sm:pt-4 mt-0 border-t border-[#2a2a2a] shrink-0 px-4 pb-4 sm:px-6 sm:pb-6 flex-col sm:flex-row gap-2 sm:gap-3">
                               {viewingUser && user && viewingUser.id !== user.id && viewingUser.role !== 'admin' ? (
                                    <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="destructive" size="sm"
                                                 disabled={isDeletingUser === viewingUser.id || isCsrfActionDisabled || isCriticalActionInProgress}
-                                                 className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-4 text-xs">
-                                                    <UserMinus className="mr-1.5 h-4 w-4" />
+                                                 className="bg-red-600/80 hover:bg-red-700 text-red-100 transition-colors h-9 px-3 sm:px-4 text-xs w-full sm:w-auto">
+                                                    <UserMinus className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-4 sm:w-4" />
                                                    {isDeletingUser === viewingUser.id ? <span className="animate-pulse">Deleting...</span> : 'Delete This User'}
                                                </Button>
                                         </AlertDialogTrigger>
@@ -2688,29 +2687,29 @@ export default function AdminDashboardPage() {
                                         </AlertDialogContent>
                                    </AlertDialog>
                                ) : (
-                                   <Button variant="destructive" size="sm" disabled className="bg-red-600/50 text-red-100/50 h-9 px-4 text-xs cursor-not-allowed"
+                                   <Button variant="destructive" size="sm" disabled className="bg-red-600/50 text-red-100/50 h-9 px-3 sm:px-4 text-xs cursor-not-allowed w-full sm:w-auto"
                                      title={viewingUser?.id === user?.id ? "You cannot delete your own account." : (viewingUser?.role === 'admin' ? "Admin accounts cannot be deleted from this interface." : "Cannot delete this user.")}>
-                                     <UserMinus className="mr-1.5 h-4 w-4" /> Delete This User
+                                     <UserMinus className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-4 sm:w-4" /> Delete This User
                                    </Button>
                                )}
                                <DialogClose asChild>
-                                    <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-4 text-xs" disabled={isCriticalActionInProgress}>Close</Button>
+                                    <Button variant="outline" className="border-gray-600 bg-gray-700/80 text-gray-200 hover:bg-gray-600 hover:text-white transition-colors h-9 px-3 sm:px-4 text-xs w-full sm:w-auto" disabled={isCriticalActionInProgress}>Close</Button>
                                 </DialogClose>
                            </DialogFooter>
                        </DialogContent>
                   </Dialog>
 
             <Dialog open={!!viewingQuoteId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[90vh]">
-                    <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
-                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
-                            <FileText className="h-5 w-5" /> Quote Details
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+                    <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
+                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                            <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> Quote Details
                         </DialogTitle>
-                        <DialogDescription className="text-gray-400">
+                        <DialogDescription className="text-gray-400 text-sm">
                             Viewing: Quote ID {viewingQuoteLoading ? 'Loading...' : (viewingQuote?.id || viewingQuoteId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                     {viewingQuoteLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2722,9 +2721,9 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingQuoteError}</p>
                         </div>
                     ) : viewingQuote ? (
-                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
-                            <div className="p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                        <div className="h-full overflow-y-auto">
+                            <div className="p-4 sm:p-6 pb-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                      <div className="flex items-center gap-2 text-pink-400 shrink-0 text-xl">
                                         <FileText className="h-6 w-6" />
@@ -2836,13 +2835,12 @@ export default function AdminDashboardPage() {
                                       )}
                                 </div>
                             </div>
-                            <ScrollBar orientation="vertical" className="w-2" />
-                            </ScrollArea>
+                            </div>
                     ) : (
                          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No quote data to display or quote not found.</div>
                     )}
                     </div>
-                    <DialogFooter className="pt-4 mt-0 border-t border-[#2a2a2a] shrink-0">
+                    <DialogFooter className="pt-3 sm:pt-4 mt-0 border-t border-[#2a2a2a] shrink-0 px-4 pb-4 sm:px-6 sm:pb-6 flex-col sm:flex-row gap-2 sm:gap-3">
                           <AlertDialog>
                              <AlertDialogTrigger asChild>
                                  <Button variant="destructive" size="sm"
@@ -2876,16 +2874,16 @@ export default function AdminDashboardPage() {
             </Dialog>
 
              <Dialog open={!!viewingReviewId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg flex flex-col max-h-[90vh]">
-                    <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
-                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-xl">
-                            <Star className="h-5 w-5" /> Review Details
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg flex flex-col max-h-[95vh] m-2 sm:m-4">
+                    <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
+                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                            <Star className="h-4 w-4 sm:h-5 sm:w-5" /> Review Details
                         </DialogTitle>
-                        <DialogDescription className="text-gray-400">
+                        <DialogDescription className="text-gray-400 text-sm">
                             Viewing review ID: {viewingReviewLoading ? 'Loading...' : (viewingReview?.id || viewingReviewId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                     {viewingReviewLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2897,9 +2895,9 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingReviewError}</p>
                         </div>
                     ) : viewingReview ? (
-                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
-                            <div className="p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                        <div className="h-full overflow-y-auto">
+                            <div className="p-4 sm:p-6 pb-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                  <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                       <div className="flex items-center gap-2 text-yellow-400 shrink-0 text-xl">
                                          <Star className="h-6 w-6" />
@@ -2928,8 +2926,7 @@ export default function AdminDashboardPage() {
                                      </div>
                                 </div>
                             </div>
-                            <ScrollBar orientation="vertical" className="w-2" />
-                            </ScrollArea>
+                            </div>
                        ) : (
                             <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No review data to display or review not found.</div>
                        )}
@@ -2967,16 +2964,16 @@ export default function AdminDashboardPage() {
            </Dialog>
 
             <Dialog open={!!viewingDisputeId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-32px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[90vh]">
-                   <DialogHeader className="pb-4 mb-0 border-b border-[#2a2a2a] shrink-0">
-                       <DialogTitle className="text-red-500 flex items-center gap-2 text-xl">
-                           <TriangleAlert className="h-5 w-5" /> Dispute Details
+               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+                   <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
+                       <DialogTitle className="text-red-500 flex items-center gap-2 text-lg sm:text-xl">
+                           <TriangleAlert className="h-4 w-4 sm:h-5 sm:w-5" /> Dispute Details
                        </DialogTitle>
-                       <DialogDescription className="text-gray-400">
+                       <DialogDescription className="text-gray-400 text-sm">
                            Viewing dispute ID: {viewingDisputeLoading ? 'Loading...' : (viewingDispute?.id || viewingDisputeId || 'N/A')}
                        </DialogDescription>
                    </DialogHeader>
-                   <div className="flex-1 min-h-0">
+                   <div className="flex-1 min-h-0 overflow-hidden">
                    {viewingDisputeLoading ? (
                        <div className="flex flex-col items-center justify-center h-full py-12">
                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-500 mb-3"></div>
@@ -2988,9 +2985,9 @@ export default function AdminDashboardPage() {
                            <p className="font-semibold">Error: {viewingDisputeError}</p>
                        </div>
                    ) : viewingDispute ? (
-                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
-                            <div className="p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
+                        <div className="h-full overflow-y-auto">
+                            <div className="p-4 sm:p-6 pb-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                     <div className="flex items-center gap-2 text-red-400 shrink-0 text-xl">
                                         <TriangleAlert className="h-6 w-6" />
@@ -3143,8 +3140,7 @@ export default function AdminDashboardPage() {
                                      </div>
                                 </div>
                             </div>
-                            <ScrollBar orientation="vertical" className="w-2" />
-                           </ScrollArea>
+                            </div>
                       ) : (
                            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No dispute data to display or dispute not found.</div>
                       )}
