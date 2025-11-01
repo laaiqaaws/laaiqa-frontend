@@ -29,8 +29,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        // Dark theme calendar styling
-        "bg-[#1A1518] group/calendar p-4 rounded-xl shadow-lg border border-[#2A2428] [--cell-size:2.5rem] min-w-[280px]",
+        "bg-[#1A1518] group/calendar p-3 rounded-lg shadow-lg border border-[#2A2428] [--cell-size:2.25rem] min-w-[260px]",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -44,10 +43,10 @@ function Calendar({
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn(
-          "relative flex flex-col gap-4 md:flex-row",
+          "relative flex flex-col gap-3 md:flex-row",
           defaultClassNames.months
         ),
-        month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
+        month: cn("flex w-full flex-col gap-3", defaultClassNames.month),
         nav: cn(
           "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
           defaultClassNames.nav
@@ -82,21 +81,13 @@ function Calendar({
             : "[&>svg]:text-[#A0A0A0] flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
-        
-        // Ensure table is full width and border-collapse is maintained
         table: "w-full border-collapse",
-        
-        // FIX: Weekdays container must be flex and wide
         weekdays: cn("flex justify-between w-full", defaultClassNames.weekdays),
-        
-        // FIX: Weekday header (TH element) must be equally distributed
         weekday: cn(
           "text-[#A0A0A0] flex-1 select-none rounded-md text-[0.8rem] font-normal h-[--cell-size] flex items-center justify-center",
           defaultClassNames.weekday
         ),
-        
-        // FIX: Week row (TR element) must be flex and wide
-        week: cn("mt-2 flex w-full", defaultClassNames.week),
+        week: cn("mt-1 flex w-full", defaultClassNames.week),
         
         week_number_header: cn(
           "w-[--cell-size] select-none",
@@ -106,14 +97,10 @@ function Calendar({
           "text-muted-foreground select-none text-[0.8rem]",
           defaultClassNames.week_number
         ),
-        
-        // FIX: Day cell (TD element) must be equally distributed and zero padding/margin
         day: cn(
-          "group/day relative h-full w-full select-none p-0 text-center flex-1", // Use flex-1 for equal distribution
+          "group/day relative h-full w-full select-none p-0 text-center flex-1",
           defaultClassNames.day
         ),
-        
-        // Selection/Range Classes (Keep minimal as DayButton handles color)
         range_start: cn(
           "data-[selected=true]:bg-transparent",
           defaultClassNames.range_start
@@ -174,7 +161,6 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
-        // Ensure WeekNumber TD wrapper is correctly sized if used
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
@@ -223,23 +209,14 @@ function CalendarDayButton({
       data-today={modifiers.today ? "true" : "false"}
       
       className={cn(
-        // Ensure the button fills the container and respects --cell-size for centering
-        "h-[--cell-size] w-full p-0 flex flex-col justify-center items-center text-sm text-[#E5E5E5] hover:bg-[#2A2428] hover:text-white transition-colors", 
-        
+        "h-[--cell-size] w-full p-0 flex flex-col justify-center items-center text-sm text-[#E5E5E5] hover:bg-[#2A2428] hover:text-white transition-colors",
         "flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none [&>span]:text-xs [&>span]:opacity-70",
-        
         defaultClassNames.day,
-        
-        // Selection Styles - Primary Pink theme
         "data-[selected-single=true]:bg-[#C40F5A] data-[selected-single=true]:text-white data-[selected-single=true]:rounded-md data-[selected-single=true]:hover:bg-[#A00D4A]",
         "data-[range-middle=true]:bg-[#C40F5A]/30 data-[range-middle=true]:text-white data-[range-middle=true]:rounded-none",
         "data-[range-start=true]:bg-[#C40F5A] data-[range-start=true]:text-white data-[range-start=true]:rounded-l-md data-[range-start=true]:rounded-r-none data-[range-start=true]:hover:bg-[#A00D4A]",
         "data-[range-end=true]:bg-[#C40F5A] data-[range-end=true]:text-white data-[range-end=true]:rounded-r-md data-[range-end=true]:rounded-l-none data-[range-end=true]:hover:bg-[#A00D4A]",
-        
-        // Today Styles - Primary Pink accent
         "data-[today=true]:border data-[today=true]:border-[#C40F5A] data-[today=true]:text-[#F46CA4] data-[selected=false][data-today=true]:bg-[#C40F5A]/20",
-        
-        // Focus styles - Primary Pink ring
         "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:border-[#C40F5A] group-data-[focused=true]/day:ring-[#C40F5A]/50",
         
         className

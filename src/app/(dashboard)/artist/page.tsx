@@ -804,26 +804,48 @@ export default function ArtistDashboardPage() {
   };
 
   const handleCreateQuoteSubmit = async () => {
+    // Reset error state
+    setCreateQuoteError(null);
+    
     const finalProductType = newQuoteProductType === 'Other' ? newQuoteOtherProductType.trim() : newQuoteProductType;
     const priceAsNumber = parseFloat(String(newQuotePrice));
 
+    // Comprehensive validation with better error messages
     if (!finalProductType) {
-      setCreateQuoteError("Product type is required."); return;
+      setCreateQuoteError("Product type is required. Please select a service type."); 
+      return;
     }
     if (!newQuoteDetails.trim()) {
-      setCreateQuoteError("Details are required."); return;
+      setCreateQuoteError("Service details are required. Please describe what you'll provide."); 
+      return;
+    }
+    if (newQuotePrice === '' || newQuotePrice === null || newQuotePrice === undefined) {
+      setCreateQuoteError("Price is required. Please enter the service cost."); 
+      return;
     }
     if (isNaN(priceAsNumber) || priceAsNumber < 0) {
-      setCreateQuoteError("A valid, non-negative price is required."); return;
+      setCreateQuoteError("Please enter a valid price (numbers only, no negative values)."); 
+      return;
     }
-     if (newQuotePrice === '') {
-         setCreateQuoteError("Price is required."); return;
-     }
+    if (priceAsNumber === 0) {
+      setCreateQuoteError("Price must be greater than 0."); 
+      return;
+    }
     if (!newQuoteServiceDate) {
-      setCreateQuoteError("Service date is required."); return;
+      setCreateQuoteError("Service date is required. Please select when you'll provide the service."); 
+      return;
     }
     if (!newQuoteServiceTime.trim()) {
-      setCreateQuoteError("Service time is required."); return;
+      setCreateQuoteError("Service time is required. Please specify the time."); 
+      return;
+    }
+    
+    // Validate date is not in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (newQuoteServiceDate < today) {
+      setCreateQuoteError("Service date cannot be in the past. Please select a future date."); 
+      return;
     }
 
      let token = csrfToken;
@@ -932,7 +954,7 @@ export default function ArtistDashboardPage() {
          return;
      }
 
-     if (quoteToDelete.disputes && quoteToDelete.disputes.some(d => d.status !== 'Closed')) {
+     if (quoteToDelete.disputes && quoteToDelete.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
          sonnerToast.error("Deletion Failed", { description: "Cannot delete quote with active disputes. Please resolve or delete disputes first." });
          return;
      }
@@ -990,7 +1012,7 @@ export default function ArtistDashboardPage() {
            return;
       }
 
-      if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
+      if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
         sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
         return;
       }
@@ -1052,7 +1074,7 @@ export default function ArtistDashboardPage() {
             return;
        }
 
-       if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
+       if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
            sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
            return;
        }
@@ -1111,7 +1133,7 @@ export default function ArtistDashboardPage() {
             return;
         }
 
-         if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
+         if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
              sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
              return;
          }
@@ -2071,7 +2093,7 @@ export default function ArtistDashboardPage() {
                                   </AlertDialog>
                               )}
 
-                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(d => d.status !== 'Closed') && (
+                             {user && (quote.status === 'Accepted' || quote.status === 'Booked' || quote.status === 'Completed') && quote.customerId && !quote.disputes?.some(d => d.status !== 'Closed' && d.status !== 'Resolved') && (
                                  <Button
                                      variant="outline"
                                      size="sm"
@@ -2082,7 +2104,7 @@ export default function ArtistDashboardPage() {
                                      <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                  </Button>
                              )}
-                              {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
+                              {quote.disputes && quote.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved') && (
                                    <Button
                                        variant="outline"
                                        size="sm"
@@ -2637,24 +2659,25 @@ export default function ArtistDashboardPage() {
         selected={newQuoteServiceDate} 
         onSelect={setNewQuoteServiceDate}
         initialFocus
-        // *** ADDED min-w-[300px] and ensured proper cell sizing visibility ***
-        className="text-white [&_button]:text-white [&_button:hover]:bg-[#383838] [&_button:hover]:text-pink-600 [&_button:focus]:bg-[#3a3a3a] [&_button[aria-selected]]:bg-pink-600 [&_button[aria-selected]]:text-white min-w-[300px]"
-        classNames={{
-            day_today: "border border-pink-600 text-pink-500",
-            // Add a critical override to ensure the table row doesn't collapse if the container is weird
-            week: "flex justify-between w-full",
-            // Added day_cell: to ensure the day wrapper doesn't have explicit padding or margin issue
-            day: "p-0", 
-        }}
+        disabled={(date) => date < new Date()}
+        className="calendar-dark-theme"
     />
 </PopoverContent>
                 </Popover>
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceTime" className="text-right text-gray-400">Time</Label>
-                <Input id="serviceTime" type="time" value={newQuoteServiceTime}
-                  onChange={(e) => setNewQuoteServiceTime(e.target.value)}
-                  className="col-span-3 bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark]" disabled={isCreatingQuote}/>
+                <div className="col-span-3 relative">
+                  <Input id="serviceTime" type="time" value={newQuoteServiceTime}
+                    onChange={(e) => setNewQuoteServiceTime(e.target.value)}
+                    className="w-full bg-[#2a2a2a] text-white border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 [color-scheme:dark] cursor-pointer" 
+                    disabled={isCreatingQuote}
+                    onClick={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      input.showPicker?.();
+                    }}
+                  />
+                </div>
               </div>
 
               {createQuoteError && (

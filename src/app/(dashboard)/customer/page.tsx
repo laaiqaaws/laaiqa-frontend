@@ -678,7 +678,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed')) {
+        if (quoteToComplete.disputes && quoteToComplete.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
             sonnerToast.info("Completion Blocked", { description: "Cannot mark quote as completed with active disputes. Please resolve disputes first." });
             return;
         }
@@ -758,7 +758,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed')) {
+        if (quoteToCancel.disputes && quoteToCancel.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
             sonnerToast.info("Cancellation Blocked", { description: "Cannot cancel quote with active disputes. Please resolve disputes first." });
             return;
         }
@@ -821,7 +821,7 @@ export default function CustomerDashboardPage() {
             return;
         }
 
-        if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed')) {
+        if (quote.disputes && quote.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved')) {
             sonnerToast.info("Info", { description: "An active dispute already exists for this quote." });
             return;
         }
@@ -1230,7 +1230,7 @@ export default function CustomerDashboardPage() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0 bg-[#161616] border-[#2a2a2a] text-gray-200" align="end">
-                                    <Calendar initialFocus mode="range" defaultMonth={analyticsDateRange?.from} selected={analyticsDateRange} onSelect={setAnalyticsDateRange} numberOfMonths={2} />
+                                    <Calendar initialFocus mode="range" defaultMonth={analyticsDateRange?.from} selected={analyticsDateRange} onSelect={setAnalyticsDateRange} numberOfMonths={2} className="calendar-dark-theme" />
                                 </PopoverContent>
                             </Popover>
                         )}
@@ -1663,7 +1663,7 @@ export default function CustomerDashboardPage() {
                                                 </AlertDialog>
                                             )}
 
-                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(d => d.status !== 'Closed') && (
+                                            {user && quote.status !== 'Pending' && quote.customerId === user.id && !quote.disputes?.some(d => d.status !== 'Closed' && d.status !== 'Resolved') && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -1674,7 +1674,7 @@ export default function CustomerDashboardPage() {
                                                     <TriangleAlert className="h-4 w-4" /> Raise Dispute
                                                 </Button>
                                             )}
-                                            {quote.disputes && quote.disputes.some(d => d.status !== 'Closed') && (
+                                            {quote.disputes && quote.disputes.some(d => d.status !== 'Closed' && d.status !== 'Resolved') && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

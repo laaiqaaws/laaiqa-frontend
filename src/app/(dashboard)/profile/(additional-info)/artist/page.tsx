@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
-import { validateProfileCompletion, isFieldRequired, getMissingFieldNames, FIELD_DISPLAY_NAMES } from '@/lib/profileValidation';
+import { validateProfileCompletion, getMissingFieldNames } from '@/lib/profileValidation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -145,6 +145,7 @@ export default function ArtistProfilePage() {
     const [incompleteProfileMessage, setIncompleteProfileMessage] = useState<string | null>(null);
 
     // Artist-specific fields only
+    const [name, setName] = useState('');
     const [address, setAddress] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
@@ -577,7 +578,7 @@ export default function ArtistProfilePage() {
                        description: "Your profile has been completed successfully. Redirecting to dashboard..." 
                    });
                    setTimeout(() => {
-                       router.push('/dashboard/artist');
+                       router.push('/artist');
                    }, 2000);
                 } else {
                    setIsEditing(false);
@@ -775,11 +776,22 @@ export default function ArtistProfilePage() {
                                          </AvatarFallback>
                                       </Avatar>
                                  </div>
-                                 <div className="text-center text-sm text-gray-400 mb-6">
-                                     <p>Profile picture and basic info (Name, Email) can be updated elsewhere if needed.</p>
-                                 </div>
+
 
                                  <>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="name" className="text-gray-400">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input id="name" placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email" className="text-gray-400">
+                                            Email Address
+                                        </Label>
+                                        <Input id="email" type="email" value={userData?.email || ''} className="bg-[#100D0F] text-gray-400 border-[#333333] cursor-not-allowed" disabled={true} readOnly />
+                                        <p className="text-xs text-gray-500">Email cannot be changed (Google Account)</p>
+                                    </div>
                                      <div className="space-y-2">
                                         <Label htmlFor="phone" className="text-gray-400">
                                             Phone Number <span className="text-red-500">*</span>

@@ -1,8 +1,3 @@
-/**
- * Frontend profile validation utilities
- * Mirrors the backend validation logic for consistency
- */
-
 export interface ProfileValidationResult {
   isComplete: boolean;
   missingFields: string[];
@@ -30,8 +25,6 @@ export interface UserProfile {
   preferredArtists?: string[] | null;
   [key: string]: any;
 }
-
-// Define required and optional fields for each role
 export const PROFILE_FIELD_CONFIG = {
   artist: {
     required: ['bio', 'specialties', 'phone', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
@@ -47,9 +40,6 @@ export const PROFILE_FIELD_CONFIG = {
   }
 };
 
-/**
- * Check if a user's profile is complete based on their role
- */
 export function validateProfileCompletion(user: UserProfile): ProfileValidationResult {
   if (!user || !user.role) {
     return {
@@ -61,7 +51,7 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
   }
 
   // Basic required fields for all users
-  const basicRequiredFields = ['name', 'email'];
+  const basicRequiredFields = ['name'];
   const missingBasicFields = basicRequiredFields.filter(field => !user[field]);
 
   if (missingBasicFields.length > 0) {
@@ -76,7 +66,6 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
   const roleConfig = PROFILE_FIELD_CONFIG[user.role as 'artist' | 'customer' | 'admin'];
   
   if (!roleConfig) {
-    // Unknown role, consider incomplete
     return {
       isComplete: false,
       missingFields: ['valid_role'],
@@ -84,8 +73,6 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
       optionalFields: []
     };
   }
-
-  // Admin profiles are always considered complete
   if (user.role === 'admin') {
     return {
       isComplete: true,
@@ -111,30 +98,21 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
   };
 }
 
-/**
- * Check if a field is required for a specific role
- */
 export function isFieldRequired(fieldName: string, role: string): boolean {
-  const basicRequired = ['name', 'email'];
+  const basicRequired = ['name'];
   if (basicRequired.includes(fieldName)) return true;
 
   const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
   return roleConfig ? roleConfig.required.includes(fieldName) : false;
 }
 
-/**
- * Check if a field is optional for a specific role
- */
 export function isFieldOptional(fieldName: string, role: string): boolean {
   const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
   return roleConfig ? roleConfig.optional.includes(fieldName) : false;
 }
 
-/**
- * Get all allowed fields for a specific role (required + optional)
- */
 export function getAllowedFields(role: string): string[] {
-  const basicFields = ['name', 'email', 'role'];
+  const basicFields = ['name', 'role'];
   const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
   
   if (!roleConfig) return basicFields;
@@ -142,9 +120,6 @@ export function getAllowedFields(role: string): string[] {
   return [...basicFields, ...roleConfig.required, ...roleConfig.optional];
 }
 
-/**
- * Get user-friendly field names for display in error messages
- */
 export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   name: 'Full Name',
   email: 'Email Address',
@@ -171,9 +146,6 @@ export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   preferredArtists: 'Preferred Artists'
 };
 
-/**
- * Get user-friendly names for missing fields
- */
 export function getMissingFieldNames(missingFields: string[]): string[] {
   return missingFields.map(field => FIELD_DISPLAY_NAMES[field] || field);
 }

@@ -47,7 +47,7 @@ import {
     Link as LinkIcon,
     Search,
     Filter,
-    Download,
+
     ArrowRight,
     CreditCard,
     Wallet
@@ -100,8 +100,7 @@ import { DateRange } from 'react-day-picker';
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title as ChartJSTitle, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+
 import DOMPurify from 'dompurify';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartJSTitle, CategoryScale, LinearScale, BarElement, PointElement, LineElement);
@@ -347,7 +346,7 @@ export default function AdminDashboardPage() {
         from: subDays(startOfToday(), 29),
         to: endOfToday(),
     });
-    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
 
     const [csrfToken, setCsrfToken] = useState<string | null>(null);
     const [csrfFetchAttempted, setCsrfFetchAttempted] = useState(false);
@@ -458,11 +457,11 @@ export default function AdminDashboardPage() {
 
     const isCriticalActionInProgress = useMemo(() => {
         return !!isDeletingUser || !!isDeletingQuote || !!isDeletingReview || !!isDeletingDispute ||
-               isSubmittingDisputeUpdate || isQuickResolving || isGeneratingPDF ||
+               isSubmittingDisputeUpdate || isQuickResolving ||
                !!isProcessingWithdrawal || !!isCompletingWithdrawal || !!isFailingWithdrawal;
     }, [
         isDeletingUser, isDeletingQuote, isDeletingReview, isDeletingDispute,
-        isSubmittingDisputeUpdate, isQuickResolving, isGeneratingPDF,
+        isSubmittingDisputeUpdate, isQuickResolving,
         isProcessingWithdrawal, isCompletingWithdrawal, isFailingWithdrawal
     ]);
 
@@ -1381,61 +1380,7 @@ export default function AdminDashboardPage() {
          },
     } as any);
 
-    const handleDownloadPDF = async () => {
-        if (!analyticsRef.current) {
-            sonnerToast.error("PDF Generation Failed", { description: "Analytics section not found." });
-            return;
-        }
-        setIsGeneratingPDF(true);
-        sonnerToast.info("Generating PDF...", { duration: 0 });
 
-        try {
-            const canvas = await html2canvas(analyticsRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#161616',
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({
-                 orientation: 'portrait',
-                 unit: 'pt',
-                 format: 'a4',
-                 putOnlyUsedFonts: true,
-                 compress: true
-            });
-
-            const imgWidth = 595.28;
-            const pageHeight = 841.89;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-            }
-
-            pdf.save(`admin_dashboard_analytics_${formatDateSafely(new Date(), 'yyyy-MM-dd')}.pdf`);
-            sonnerToast.success("PDF Generated", { description: "Analytics PDF downloaded." });
-
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            if ((error as Error).message?.includes('unsupported color function "oklch"')) {
-                  sonnerToast.error("PDF Generation Failed", { description: "A color format issue prevented PDF generation." });
-             } else {
-                sonnerToast.error("PDF Generation Failed", { description: "An unexpected error occurred while generating the PDF." });
-             }
-        } finally {
-            setIsGeneratingPDF(false);
-            sonnerToast.dismiss();
-        }
-    };
 
     const renderAnalyticsSection = () => {
          const isLoading = usersLoading || quotesLoading || reviewsLoading || disputesLoading || walletStatsLoading;
@@ -1515,10 +1460,7 @@ export default function AdminDashboardPage() {
                             {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-pink-500"></div> : <RefreshCw className="h-4 w-4" />}
                              <span className="sr-only">Refresh Data</span>
                          </Button>
-                         <Button variant="ghost" size="icon" onClick={handleDownloadPDF} disabled={isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-green-500 transition-colors ${isLoading || !!hasError || isGeneratingPDF || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Download Analytics as PDF">
-                             {isGeneratingPDF ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-green-500"></div> : <Download className="h-4 w-4" />}
-                             <span className="sr-only">Download Analytics as PDF</span>
-                         </Button>
+
                      </div>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 sm:p-6">

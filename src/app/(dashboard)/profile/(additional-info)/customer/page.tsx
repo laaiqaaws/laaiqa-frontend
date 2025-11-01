@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
-import { validateProfileCompletion, isFieldRequired, getMissingFieldNames, FIELD_DISPLAY_NAMES } from '@/lib/profileValidation';
+import { validateProfileCompletion, getMissingFieldNames } from '@/lib/profileValidation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,7 @@ import {
     Terminal,
     User as UserIcon,
     Edit3,
-    ShoppingCart,
     FileText,
-    BookOpen,
-    Star,
     Weight,
     Ruler,
     Droplet,
@@ -30,14 +27,12 @@ import {
     Phone,
     UserCog,
     Info,
-    Map,
     Clock,
     Bell,
     LogOut,
     Settings,
     LayoutDashboard,
     Heart,
-    ChevronLeft,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -87,6 +82,7 @@ export default function CustomerProfilePage() {
     const [incompleteProfileMessage, setIncompleteProfileMessage] = useState<string | null>(null);
 
 
+    const [name, setName] = useState('');
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
     const [color, setColor] = useState('');
@@ -121,6 +117,7 @@ export default function CustomerProfilePage() {
 
     const populateFormStates = useCallback((data: CustomerProfileData | null) => {
         if (data) {
+            setName(data.name ?? '');
             setHeight(data.height?.toString() ?? '');
             setWeight(data.weight?.toString() ?? '');
             setColor(data.color ?? '');
@@ -140,6 +137,7 @@ export default function CustomerProfilePage() {
             setPreferredArtistsInput(Array.isArray(data.preferredArtists) ? data.preferredArtists.join(', ') : '');
 
         } else {
+            setName('');
             setHeight(''); setWeight(''); setColor(''); setEthnicity(''); setAge(''); setOther('');
             setAddress(''); setCity(''); setState(''); setZipCode(''); setCountry(''); setPhone(''); setGender('');
             setBookingPreferencesInput(''); setPreferredArtistsInput('');
@@ -335,6 +333,7 @@ export default function CustomerProfilePage() {
 
         // Validate required fields before processing
         const requiredFields = {
+            name: name?.trim(),
             phone: phone?.trim(),
             age: age?.trim(),
             height: height?.trim(),
@@ -404,6 +403,7 @@ export default function CustomerProfilePage() {
 
 
         const dataToSend = {
+            name: name || null,
             height: parsedHeight,
             weight: parsedWeight,
             color: color || null,
@@ -461,7 +461,7 @@ export default function CustomerProfilePage() {
                         description: "Your profile has been completed successfully. Redirecting to dashboard..." 
                     });
                     setTimeout(() => {
-                        router.push('/dashboard/customer');
+                        router.push('/customer');
                     }, 2000);
                 } else {
                     setIsEditing(false);
@@ -678,11 +678,20 @@ export default function CustomerProfilePage() {
                                         )}
                                     </Avatar>
                                 </div>
-                                <div className="text-center text-sm text-gray-400 mb-6">
-                                    <p>Profile picture and basic info (Name, Email) can be updated elsewhere if needed.</p>
-                                </div>
-
                                 <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name" className="text-gray-400">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input id="name" placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} className="bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600" disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email" className="text-gray-400">
+                                            Email Address
+                                        </Label>
+                                        <Input id="email" type="email" value={userData?.email || ''} className="bg-[#100D0F] text-gray-400 border-[#333333] cursor-not-allowed" disabled={true} readOnly />
+                                        <p className="text-xs text-gray-500">Email cannot be changed (Google Account)</p>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="phone" className="text-gray-400">
                                             Phone Number <span className="text-red-500">*</span>

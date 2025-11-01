@@ -44,7 +44,6 @@
 }
 
 :root {
-  /* Laaiqa Color Palette */
   --color-primary: #C40F5A;
   --color-secondary: #F46CA4;
   --color-background: #100D0F;
@@ -139,7 +138,7 @@
   }
 }
 
-/* Custom scrollbar */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -157,3 +156,41 @@
   background: var(--color-primary);
 }
 
+/* Calendar dark theme improvements */
+.calendar-dark-theme {
+  color: white;
+}
+
+.calendar-dark-theme button {
+  color: white;
+}
+
+.calendar-dark-theme button:hover {
+  background-color: #2A2428;
+  color: white;
+}
+
+.calendar-dark-theme button:focus {
+  background-color: #2A2428;
+  color: white;
+}
+
+.calendar-dark-theme button[aria-selected="true"] {
+  background-color: #C40F5A;
+  color: white;
+}
+
+.calendar-dark-theme button[aria-selected="true"]:hover {
+  background-color: #A00D4A;
+}
+
+.calendar-dark-theme button[data-today="true"] {
+  border: 1px solid #C40F5A;
+  color: #F46CA4;
+}
+
+.calendar-dark-theme button[data-today="true"][aria-selected="true"] {
+  background-color: #C40F5A;
+  color: white;
+  border-color: #C40F5A;
+}
