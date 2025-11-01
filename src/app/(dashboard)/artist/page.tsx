@@ -2596,7 +2596,7 @@ export default function ArtistDashboardPage() {
                 Fill details to create a quote. Share the link for customers to accept.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="space-y-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="productType" className="text-right text-gray-400">Type</Label>
                 <Select onValueChange={(value) => {
@@ -2635,6 +2635,7 @@ export default function ArtistDashboardPage() {
                   className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600 min-h-[80px]"
                   placeholder="Describe the service or artwork..." disabled={isCreatingQuote} />
               </div>
+              
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right text-gray-400">Price (₹)</Label>
                 <Input id="price" type="number" value={newQuotePrice}
@@ -2642,6 +2643,7 @@ export default function ArtistDashboardPage() {
                   className="col-span-3 bg-[#2a2a2a] text-white placeholder-gray-500 border-[#4a4a4a] focus:border-pink-600 focus:ring-pink-600"
                   placeholder="e.g., 1500" min="0" step="0.01" disabled={isCreatingQuote} />
               </div>
+              
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceDate" className="text-right text-gray-400">Date</Label>
                 <Popover>
@@ -2653,19 +2655,20 @@ export default function ArtistDashboardPage() {
                       {newQuoteServiceDate ? format(newQuoteServiceDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-<PopoverContent className="w-auto p-0 bg-[#161616] border-[#4a4a4a]">
-    <Calendar 
-        mode="single" 
-        selected={newQuoteServiceDate} 
-        onSelect={setNewQuoteServiceDate}
-        initialFocus
-        disabled={(date) => date < new Date()}
-        className="calendar-dark-theme"
-    />
-</PopoverContent>
+                  <PopoverContent className="w-auto p-0 bg-[#161616] border-[#4a4a4a]">
+                      <Calendar 
+                          mode="single" 
+                          selected={newQuoteServiceDate} 
+                          onSelect={setNewQuoteServiceDate}
+                          initialFocus
+                          disabled={(date) => date < new Date()}
+                          className="calendar-dark-theme"
+                      />
+                  </PopoverContent>
                 </Popover>
               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
+              
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceTime" className="text-right text-gray-400">Time</Label>
                 <div className="col-span-3 relative">
                   <Input id="serviceTime" type="time" value={newQuoteServiceTime}
@@ -2681,7 +2684,9 @@ export default function ArtistDashboardPage() {
               </div>
 
               {createQuoteError && (
-                  <div className="col-span-4 text-red-500 text-sm text-center p-2 bg-red-900/20 rounded-md border border-red-800/50">{createQuoteError}</div>
+                  <div className="w-full text-red-500 text-sm text-center p-3 bg-red-900/20 rounded-md border border-red-800/50 mt-2">
+                      {createQuoteError}
+                  </div>
               )}
             </div>
             <DialogFooter className="border-t border-[#2a2a2a] pt-4">

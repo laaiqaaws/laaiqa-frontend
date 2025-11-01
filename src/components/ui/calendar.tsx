@@ -88,7 +88,7 @@ function Calendar({
           defaultClassNames.weekday
         ),
         week: cn("mt-1 flex w-full", defaultClassNames.week),
-        
+
         week_number_header: cn(
           "w-[--cell-size] select-none",
           defaultClassNames.week_number_header
@@ -117,7 +117,7 @@ function Calendar({
           "data-[selected=true]:rounded-none",
           defaultClassNames.today
         ),
-        
+
         outside: cn(
           "text-[#3A3438] aria-selected:text-[#3A3438]",
           defaultClassNames.outside
@@ -190,10 +190,10 @@ function CalendarDayButton({
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
-  const isSelectedSingle = modifiers.selected && 
-                           !modifiers.range_start && 
-                           !modifiers.range_end && 
-                           !modifiers.range_middle;
+  const isSelectedSingle = modifiers.selected &&
+    !modifiers.range_start &&
+    !modifiers.range_end &&
+    !modifiers.range_middle;
 
   return (
     <Button
@@ -202,12 +202,12 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString()}
       data-selected={modifiers.selected ? "true" : "false"}
-      data-selected-single={isSelectedSingle ? "true" : "false"} 
+      data-selected-single={isSelectedSingle ? "true" : "false"}
       data-range-start={modifiers.range_start ? "true" : "false"}
       data-range-end={modifiers.range_end ? "true" : "false"}
       data-range-middle={modifiers.range_middle ? "true" : "false"}
       data-today={modifiers.today ? "true" : "false"}
-      
+
       className={cn(
         "h-[--cell-size] w-full p-0 flex flex-col justify-center items-center text-sm text-[#E5E5E5] hover:bg-[#2A2428] hover:text-white transition-colors",
         "flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none [&>span]:text-xs [&>span]:opacity-70",
@@ -218,7 +218,7 @@ function CalendarDayButton({
         "data-[range-end=true]:bg-[#C40F5A] data-[range-end=true]:text-white data-[range-end=true]:rounded-r-md data-[range-end=true]:rounded-l-none data-[range-end=true]:hover:bg-[#A00D4A]",
         "data-[today=true]:border data-[today=true]:border-[#C40F5A] data-[today=true]:text-[#F46CA4] data-[selected=false][data-today=true]:bg-[#C40F5A]/20",
         "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:border-[#C40F5A] group-data-[focused=true]/day:ring-[#C40F5A]/50",
-        
+
         className
       )}
       {...props}
