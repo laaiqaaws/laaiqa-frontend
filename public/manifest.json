@@ -1,0 +1,35 @@
+{
+  "name": "Laaiqa - Professional Artist Platform",
+  "short_name": "Laaiqa",
+  "description": "Connect with professional artists for your creative projects",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100D0F",
+  "theme_color": "#C40F5A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Laaiqa Coloured Favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Laaiqa Coloured Favicon.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Laaiqa White Favicon.png",
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "monochrome"
+    }
+  ],
+  "categories": ["business", "productivity", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

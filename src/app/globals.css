@@ -130,6 +130,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     background-color: var(--color-background);
@@ -193,4 +194,86 @@
   background-color: #C40F5A;
   color: white;
   border-color: #C40F5A;
+}
+
+.modal-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #C40F5A #2A2428;
+}
+
+.modal-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-track {
+  background: #2A2428;
+  border-radius: 4px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb {
+  background: #C40F5A;
+  border-radius: 4px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #A00D4A;
+}
+
+/* Force scrollbar to always be visible */
+.force-scrollbar {
+  overflow-y: scroll !important;
+  scrollbar-gutter: stable;
+}
+
+/* Enhan
+ced ScrollArea for modals */
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: thin !important;
+  scrollbar-color: #C40F5A #2A2428 !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-track {
+  background: #2A2428 !important;
+  border-radius: 6px !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background: #C40F5A !important;
+  border-radius: 6px !important;
+  border: 2px solid #2A2428 !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:hover {
+  background: #A00D4A !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-corner {
+  background: #2A2428 !important;
+}
+
+/* Force scrollbar visibility */
+.modal-scroll-area [data-radix-scroll-area-viewport] {
+  overflow-y: scroll !important;
+}
+
+/* ScrollBar component styling */
+[data-radix-scroll-area-scrollbar] {
+  background: #2A2428 !important;
+  border-radius: 6px !important;
+  width: 12px !important;
+}
+
+[data-radix-scroll-area-thumb] {
+  background: #C40F5A !important;
+  border-radius: 6px !important;
+  opacity: 1 !important;
+}
+
+[data-radix-scroll-area-thumb]:hover {
+  background: #A00D4A !important;
 }

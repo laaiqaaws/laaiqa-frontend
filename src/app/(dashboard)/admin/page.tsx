@@ -2560,7 +2560,7 @@ export default function AdminDashboardPage() {
                                   <p className="font-semibold">Error: {viewingUserError}</p>
                              </div>
                          ) : viewingUser ? (
-                            <ScrollArea className="h-full w-full">
+                            <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
                                 <div className="p-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                     <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
@@ -2653,6 +2653,7 @@ export default function AdminDashboardPage() {
                                     )}
                                 </div>
                                 </div>
+                                <ScrollBar orientation="vertical" className="w-3 bg-[#2A2428] hover:bg-[#3A3438]" />
                             </ScrollArea>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No user data to display or user not found.</div>
@@ -2721,7 +2722,7 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingQuoteError}</p>
                         </div>
                     ) : viewingQuote ? (
-                        <ScrollArea className="h-full w-full">
+                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
                             <div className="p-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
@@ -2835,6 +2836,7 @@ export default function AdminDashboardPage() {
                                       )}
                                 </div>
                             </div>
+                            <ScrollBar orientation="vertical" className="w-2" />
                             </ScrollArea>
                     ) : (
                          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No quote data to display or quote not found.</div>
@@ -2895,7 +2897,7 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingReviewError}</p>
                         </div>
                     ) : viewingReview ? (
-                        <ScrollArea className="h-full w-full">
+                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
                             <div className="p-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                  <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
@@ -2926,6 +2928,7 @@ export default function AdminDashboardPage() {
                                      </div>
                                 </div>
                             </div>
+                            <ScrollBar orientation="vertical" className="w-2" />
                             </ScrollArea>
                        ) : (
                             <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No review data to display or review not found.</div>
@@ -2985,7 +2988,7 @@ export default function AdminDashboardPage() {
                            <p className="font-semibold">Error: {viewingDisputeError}</p>
                        </div>
                    ) : viewingDispute ? (
-                        <ScrollArea className="h-full w-full">
+                        <ScrollArea className="h-full w-full overflow-auto modal-scroll-area force-scrollbar">
                             <div className="p-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm p-1 pb-4">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
@@ -3140,6 +3143,7 @@ export default function AdminDashboardPage() {
                                      </div>
                                 </div>
                             </div>
+                            <ScrollBar orientation="vertical" className="w-2" />
                            </ScrollArea>
                       ) : (
                            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No dispute data to display or dispute not found.</div>

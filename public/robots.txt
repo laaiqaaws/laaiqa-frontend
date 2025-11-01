@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup-options
+Allow: /signup-artist
+Allow: /signup-customer
+
+# Disallow private areas
+Disallow: /admin*
+Disallow: /artist*
+Disallow: /customer*
+Disallow: /dashboard*
+Disallow: /profile*
+Disallow: /quote*
+Disallow: /api*
+
+# Sitemap
+Sitemap: https://laaiqa.com/sitemap.xml
