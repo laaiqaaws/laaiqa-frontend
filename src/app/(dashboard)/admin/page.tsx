@@ -1717,7 +1717,7 @@ export default function AdminDashboardPage() {
                                <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No users found in the system.</p>
                           )
                      ) : (
-                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
+                        <div className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[640px] text-sm text-left text-gray-400">
                                  <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10">
                                      <tr>
@@ -1767,8 +1767,7 @@ export default function AdminDashboardPage() {
                                          ))}
                                      </tbody>
                                  </table>
-                                <ScrollBar orientation="horizontal" className="h-2.5" />
-                         </ScrollArea>
+                         </div>
                      )}
                  </CardContent>
              </Card>
@@ -1846,7 +1845,7 @@ export default function AdminDashboardPage() {
                             <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No quotes found in the system.</p>
                          )
                     ) : (
-                        <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
+                        <div className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[720px] text-sm text-left text-gray-400">
                                 <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                         <th scope="col" className="px-3 py-3 rounded-tl-md">Quote ID</th>
@@ -1894,8 +1893,7 @@ export default function AdminDashboardPage() {
                                     ))}
                                 </tbody>
                             </table>
-                            <ScrollBar orientation="horizontal" className="h-2.5" />
-                        </ScrollArea>
+                        </div>
                     )}
                 </CardContent>
             </Card>
@@ -1968,7 +1966,7 @@ export default function AdminDashboardPage() {
                                <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No reviews found in the system.</p>
                           )
                      ) : (
-                         <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
+                         <div className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                              <table className="w-full min-w-[720px] text-sm text-left text-gray-400">
                                  <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                          <th scope="col" className="px-3 py-3 rounded-tl-md">Review ID</th>
@@ -2007,8 +2005,7 @@ export default function AdminDashboardPage() {
                                      ))}
                                  </tbody>
                              </table>
-                             <ScrollBar orientation="horizontal" className="h-2.5" />
-                         </ScrollArea>
+                         </div>
                      )}
                  </CardContent>
              </Card>
@@ -2086,7 +2083,7 @@ export default function AdminDashboardPage() {
                             <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No disputes found in the system.</p>
                         )
                    ) : (
-                       <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
+                       <div className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                             <table className="w-full min-w-[800px] text-sm text-left text-gray-400">
                                <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10"><tr>
                                        <th scope="col" className="px-3 py-3 rounded-tl-md">Dispute ID</th>
@@ -2151,8 +2148,7 @@ export default function AdminDashboardPage() {
                                    ))}
                                </tbody>
                            </table>
-                           <ScrollBar orientation="horizontal" className="h-2.5" />
-                       </ScrollArea>
+                       </div>
                    )}
                </CardContent>
            </Card>
@@ -2221,7 +2217,7 @@ export default function AdminDashboardPage() {
                         <p className="text-center text-gray-500 py-10 px-4 sm:px-0">No pending withdrawals found.</p>
                     )
                 ) : (
-                    <ScrollArea className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
+                    <div className="max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh] w-full overflow-auto rounded-md">
                         <table className="w-full min-w-[800px] text-sm text-left text-gray-400">
                             <thead className="text-xs text-gray-300 uppercase bg-[#2a2a2a] sticky top-0 z-10">
                                 <tr>
@@ -2326,8 +2322,7 @@ export default function AdminDashboardPage() {
                                 ))}
                             </tbody>
                         </table>
-                        <ScrollBar orientation="horizontal" className="h-2.5" />
-                    </ScrollArea>
+                    </div>
                 )}
             </CardContent>
         </Card>
@@ -2539,7 +2534,7 @@ export default function AdminDashboardPage() {
             </main>
 
             <Dialog open={!!viewingUserId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col h-[90vh] max-h-[90vh]">
                       <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
                           <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
                               <Info className="h-4 w-4 sm:h-5 sm:w-5" /> User Details
@@ -2548,7 +2543,7 @@ export default function AdminDashboardPage() {
                               Viewing: {viewingUserLoading ? 'Loading...' : (viewingUser?.name || viewingUser?.email || viewingUserId || 'N/A')}
                           </DialogDescription>
                       </DialogHeader>
-                        <div className="flex-1 min-h-0 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                        {viewingUserLoading ? (
                              <div className="flex flex-col items-center justify-center h-full py-8 px-4">
                                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2560,10 +2555,9 @@ export default function AdminDashboardPage() {
                                   <p className="font-semibold text-sm">Error: {viewingUserError}</p>
                              </div>
                          ) : viewingUser ? (
-                            <div className="h-full overflow-y-auto">
-                                <div className="p-4 sm:p-6 pb-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
-                                    <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
+                            <div className="p-4 sm:p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm">
+                                <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                         <Avatar className="h-20 w-20 text-3xl shrink-0">
                                             <AvatarImage src={viewingUser.image || undefined} alt={viewingUser.name || "User Avatar"} />
                                             <AvatarFallback className="bg-pink-700/50 text-pink-200 border border-pink-600">{getInitials(viewingUser.name)}</AvatarFallback>
@@ -2652,7 +2646,6 @@ export default function AdminDashboardPage() {
                                         </>
                                     )}
                                 </div>
-                                </div>
                             </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No user data to display or user not found.</div>
@@ -2700,7 +2693,7 @@ export default function AdminDashboardPage() {
                   </Dialog>
 
             <Dialog open={!!viewingQuoteId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col h-[90vh] max-h-[90vh]">
                     <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
                         <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
                             <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> Quote Details
@@ -2709,7 +2702,7 @@ export default function AdminDashboardPage() {
                             Viewing: Quote ID {viewingQuoteLoading ? 'Loading...' : (viewingQuote?.id || viewingQuoteId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto min-h-0">
                     {viewingQuoteLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2721,8 +2714,8 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingQuoteError}</p>
                         </div>
                     ) : viewingQuote ? (
-                        <div className="h-full overflow-y-auto">
-                            <div className="p-4 sm:p-6 pb-2">
+                        <div className="p-4 sm:p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                      <div className="flex items-center gap-2 text-pink-400 shrink-0 text-xl">
@@ -2835,7 +2828,7 @@ export default function AdminDashboardPage() {
                                       )}
                                 </div>
                             </div>
-                            </div>
+                        </div>
                     ) : (
                          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">No quote data to display or quote not found.</div>
                     )}
@@ -2874,7 +2867,7 @@ export default function AdminDashboardPage() {
             </Dialog>
 
              <Dialog open={!!viewingReviewId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg flex flex-col max-h-[95vh] m-2 sm:m-4">
+                <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg flex flex-col h-[90vh] max-h-[90vh]">
                     <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
                         <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
                             <Star className="h-4 w-4 sm:h-5 sm:w-5" /> Review Details
@@ -2883,7 +2876,7 @@ export default function AdminDashboardPage() {
                             Viewing review ID: {viewingReviewLoading ? 'Loading...' : (viewingReview?.id || viewingReviewId || 'N/A')}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto min-h-0">
                     {viewingReviewLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
@@ -2895,8 +2888,8 @@ export default function AdminDashboardPage() {
                             <p className="font-semibold">Error: {viewingReviewError}</p>
                         </div>
                     ) : viewingReview ? (
-                        <div className="h-full overflow-y-auto">
-                            <div className="p-4 sm:p-6 pb-2">
+                        <div className="p-4 sm:p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                  <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                       <div className="flex items-center gap-2 text-yellow-400 shrink-0 text-xl">
@@ -2964,7 +2957,7 @@ export default function AdminDashboardPage() {
            </Dialog>
 
             <Dialog open={!!viewingDisputeId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
-               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] m-2 sm:m-4">
+               <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col h-[90vh] max-h-[90vh]">
                    <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
                        <DialogTitle className="text-red-500 flex items-center gap-2 text-lg sm:text-xl">
                            <TriangleAlert className="h-4 w-4 sm:h-5 sm:w-5" /> Dispute Details
@@ -2973,7 +2966,7 @@ export default function AdminDashboardPage() {
                            Viewing dispute ID: {viewingDisputeLoading ? 'Loading...' : (viewingDispute?.id || viewingDisputeId || 'N/A')}
                        </DialogDescription>
                    </DialogHeader>
-                   <div className="flex-1 min-h-0 overflow-hidden">
+                   <div className="flex-1 overflow-y-auto min-h-0">
                    {viewingDisputeLoading ? (
                        <div className="flex flex-col items-center justify-center h-full py-12">
                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-500 mb-3"></div>
@@ -2985,8 +2978,8 @@ export default function AdminDashboardPage() {
                            <p className="font-semibold">Error: {viewingDisputeError}</p>
                        </div>
                    ) : viewingDispute ? (
-                        <div className="h-full overflow-y-auto">
-                            <div className="p-4 sm:p-6 pb-2">
+                        <div className="p-4 sm:p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                     <div className="flex items-center gap-2 text-red-400 shrink-0 text-xl">
