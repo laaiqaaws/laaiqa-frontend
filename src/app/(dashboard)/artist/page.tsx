@@ -64,6 +64,7 @@ function ArtistDashboardContent() {
   const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationViewed, setNotificationViewed] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   // Load quotes from cache or fetch
   const loadQuotes = useCallback(async (forceRefresh = false) => {
@@ -202,8 +203,16 @@ function ArtistDashboardContent() {
               <button 
                 className="relative p-2 hover:bg-gray-800 rounded-full transition-colors"
                 onClick={() => {
-                  // Mark as viewed when clicked
+                  // Toggle notification - if open, dismiss all toasts
+                  if (notificationOpen) {
+                    sonnerToast.dismiss();
+                    setNotificationOpen(false);
+                    return;
+                  }
+                  
+                  // Mark as viewed and open
                   setNotificationViewed(true);
+                  setNotificationOpen(true);
                   
                   const pendingQuotesList = quotes.filter(q => q.status === 'Pending');
                   const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
@@ -213,6 +222,8 @@ function ArtistDashboardContent() {
                   if (total === 0) {
                     sonnerToast.info('All caught up! ✨', {
                       description: 'No pending bookings at the moment.',
+                      onDismiss: () => setNotificationOpen(false),
+                      onAutoClose: () => setNotificationOpen(false),
                     });
                   } else {
                     sonnerToast('Booking Summary', {
@@ -247,6 +258,8 @@ function ArtistDashboardContent() {
                           )}
                         </div>
                       ),
+                      onDismiss: () => setNotificationOpen(false),
+                      onAutoClose: () => setNotificationOpen(false),
                     });
                   }
                 }}
@@ -621,7 +634,7 @@ function ArtistDashboardContent() {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30">
-        <div className="flex justify-around items-center h-full">
+        <div className="flex justify-around items-center h-full max-w-3xl mx-auto">
           <Link href="/artist?view=home"
             className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'home' ? 'text-[#EE2377]' : 'text-gray-500'}`}>
             <Home className="h-6 w-6" strokeWidth={view === 'home' ? 2.5 : 1.5} />
