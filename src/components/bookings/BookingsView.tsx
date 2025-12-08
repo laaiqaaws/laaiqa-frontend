@@ -288,13 +288,13 @@ function BookingCard({ quote, index, isExpanded, onToggle, userRole }: {
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <Link href={`/quote/${quote.id}`} className="flex-1">
-                    <Button className="w-full bg-[#EE2377] hover:bg-[#C40F5A] text-white rounded-xl">
+                    <Button className="w-full bg-[#EE2377] hover:bg-[#C40F5A] text-white rounded-lg h-12 font-medium">
                       <ExternalLink className="mr-2 h-4 w-4" /> View Quote
                     </Button>
                   </Link>
                   {canRaiseDispute && (
                     <Link href={disputeLink} className="flex-1">
-                      <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl">
+                      <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-lg h-12 font-medium">
                         <AlertTriangle className="mr-2 h-4 w-4" /> Raise Dispute
                       </Button>
                     </Link>
@@ -488,14 +488,7 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
         />
       )}
 
-      {userRole === 'artist' && sortedQuotes.length > 0 && (
-        <Link
-          href={createQuoteLink}
-          className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20"
-        >
-          <Plus className="h-5 w-5" /> New Booking
-        </Link>
-      )}
+      {/* FAB removed - handled by parent page on home view only */}
     </div>
   );
 }

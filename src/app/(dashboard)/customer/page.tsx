@@ -174,29 +174,31 @@ function CustomerDashboardContent() {
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-4">
           <div><p className="text-gray-400 text-sm">{getGreeting()},</p><h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1></div>
-          <button className="relative p-2" onClick={() => {
-              const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
-              const bookedCount = quotes.filter(q => q.status === 'Booked').length;
-              const completedCount = quotes.filter(q => q.status === 'Completed').length;
-              const total = acceptedCount + bookedCount;
-              
-              if (total === 0) {
-                sonnerToast('No new notifications', { description: 'You\'re all caught up!', duration: 3000 });
-              } else {
-                sonnerToast('Activity Summary', {
-                  description: (
-                    <div className="space-y-1 mt-1">
-                      {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
-                      {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} upcoming</div>}
-                      {completedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-gray-400 rounded-full"></span>{completedCount} completed</div>}
-                    </div>
-                  ),
-                  duration: 5000,
-                });
-              }
-            }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
+          {view === 'home' && (
+            <button className="relative p-2" onClick={() => {
+                const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
+                const bookedCount = quotes.filter(q => q.status === 'Booked').length;
+                const completedCount = quotes.filter(q => q.status === 'Completed').length;
+                const total = acceptedCount + bookedCount;
+                
+                if (total === 0) {
+                  sonnerToast('No new notifications', { description: 'You\'re all caught up!', duration: 3000 });
+                } else {
+                  sonnerToast('Activity Summary', {
+                    description: (
+                      <div className="space-y-1 mt-1">
+                        {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
+                        {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} upcoming</div>}
+                        {completedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-gray-400 rounded-full"></span>{completedCount} completed</div>}
+                      </div>
+                    ),
+                    duration: 5000,
+                  });
+                }
+              }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
+          )}
         </div>
-        {(view === 'home' || view === 'bookings') && (
+        {view === 'home' && (
           <div className="relative mb-6">
             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors" />
             <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>

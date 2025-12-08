@@ -27,10 +27,12 @@ export interface UserProfile {
 }
 export const PROFILE_FIELD_CONFIG = {
   artist: {
-    required: ['bio', 'specialties', 'phone', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
-    optional: ['services', 'availableLocations', 'bookingInfo', 'portfolioLink'] as string[]
+    // Minimum required fields for artist profile completion
+    required: ['phone', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
+    optional: ['bio', 'specialties', 'services', 'availableLocations', 'bookingInfo', 'portfolioLink'] as string[]
   },
   customer: {
+    // Minimum required fields for customer profile completion
     required: ['phone', 'age', 'height', 'color', 'ethnicity', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
     optional: ['weight', 'other', 'gender', 'bookingPreferences', 'preferredArtists'] as string[]
   },

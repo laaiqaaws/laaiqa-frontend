@@ -176,42 +176,44 @@ function ArtistDashboardContent() {
             <p className="text-gray-400 text-sm">{getGreeting()},</p>
             <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Artist'}</h1>
           </div>
-          <button 
-            className="relative p-2"
-            onClick={() => {
-              const pendingCount = quotes.filter(q => q.status === 'Pending').length;
-              const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
-              const bookedCount = quotes.filter(q => q.status === 'Booked').length;
-              const total = pendingCount + acceptedCount + bookedCount;
-              
-              if (total === 0) {
-                sonnerToast('No new notifications', {
-                  description: 'You\'re all caught up!',
-                  duration: 3000,
-                });
-              } else {
-                sonnerToast('Activity Summary', {
-                  description: (
-                    <div className="space-y-1 mt-1">
-                      {pendingCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-yellow-400 rounded-full"></span>{pendingCount} pending</div>}
-                      {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
-                      {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} booked</div>}
-                    </div>
-                  ),
-                  duration: 5000,
-                });
-              }
-            }}
-          >
-            <BellIcon className="h-6 w-6 text-white" />
-            {quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>
-            )}
-          </button>
+          {view === 'home' && (
+            <button 
+              className="relative p-2"
+              onClick={() => {
+                const pendingCount = quotes.filter(q => q.status === 'Pending').length;
+                const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
+                const bookedCount = quotes.filter(q => q.status === 'Booked').length;
+                const total = pendingCount + acceptedCount + bookedCount;
+                
+                if (total === 0) {
+                  sonnerToast('No new notifications', {
+                    description: 'You\'re all caught up!',
+                    duration: 3000,
+                  });
+                } else {
+                  sonnerToast('Activity Summary', {
+                    description: (
+                      <div className="space-y-1 mt-1">
+                        {pendingCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-yellow-400 rounded-full"></span>{pendingCount} pending</div>}
+                        {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
+                        {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} booked</div>}
+                      </div>
+                    ),
+                    duration: 5000,
+                  });
+                }
+              }}
+            >
+              <BellIcon className="h-6 w-6 text-white" />
+              {quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>
+              )}
+            </button>
+          )}
         </div>
 
-        {/* Search Bar - only on home and bookings */}
-        {(view === 'home' || view === 'bookings') && (
+        {/* Search Bar - only on home */}
+        {view === 'home' && (
           <div className="relative mb-6">
             <Input
               value={searchQuery}
@@ -599,8 +601,8 @@ function ArtistDashboardContent() {
         )}
       </AnimatePresence>
 
-      {/* FAB - New Booking */}
-      {(view === 'home' || view === 'bookings') && quotes.length > 0 && (
+      {/* FAB - New Booking - Only on home page */}
+      {view === 'home' && quotes.length > 0 && (
         <Link href="/artist/create-quote"
           className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20">
           <Plus className="h-5 w-5" /> Add Booking
