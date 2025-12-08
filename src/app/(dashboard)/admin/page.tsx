@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { User as AuthUserRaw, API_BASE_URL } from '@/types/user';
 import {
     LayoutDashboard, Users, FileText, Star, Trash2, IndianRupee, CheckSquare, AlertCircle,
-    TriangleAlert, RefreshCw, Sparkles, Search, CreditCard, Wallet, ChevronRight
+    TriangleAlert, RefreshCw, Sparkles, Search, CreditCard, Wallet, ChevronRight, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -239,7 +239,7 @@ function AdminDashboardContent() {
     };
 
     const handleRefresh = () => {
-        sonnerToast.info("Refreshing...");
+        setTimeout(() => sonnerToast.info("Refreshing..."), 100);
         fetchAllData();
     };
 
@@ -254,7 +254,7 @@ function AdminDashboardContent() {
                 headers: { 'CSRF-Token': token },
             });
             if (res.ok) {
-                sonnerToast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted`);
+                setTimeout(() => sonnerToast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted`), 100);
                 if (type === 'user') setUsers(prev => prev.filter(u => u.id !== id));
                 if (type === 'quote') setQuotes(prev => prev.filter(q => q.id !== id));
                 if (type === 'review') setReviews(prev => prev.filter(r => r.id !== id));
@@ -262,9 +262,9 @@ function AdminDashboardContent() {
                 setSelectedUser(null); setSelectedQuote(null); setSelectedReview(null); setSelectedDispute(null);
             } else {
                 const data = await res.json().catch(() => ({}));
-                sonnerToast.error(data.message || "Delete failed");
+                setTimeout(() => sonnerToast.error(data.message || "Delete failed"), 100);
             }
-        } catch { sonnerToast.error("Delete failed"); }
+        } catch { setTimeout(() => sonnerToast.error("Delete failed"), 100); }
         finally { setActionLoading(null); }
     };
 
@@ -282,14 +282,14 @@ function AdminDashboardContent() {
             if (res.ok) {
                 const updated = await res.json();
                 setDisputes(prev => prev.map(d => d.id === disputeId ? updated : d));
-                sonnerToast.success("Dispute resolved");
+                setTimeout(() => sonnerToast.success("Dispute resolved"), 100);
                 setQuickResolveDispute(null);
                 setQuickResolveNotes("");
-                fetchAllData(); // Refresh to sync quote status
+                fetchAllData();
             } else {
-                sonnerToast.error("Failed to resolve dispute");
+                setTimeout(() => sonnerToast.error("Failed to resolve dispute"), 100);
             }
-        } catch { sonnerToast.error("Failed to resolve dispute"); }
+        } catch { setTimeout(() => sonnerToast.error("Failed to resolve dispute"), 100); }
         finally { setActionLoading(null); }
     };
 
@@ -307,11 +307,11 @@ function AdminDashboardContent() {
             if (res.ok) {
                 const data = await res.json();
                 setWithdrawals(prev => prev.map(w => w.id === id ? data.withdrawal : w));
-                sonnerToast.success(`Withdrawal ${action}d`);
+                setTimeout(() => sonnerToast.success(`Withdrawal ${action}d`), 100);
             } else {
-                sonnerToast.error(`Failed to ${action} withdrawal`);
+                setTimeout(() => sonnerToast.error(`Failed to ${action} withdrawal`), 100);
             }
-        } catch { sonnerToast.error(`Failed to ${action} withdrawal`); }
+        } catch { setTimeout(() => sonnerToast.error(`Failed to ${action} withdrawal`), 100); }
         finally { setActionLoading(null); }
     };
 
@@ -469,24 +469,21 @@ function AdminDashboardContent() {
 
 
     return (
-        <div className="min-h-screen bg-black text-white pb-20">
-            <div className="w-full max-w-4xl mx-auto lg:px-4">
-                {/* Header */}
-                <div className="px-4 pt-4 pb-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <p className="text-gray-400 text-sm">Admin Dashboard</p>
-                            <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Admin'}</h1>
-                        </div>
-                        <div className="flex items-center gap-2">
+        <div className="min-h-screen bg-black text-white pb-16">
+            <div className="w-full max-w-4xl mx-auto">
+                {/* Header - Compact */}
+                <div className="px-4 pt-3 pb-2">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-lg font-semibold text-white">{user?.name || 'Admin'}</h1>
+                        <div className="flex items-center gap-1">
                             <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={dataLoading}
-                                className="text-gray-400 hover:text-white hover:bg-gray-800">
-                                <RefreshCw className={`h-5 w-5 ${dataLoading ? 'animate-spin' : ''}`} />
+                                className="text-gray-400 hover:text-white hover:bg-gray-800/50 h-8 w-8">
+                                <RefreshCw className={`h-4 w-4 ${dataLoading ? 'animate-spin' : ''}`} />
                             </Button>
-                            <Avatar className="h-10 w-10 cursor-pointer" onClick={handleLogout}>
-                                {user?.image && <AvatarImage src={user.image} />}
-                                <AvatarFallback className="bg-[#C40F5A] text-white">{getInitials(user?.name)}</AvatarFallback>
-                            </Avatar>
+                            <Button variant="ghost" size="icon" onClick={handleLogout}
+                                className="text-gray-400 hover:text-red-400 hover:bg-gray-800/50 h-8 w-8">
+                                <LogOut className="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -504,15 +501,14 @@ function AdminDashboardContent() {
                 </AnimatePresence>
             </div>
 
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30">
-                <div className="flex justify-around items-center h-full max-w-4xl mx-auto overflow-x-auto">
+            {/* Bottom Navigation - Compact */}
+            <nav className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-t border-gray-800/50 h-14 z-30">
+                <div className="flex justify-between items-center h-full max-w-4xl mx-auto px-2">
                     {navItems.map(item => (
                         <Link key={item.view} href={`/admin?view=${item.view}`}
-                            className={`flex flex-col items-center gap-1 px-2 min-w-[60px] transition-colors relative ${view === item.view ? 'text-[#EE2377]' : 'text-gray-500'}`}>
-                            <item.icon className="h-5 w-5" strokeWidth={view === item.view ? 2.5 : 1.5} />
-                            <span className="text-[10px] font-medium">{item.name}</span>
-                            {view === item.view && <span className="absolute -bottom-1 w-6 h-1 bg-[#EE2377] rounded-full"></span>}
+                            className={`flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 min-w-[48px] rounded-lg transition-all ${view === item.view ? 'text-[#EE2377] bg-[#EE2377]/10' : 'text-gray-500 hover:text-gray-300'}`}>
+                            <item.icon className="h-4 w-4" strokeWidth={view === item.view ? 2.5 : 1.5} />
+                            <span className="text-[9px] font-medium leading-tight">{item.name}</span>
                         </Link>
                     ))}
                 </div>
@@ -920,10 +916,14 @@ function AdminDashboardContent() {
                         </div>
                         {selectedUser.bio && <div><p className="text-gray-500 text-sm">Bio</p><p className="text-sm">{selectedUser.bio}</p></div>}
                     </div>
-                    <DialogFooter className="mt-4">
+                    <DialogFooter className="mt-4 flex gap-2">
+                        <DialogClose asChild>
+                            <Button variant="outline" size="sm" className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white">Close</Button>
+                        </DialogClose>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm" disabled={actionLoading === `delete-user-${selectedUser.id}` || selectedUser.id === user?.id}>
+                                <Button size="sm" disabled={actionLoading === `delete-user-${selectedUser.id}` || selectedUser.id === user?.id}
+                                    className="bg-red-600 hover:bg-red-700 text-white border-0">
                                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                                 </Button>
                             </AlertDialogTrigger>
@@ -935,14 +935,11 @@ function AdminDashboardContent() {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete('user', selectedUser.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete('user', selectedUser.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                        <DialogClose asChild>
-                            <Button variant="outline" className="border-gray-700 text-white hover:bg-gray-800">Close</Button>
-                        </DialogClose>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -984,10 +981,14 @@ function AdminDashboardContent() {
                             </div>
                         )}
                     </div>
-                    <DialogFooter className="mt-4">
+                    <DialogFooter className="mt-4 flex gap-2">
+                        <DialogClose asChild>
+                            <Button variant="outline" size="sm" className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white">Close</Button>
+                        </DialogClose>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm" disabled={actionLoading === `delete-quote-${selectedQuote.id}`}>
+                                <Button size="sm" disabled={actionLoading === `delete-quote-${selectedQuote.id}`}
+                                    className="bg-red-600 hover:bg-red-700 text-white border-0">
                                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                                 </Button>
                             </AlertDialogTrigger>
@@ -997,14 +998,11 @@ function AdminDashboardContent() {
                                     <AlertDialogDescription className="text-gray-400">This will permanently delete this quote and related data.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete('quote', selectedQuote.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete('quote', selectedQuote.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                        <DialogClose asChild>
-                            <Button variant="outline" className="border-gray-700 text-white hover:bg-gray-800">Close</Button>
-                        </DialogClose>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -1047,10 +1045,14 @@ function AdminDashboardContent() {
                         )}
                         <p className="text-xs text-gray-500">Created: {formatDate(selectedReview.createdAt, 'PPp')}</p>
                     </div>
-                    <DialogFooter className="mt-4">
+                    <DialogFooter className="mt-4 flex gap-2">
+                        <DialogClose asChild>
+                            <Button variant="outline" size="sm" className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white">Close</Button>
+                        </DialogClose>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm" disabled={actionLoading === `delete-review-${selectedReview.id}`}>
+                                <Button size="sm" disabled={actionLoading === `delete-review-${selectedReview.id}`}
+                                    className="bg-red-600 hover:bg-red-700 text-white border-0">
                                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                                 </Button>
                             </AlertDialogTrigger>
@@ -1060,14 +1062,11 @@ function AdminDashboardContent() {
                                     <AlertDialogDescription className="text-gray-400">This will permanently delete this review.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete('review', selectedReview.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete('review', selectedReview.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                        <DialogClose asChild>
-                            <Button variant="outline" className="border-gray-700 text-white hover:bg-gray-800">Close</Button>
-                        </DialogClose>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -1114,16 +1113,20 @@ function AdminDashboardContent() {
                         )}
                         <p className="text-xs text-gray-500">Created: {formatDate(selectedDispute.createdAt, 'PPp')}</p>
                     </div>
-                    <DialogFooter className="mt-4">
+                    <DialogFooter className="mt-4 flex gap-2">
+                        <DialogClose asChild>
+                            <Button variant="outline" size="sm" className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white">Close</Button>
+                        </DialogClose>
                         {(selectedDispute.status === 'Open' || selectedDispute.status === 'Under Review') && (
-                            <Button size="sm" variant="outline" onClick={() => { setQuickResolveDispute(selectedDispute); setQuickResolveNotes(selectedDispute.resolution || ''); setSelectedDispute(null); }}
-                                className="border-green-600 text-green-400 hover:bg-green-900/30">
+                            <Button size="sm" onClick={() => { setQuickResolveDispute(selectedDispute); setQuickResolveNotes(selectedDispute.resolution || ''); setSelectedDispute(null); }}
+                                className="bg-green-600 hover:bg-green-700 text-white border-0">
                                 <Sparkles className="h-4 w-4 mr-1" /> Resolve
                             </Button>
                         )}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm" disabled={actionLoading === `delete-dispute-${selectedDispute.id}`}>
+                                <Button size="sm" disabled={actionLoading === `delete-dispute-${selectedDispute.id}`}
+                                    className="bg-red-600 hover:bg-red-700 text-white border-0">
                                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                                 </Button>
                             </AlertDialogTrigger>
@@ -1133,14 +1136,11 @@ function AdminDashboardContent() {
                                     <AlertDialogDescription className="text-gray-400">This will permanently delete this dispute.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete('dispute', selectedDispute.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                                    <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete('dispute', selectedDispute.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                        <DialogClose asChild>
-                            <Button variant="outline" className="border-gray-700 text-white hover:bg-gray-800">Close</Button>
-                        </DialogClose>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -1167,12 +1167,12 @@ function AdminDashboardContent() {
                                 className="bg-gray-900 border-gray-800 text-white mt-1 min-h-[100px]" />
                         </div>
                     </div>
-                    <DialogFooter className="mt-4">
-                        <Button variant="outline" onClick={() => { setQuickResolveDispute(null); setQuickResolveNotes(''); }}
-                            className="border-gray-700 text-white hover:bg-gray-800">Cancel</Button>
-                        <Button onClick={() => handleResolveDispute(quickResolveDispute.id, quickResolveNotes)}
+                    <DialogFooter className="mt-4 flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => { setQuickResolveDispute(null); setQuickResolveNotes(''); }}
+                            className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white">Cancel</Button>
+                        <Button size="sm" onClick={() => handleResolveDispute(quickResolveDispute.id, quickResolveNotes)}
                             disabled={actionLoading === `resolve-${quickResolveDispute.id}`}
-                            className="bg-green-600 hover:bg-green-700 text-white">
+                            className="bg-green-600 hover:bg-green-700 text-white border-0">
                             {actionLoading === `resolve-${quickResolveDispute.id}` ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <CheckSquare className="h-4 w-4 mr-1" />}
                             Resolve
                         </Button>

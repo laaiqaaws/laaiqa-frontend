@@ -5,11 +5,10 @@ import { useRouter, useSearchParams as nextUseSearchParams } from 'next/navigati
 import Link from 'next/link';
 import { API_BASE_URL } from '@/types/user';
 import {
-  Search, Home, Calendar, User, ChevronRight, LogOut, FileText, Heart, Share2, BarChart3
+  Search, Home, Calendar, User, ChevronRight, LogOut, Heart, Share2, BarChart3
 } from "lucide-react";
 import BookingsView from "@/components/bookings/BookingsView";
 import { BellIcon } from "@/components/icons/bell-filled";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast as sonnerToast } from "sonner";
 import { format, parseISO, isValid, differenceInDays, startOfDay } from "date-fns";
@@ -45,42 +44,6 @@ function CalendarEmptyIcon() {
         <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
       </div>
       <span className="text-3xl font-bold text-white">31</span>
-    </div>
-  );
-}
-
-function CalendarView({ quotes }: { quotes: Quote[] }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
-  const bookingsByDate = quotes.reduce((acc, quote) => {
-    const dateKey = format(parseISO(quote.serviceDate), 'yyyy-MM-dd');
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(quote);
-    return acc;
-  }, {} as Record<string, Quote[]>);
-  const days = [];
-  for (let i = 0; i < firstDayOfMonth; i++) days.push(<div key={`empty-${i}`} className="h-10"></div>);
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = format(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day), 'yyyy-MM-dd');
-    const hasBooking = bookingsByDate[dateKey]?.length > 0;
-    const isToday = format(new Date(), 'yyyy-MM-dd') === dateKey;
-    days.push(
-      <div key={day} className={`h-10 flex items-center justify-center rounded-lg text-sm relative ${isToday ? 'bg-[#C40F5A] text-white font-bold' : 'text-gray-300'} ${hasBooking && !isToday ? 'bg-[#C40F5A]/20' : ''}`}>
-        {day}
-        {hasBooking && <span className="absolute bottom-1 w-1 h-1 bg-[#C40F5A] rounded-full"></span>}
-      </div>
-    );
-  }
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className="text-gray-400 hover:text-white p-2">←</button>
-        <h3 className="text-white font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
-        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className="text-gray-400 hover:text-white p-2">→</button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="h-8 flex items-center justify-center text-xs text-gray-500">{d}</div>)}</div>
-      <div className="grid grid-cols-7 gap-1">{days}</div>
     </div>
   );
 }
@@ -149,7 +112,7 @@ function CustomerDashboardContent() {
       sessionStorage.removeItem(QUOTES_CACHE_KEY);
       sessionStorage.removeItem(QUOTES_CACHE_EXPIRY_KEY);
       window.location.href = '/login';
-    } else { sonnerToast.error("Logout failed"); }
+    } else { setTimeout(() => sonnerToast.error("Logout failed"), 100); }
   };
 
   const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; };
@@ -176,7 +139,7 @@ function CustomerDashboardContent() {
   // Group quotes by status for proper display - apply search filter
   const activeQuotes = filterBySearch(quotes.filter(q => ['Accepted', 'Booked'].includes(q.status))).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
   const upcomingQuotes = activeQuotes.slice(0, 5);
-  const recentQuotes = filterBySearch(quotes).slice(0, 5);
+
 
   if (authLoading || quotesLoading) return <div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>;
 
@@ -275,7 +238,7 @@ function CustomerDashboardContent() {
                 </div>
               )}
             </div>
-            <div className="px-4"><h2 className="text-xl font-semibold mb-3">Recent Activity</h2><div className="space-y-3">{recentQuotes.map(q => <Link key={q.id} href={`/quote/${q.id}`} className="flex items-center gap-3 bg-[#1a1a1a] rounded-xl p-3 transition-colors hover:bg-[#222]"><div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center"><FileText className="h-5 w-5 text-[#C40F5A]" /></div><div className="flex-1 min-w-0"><p className="font-medium truncate">{q.productType}</p><p className="text-gray-400 text-sm">{q.artistName} • ₹{q.price}</p></div><ChevronRight className="h-5 w-5 text-gray-500" /></Link>)}{recentQuotes.length === 0 && <p className="text-gray-500 text-center py-4">{searchQuery ? 'No matching bookings' : 'No bookings yet'}</p>}</div></div>
+
           </motion.div>
         )}
         {view === 'bookings' && (
