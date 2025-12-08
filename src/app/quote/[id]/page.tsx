@@ -61,6 +61,7 @@ interface QuotePageData {
   artistName?: string | null;
   customerId?: string | null;
   customerName?: string | null;
+  // Customer profile attributes (from User relation)
   customerSex?: string | null;
   customerAge?: number | null;
   customerColor?: string | null;
@@ -68,8 +69,32 @@ interface QuotePageData {
   customerHeight?: number | null;
   customerWeight?: number | null;
   customerOther?: string | null;
+  // Quote-specific client info (manually entered by artist)
+  clientFirstName?: string | null;
+  clientLastName?: string | null;
+  clientGender?: string | null;
+  clientDob?: string | null;
+  clientPhone?: string | null;
+  clientEmail?: string | null;
+  // Location & Venue
+  venueType?: string | null;
+  venueAddress?: string | null;
+  venueAddress2?: string | null;
+  venueCity?: string | null;
+  venueState?: string | null;
+  venuePincode?: string | null;
+  // Services
+  makeupType?: string | null;
+  numberOfLooks?: number | null;
+  packageType?: string | null;
+  extraAddons?: boolean | null;
+  serviceNotes?: string | null;
+  // Payment
+  paymentType?: string | null;
+  advanceAmount?: string | null;
+  // Core fields
   productType: string;
-  details: string;
+  details?: string | null;
   price: string;
   serviceDate: string;
   serviceTime: string;
@@ -722,36 +747,99 @@ export default function IndividualQuotePage() {
 
            <Separator className="bg-[#2A2428]" />
 
-          <div className="space-y-3 text-sm">
-             <div>
-                 <strong className="text-[#E5E5E5] block mb-0.5">Details:</strong>
-                 <p className="text-[#A0A0A0] whitespace-pre-wrap">{quote.details}</p>
-             </div>
-             {canViewCustomerDetails && (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-[#A0A0A0]">
-
-                     {quote.customerAge !== null && quote.customerAge !== undefined && <div><strong>Age:</strong> {quote.customerAge}</div>}
-                     {quote.customerColor && <div><strong>Color:</strong> {quote.customerColor}</div>}
-                     {quote.customerEthnicity && <div><strong>Ethnicity:</strong> {quote.customerEthnicity}</div>}
-                     {quote.customerHeight !== null && quote.customerHeight !== undefined && <div><strong>Height:</strong> {quote.customerHeight}</div>}
-                     {quote.customerWeight !== null && quote.customerWeight !== undefined && <div><strong>Weight:</strong> {quote.customerWeight}</div>}
-                      {quote.customerOther && <div><strong>Other:</strong> {quote.customerOther}</div>}
+          <div className="space-y-4 text-sm">
+             {/* Client Info Section - from quote (manually entered by artist) */}
+             {canViewCustomerDetails && (quote.clientFirstName || quote.clientLastName || quote.clientPhone || quote.clientEmail || quote.clientGender) && (
+               <div className="bg-[#2a2a2a] rounded-lg p-3">
+                 <strong className="text-[#C40F5A] block mb-2">Client Info</strong>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[#A0A0A0]">
+                   {(quote.clientFirstName || quote.clientLastName) && (
+                     <div><strong className="text-gray-400">Name:</strong> <span className="text-white">{[quote.clientFirstName, quote.clientLastName].filter(Boolean).join(' ')}</span></div>
+                   )}
+                   {quote.clientGender && <div><strong className="text-gray-400">Gender:</strong> <span className="text-white">{quote.clientGender}</span></div>}
+                   {quote.clientDob && <div><strong className="text-gray-400">DOB:</strong> <span className="text-white">{formatDateSafely(quote.clientDob, 'dd MMM yyyy')}</span></div>}
+                   {quote.clientPhone && <div><strong className="text-gray-400">Phone:</strong> <span className="text-white">{quote.clientPhone}</span></div>}
+                   {quote.clientEmail && <div className="col-span-1 sm:col-span-2"><strong className="text-gray-400">Email:</strong> <span className="text-white">{quote.clientEmail}</span></div>}
                  </div>
+               </div>
              )}
 
+             {/* Customer Profile Attributes - from User (synced when customer accepts) */}
+             {canViewCustomerDetails && quote.customerId && (quote.customerAge || quote.customerHeight || quote.customerWeight || quote.customerEthnicity || quote.customerColor) && (
+               <div className="bg-[#2a2a2a] rounded-lg p-3">
+                 <strong className="text-[#C40F5A] block mb-2">Customer Profile</strong>
+                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[#A0A0A0]">
+                   {quote.customerAge !== null && quote.customerAge !== undefined && <div><strong className="text-gray-400">Age:</strong> <span className="text-white">{quote.customerAge}</span></div>}
+                   {quote.customerHeight !== null && quote.customerHeight !== undefined && <div><strong className="text-gray-400">Height:</strong> <span className="text-white">{quote.customerHeight} cm</span></div>}
+                   {quote.customerWeight !== null && quote.customerWeight !== undefined && <div><strong className="text-gray-400">Weight:</strong> <span className="text-white">{quote.customerWeight} kg</span></div>}
+                   {quote.customerColor && <div><strong className="text-gray-400">Skin Tone:</strong> <span className="text-white">{quote.customerColor}</span></div>}
+                   {quote.customerEthnicity && <div><strong className="text-gray-400">Ethnicity:</strong> <span className="text-white">{quote.customerEthnicity}</span></div>}
+                   {quote.customerOther && <div className="col-span-2 sm:col-span-3"><strong className="text-gray-400">Other:</strong> <span className="text-white">{quote.customerOther}</span></div>}
+                 </div>
+               </div>
+             )}
+
+             {/* Location & Venue */}
+             {(quote.venueType || quote.venueAddress || quote.venueCity) && (
+               <div className="bg-[#2a2a2a] rounded-lg p-3">
+                 <strong className="text-[#C40F5A] block mb-2">Location & Venue</strong>
+                 <div className="space-y-1 text-[#A0A0A0]">
+                   {quote.venueType && <div><strong className="text-gray-400">Venue:</strong> <span className="text-white">{quote.venueType}</span></div>}
+                   {quote.venueAddress && <div><strong className="text-gray-400">Address:</strong> <span className="text-white">{quote.venueAddress}{quote.venueAddress2 ? `, ${quote.venueAddress2}` : ''}</span></div>}
+                   {(quote.venueCity || quote.venueState || quote.venuePincode) && (
+                     <div><strong className="text-gray-400">Location:</strong> <span className="text-white">{[quote.venueCity, quote.venueState, quote.venuePincode].filter(Boolean).join(', ')}</span></div>
+                   )}
+                 </div>
+               </div>
+             )}
+
+             {/* Services */}
+             {(quote.makeupType || quote.packageType || quote.numberOfLooks || quote.serviceNotes) && (
+               <div className="bg-[#2a2a2a] rounded-lg p-3">
+                 <strong className="text-[#C40F5A] block mb-2">Services</strong>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[#A0A0A0]">
+                   {quote.makeupType && <div><strong className="text-gray-400">Makeup:</strong> <span className="text-white">{quote.makeupType}</span></div>}
+                   {quote.packageType && <div><strong className="text-gray-400">Package:</strong> <span className="text-white">{quote.packageType}</span></div>}
+                   {quote.numberOfLooks && <div><strong className="text-gray-400">Looks:</strong> <span className="text-white">{quote.numberOfLooks}</span></div>}
+                   {quote.extraAddons && <div><strong className="text-gray-400">Add-ons:</strong> <span className="text-white">Yes</span></div>}
+                   {quote.serviceNotes && <div className="col-span-1 sm:col-span-2"><strong className="text-gray-400">Notes:</strong> <span className="text-white">{quote.serviceNotes}</span></div>}
+                 </div>
+               </div>
+             )}
+
+             {/* Legacy details field */}
+             {quote.details && (
+               <div>
+                 <strong className="text-[#E5E5E5] block mb-0.5">Details:</strong>
+                 <p className="text-[#A0A0A0] whitespace-pre-wrap">{quote.details}</p>
+               </div>
+             )}
+
+             {/* Schedule & Payment */}
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1">
-                <div className="flex items-center gap-1.5">
-                    <IndianRupee className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
-                    <strong className="text-[#E5E5E5]">Price:</strong> <span className="text-white">₹{quote.price}</span>
-                </div>
                 <div className="flex items-center gap-1.5">
                     <CalendarDays className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
                     <strong className="text-[#E5E5E5]">Date:</strong> <span className="text-white">{formatDateSafely(quote.serviceDate)}</span>
                 </div>
-                <div className="flex items-center gap-1.5 col-span-1 sm:col-span-2">
+                <div className="flex items-center gap-1.5">
                     <Clock4 className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
                     <strong className="text-[#E5E5E5]">Time:</strong> <span className="text-white">{quote.serviceTime || 'N/A'}</span>
                 </div>
+                <div className="flex items-center gap-1.5">
+                    <IndianRupee className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                    <strong className="text-[#E5E5E5]">Total:</strong> <span className="text-white font-semibold">₹{quote.price}</span>
+                </div>
+                {quote.advanceAmount && (
+                  <div className="flex items-center gap-1.5">
+                    <IndianRupee className="h-4 w-4 text-[#A0A0A0] flex-shrink-0" />
+                    <strong className="text-[#E5E5E5]">Advance:</strong> <span className="text-white">₹{quote.advanceAmount}</span>
+                  </div>
+                )}
+                {quote.paymentType && (
+                  <div className="flex items-center gap-1.5 col-span-1 sm:col-span-2">
+                    <strong className="text-[#E5E5E5]">Payment Type:</strong> <span className="text-white">{quote.paymentType}</span>
+                  </div>
+                )}
              </div>
           </div>
 

@@ -268,7 +268,14 @@ export default function CreateQuotePage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-[#2a2a2a] border-white">
-                    <Calendar mode="single" selected={clientDob} onSelect={setClientDob} />
+                    <Calendar 
+                      mode="single" 
+                      selected={clientDob} 
+                      onSelect={setClientDob}
+                      fromYear={1940}
+                      toYear={new Date().getFullYear()}
+                      defaultMonth={clientDob || new Date(2000, 0)}
+                    />
                   </PopoverContent>
                 </Popover>
               </div>

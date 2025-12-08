@@ -176,23 +176,54 @@ function CustomerDashboardContent() {
           <div><p className="text-gray-400 text-sm">{getGreeting()},</p><h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1></div>
           {view === 'home' && (
             <button className="relative p-2" onClick={() => {
-                const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
-                const bookedCount = quotes.filter(q => q.status === 'Booked').length;
-                const completedCount = quotes.filter(q => q.status === 'Completed').length;
-                const total = acceptedCount + bookedCount;
+                const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
+                const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
+                const completedQuotesList = quotes.filter(q => q.status === 'Completed');
+                const total = acceptedQuotesList.length + bookedQuotesList.length;
                 
                 if (total === 0) {
-                  sonnerToast('No new notifications', { description: 'You\'re all caught up!', duration: 3000 });
+                  sonnerToast('No new notifications', { description: 'You\'re all caught up! No active bookings.', duration: 3000 });
                 } else {
-                  sonnerToast('Activity Summary', {
+                  sonnerToast('📋 Your Booking Summary', {
                     description: (
-                      <div className="space-y-1 mt-1">
-                        {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
-                        {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} upcoming</div>}
-                        {completedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-gray-400 rounded-full"></span>{completedCount} completed</div>}
+                      <div className="space-y-3 mt-2">
+                        {acceptedQuotesList.length > 0 && (
+                          <div className="bg-blue-500/10 rounded-lg p-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                              <span className="font-semibold text-blue-400">{acceptedQuotesList.length} Awaiting Payment</span>
+                            </div>
+                            {acceptedQuotesList.slice(0, 2).map(q => (
+                              <p key={q.id} className="text-xs text-gray-300 ml-4">
+                                • {q.productType} with {q.artistName || 'Artist'} - ₹{q.price}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {bookedQuotesList.length > 0 && (
+                          <div className="bg-green-500/10 rounded-lg p-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                              <span className="font-semibold text-green-400">{bookedQuotesList.length} Upcoming Booking{bookedQuotesList.length > 1 ? 's' : ''}</span>
+                            </div>
+                            {bookedQuotesList.slice(0, 2).map(q => (
+                              <p key={q.id} className="text-xs text-gray-300 ml-4">
+                                • {q.productType} - {q.serviceDate ? format(parseISO(q.serviceDate), 'dd MMM') : 'No date'}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {completedQuotesList.length > 0 && (
+                          <div className="bg-gray-500/10 rounded-lg p-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                              <span className="text-gray-400">{completedQuotesList.length} completed booking{completedQuotesList.length > 1 ? 's' : ''}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ),
-                    duration: 5000,
+                    duration: 8000,
                   });
                 }
               }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
@@ -271,7 +302,30 @@ function CustomerDashboardContent() {
           </motion.div>
         )}
       </AnimatePresence>
-      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30"><div className="flex justify-around items-center h-full"><Link href="/customer?view=home" className={`flex flex-col items-center gap-1 transition-colors ${view === 'home' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Home className="h-5 w-5" /><span className="text-xs">Home</span></Link><Link href="/customer?view=bookings" className={`flex flex-col items-center gap-1 transition-colors ${view === 'bookings' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Calendar className="h-5 w-5" /><span className="text-xs">Bookings</span></Link><Link href="/customer?view=analytics" className={`flex flex-col items-center gap-1 transition-colors ${view === 'analytics' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><BarChart3 className="h-5 w-5" /><span className="text-xs">Analytics</span></Link><Link href="/customer?view=profile" className={`flex flex-col items-center gap-1 transition-colors ${view === 'profile' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><User className="h-5 w-5" /><span className="text-xs">Profile</span></Link></div></nav>
+      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30">
+        <div className="flex justify-around items-center h-full">
+          <Link href="/customer?view=home" className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'home' ? 'text-[#EE2377]' : 'text-gray-500'}`}>
+            <Home className="h-6 w-6" strokeWidth={view === 'home' ? 2.5 : 1.5} />
+            <span className="text-xs font-medium">Home</span>
+            {view === 'home' && <span className="absolute -bottom-1 w-8 h-1 bg-[#EE2377] rounded-full"></span>}
+          </Link>
+          <Link href="/customer?view=bookings" className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'bookings' ? 'text-[#EE2377]' : 'text-gray-500'}`}>
+            <Calendar className="h-6 w-6" strokeWidth={view === 'bookings' ? 2.5 : 1.5} />
+            <span className="text-xs font-medium">Bookings</span>
+            {view === 'bookings' && <span className="absolute -bottom-1 w-8 h-1 bg-[#EE2377] rounded-full"></span>}
+          </Link>
+          <Link href="/customer?view=analytics" className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'analytics' ? 'text-[#EE2377]' : 'text-gray-500'}`}>
+            <BarChart3 className="h-6 w-6" strokeWidth={view === 'analytics' ? 2.5 : 1.5} />
+            <span className="text-xs font-medium">Analytics</span>
+            {view === 'analytics' && <span className="absolute -bottom-1 w-8 h-1 bg-[#EE2377] rounded-full"></span>}
+          </Link>
+          <Link href="/customer?view=profile" className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'profile' ? 'text-[#EE2377]' : 'text-gray-500'}`}>
+            <User className="h-6 w-6" strokeWidth={view === 'profile' ? 2.5 : 1.5} />
+            <span className="text-xs font-medium">Profile</span>
+            {view === 'profile' && <span className="absolute -bottom-1 w-8 h-1 bg-[#EE2377] rounded-full"></span>}
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }

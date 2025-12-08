@@ -10,15 +10,26 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Quote {
   id: string;
   productType: string;
-  details: string;
-  price: string;
-  serviceDate: string;
+  details?: string | null;
+  price: string | null;
+  serviceDate: string | null;
   serviceTime: string;
   status: string;
   customerId?: string | null;
   customerName?: string | null;
   artistName?: string | null;
   createdAt: string;
+  // New individual fields
+  clientFirstName?: string | null;
+  clientLastName?: string | null;
+  clientPhone?: string | null;
+  venueType?: string | null;
+  venueAddress?: string | null;
+  venueCity?: string | null;
+  venueState?: string | null;
+  makeupType?: string | null;
+  numberOfLooks?: number | null;
+  serviceNotes?: string | null;
 }
 
 interface BookingsViewProps {
@@ -36,7 +47,8 @@ const PASTEL_COLORS = [
   'bg-[#FFDAC1]', // Coral
 ];
 
-function getDaysUntil(dateStr: string): { text: string; isPast: boolean } {
+function getDaysUntil(dateStr: string | null | undefined): { text: string; isPast: boolean } {
+  if (!dateStr) return { text: 'No date', isPast: false };
   const date = parseISO(dateStr);
   if (!isValid(date)) return { text: '', isPast: false };
   const days = differenceInDays(startOfDay(date), startOfDay(new Date()));
@@ -68,8 +80,9 @@ function getStatusTag(status: string): { text: string; bgColor: string; textColo
   }
 }
 
-function parseDetails(details: string): Record<string, string> {
+function parseDetails(details: string | null | undefined): Record<string, string> {
   const result: Record<string, string> = {};
+  if (!details) return result;
   const parts = details.split(' | ');
   parts.forEach(part => {
     const [key, ...valueParts] = part.split(': ');
@@ -80,7 +93,8 @@ function parseDetails(details: string): Record<string, string> {
   return result;
 }
 
-function formatServiceDate(dateStr: string): string {
+function formatServiceDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return 'No date';
   try {
     const date = parseISO(dateStr);
     return format(date, 'dd/MM/yyyy');
@@ -191,18 +205,22 @@ function BookingCard({ quote, index, isExpanded, onToggle, userRole }: {
               </div>
 
               {/* Basic Booking Info */}
-              {(parsedDetails['Client'] || quote.customerName) && (
+              {(quote.clientFirstName || quote.clientLastName || parsedDetails['Client'] || quote.customerName) && (
                 <div>
                   <h4 className="text-white font-semibold mb-2">Basic Booking Info</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex">
                       <span className="text-gray-500 w-32">Client Name</span>
-                      <span className="text-gray-300">: {parsedDetails['Client'] || quote.customerName || 'N/A'}</span>
+                      <span className="text-gray-300">: {
+                        quote.clientFirstName || quote.clientLastName 
+                          ? `${quote.clientFirstName || ''} ${quote.clientLastName || ''}`.trim()
+                          : parsedDetails['Client'] || quote.customerName || 'N/A'
+                      }</span>
                     </div>
-                    {parsedDetails['Phone'] && (
+                    {(quote.clientPhone || parsedDetails['Phone']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Contact Number</span>
-                        <span className="text-gray-300">: {parsedDetails['Phone']}</span>
+                        <span className="text-gray-300">: {quote.clientPhone || parsedDetails['Phone']}</span>
                       </div>
                     )}
                   </div>
@@ -219,30 +237,36 @@ function BookingCard({ quote, index, isExpanded, onToggle, userRole }: {
                   </div>
                   <div className="flex">
                     <span className="text-gray-500 w-32">Date</span>
-                    <span className="text-gray-300">: {format(parseISO(quote.serviceDate), 'dd MMM yyyy')}</span>
+                    <span className="text-gray-300">: {quote.serviceDate ? format(parseISO(quote.serviceDate), 'dd MMM yyyy') : 'No date'}</span>
                   </div>
                   <div className="flex">
                     <span className="text-gray-500 w-32">Time to be Ready</span>
-                    <span className="text-gray-300">: {quote.serviceTime}</span>
+                    <span className="text-gray-300">: {quote.serviceTime || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Location & Venue */}
-              {(parsedDetails['Venue'] || parsedDetails['Address']) && (
+              {(quote.venueType || quote.venueAddress || parsedDetails['Venue'] || parsedDetails['Address']) && (
                 <div>
                   <h4 className="text-white font-semibold mb-2">Location & Venue</h4>
                   <div className="space-y-1 text-sm">
-                    {parsedDetails['Venue'] && (
+                    {(quote.venueType || parsedDetails['Venue']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Venue Type</span>
-                        <span className="text-gray-300">: {parsedDetails['Venue']}</span>
+                        <span className="text-gray-300">: {quote.venueType || parsedDetails['Venue']}</span>
                       </div>
                     )}
-                    {parsedDetails['Address'] && (
+                    {(quote.venueAddress || parsedDetails['Address']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Venue Address</span>
-                        <span className="text-gray-300">: {parsedDetails['Address']}</span>
+                        <span className="text-gray-300">: {quote.venueAddress || parsedDetails['Address']}</span>
+                      </div>
+                    )}
+                    {(quote.venueCity || quote.venueState) && (
+                      <div className="flex">
+                        <span className="text-gray-500 w-32">City/State</span>
+                        <span className="text-gray-300">: {[quote.venueCity, quote.venueState].filter(Boolean).join(', ')}</span>
                       </div>
                     )}
                   </div>
@@ -250,26 +274,26 @@ function BookingCard({ quote, index, isExpanded, onToggle, userRole }: {
               )}
 
               {/* Services Requested */}
-              {(parsedDetails['Makeup'] || parsedDetails['Looks'] || parsedDetails['Notes']) && (
+              {(quote.makeupType || quote.numberOfLooks || quote.serviceNotes || parsedDetails['Makeup'] || parsedDetails['Looks'] || parsedDetails['Notes']) && (
                 <div>
                   <h4 className="text-white font-semibold mb-2">Services Requested</h4>
                   <div className="space-y-1 text-sm">
-                    {parsedDetails['Makeup'] && (
+                    {(quote.makeupType || parsedDetails['Makeup']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Makeup Type</span>
-                        <span className="text-gray-300">: {parsedDetails['Makeup']}</span>
+                        <span className="text-gray-300">: {quote.makeupType || parsedDetails['Makeup']}</span>
                       </div>
                     )}
-                    {parsedDetails['Looks'] && (
+                    {(quote.numberOfLooks || parsedDetails['Looks']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Number of Looks</span>
-                        <span className="text-gray-300">: {parsedDetails['Looks']}</span>
+                        <span className="text-gray-300">: {quote.numberOfLooks || parsedDetails['Looks']}</span>
                       </div>
                     )}
-                    {parsedDetails['Notes'] && (
+                    {(quote.serviceNotes || parsedDetails['Notes']) && (
                       <div className="flex">
                         <span className="text-gray-500 w-32">Notes</span>
-                        <span className="text-gray-300">: {parsedDetails['Notes']}</span>
+                        <span className="text-gray-300">: {quote.serviceNotes || parsedDetails['Notes']}</span>
                       </div>
                     )}
                   </div>
@@ -281,7 +305,7 @@ function BookingCard({ quote, index, isExpanded, onToggle, userRole }: {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-gray-500 text-sm">Total Amount</span>
-                    <p className="text-white font-bold text-lg">₹{quote.price}</p>
+                    <p className="text-white font-bold text-lg">₹{quote.price || '0'}</p>
                   </div>
                 </div>
                 
@@ -322,6 +346,7 @@ function CalendarViewNew({ quotes, currentMonth, onMonthChange }: {
 
   const bookingsByDate = quotes.reduce((acc, quote) => {
     try {
+      if (!quote.serviceDate) return acc;
       const dateKey = format(parseISO(quote.serviceDate), 'yyyy-MM-dd');
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(quote);
@@ -390,7 +415,9 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
 
   const filteredQuotes = quotes.filter(q => {
     if (filterMonth === 'all') return true;
+    if (!q.serviceDate) return false;
     const quoteDate = parseISO(q.serviceDate);
+    if (!isValid(quoteDate)) return false;
     const now = new Date();
     if (filterMonth === 'this-month') {
       return quoteDate.getMonth() === now.getMonth() && quoteDate.getFullYear() === now.getFullYear();
@@ -402,7 +429,9 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
     const statusOrder: Record<string, number> = { 'Booked': 0, 'Accepted': 1, 'Pending': 2, 'Completed': 3, 'Cancelled': 4 };
     const statusDiff = (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
     if (statusDiff !== 0) return statusDiff;
-    return new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime();
+    const dateA = a.serviceDate ? new Date(a.serviceDate).getTime() : 0;
+    const dateB = b.serviceDate ? new Date(b.serviceDate).getTime() : 0;
+    return dateA - dateB;
   });
 
   const toggleExpand = (quoteId: string) => {
