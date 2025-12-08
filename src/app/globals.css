@@ -363,10 +363,16 @@ ced ScrollArea for modals */
 /* Sonner Toast Animations & Styling */
 [data-sonner-toaster] {
   --width: calc(100vw - 2rem) !important;
-  max-width: 360px !important;
+  max-width: calc(100vw - 2rem) !important;
   padding: 0 !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
+}
+
+@media (min-width: 768px) {
+  [data-sonner-toaster] {
+    max-width: 768px !important;
+  }
 }
 
 [data-sonner-toast] {
@@ -379,8 +385,8 @@ ced ScrollArea for modals */
   padding: 16px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
   gap: 8px !important;
-  width: calc(100vw - 2rem) !important;
-  max-width: 360px !important;
+  width: 100% !important;
+  max-width: 100% !important;
   margin: 0 auto !important;
   position: relative !important;
   overflow: hidden !important;
