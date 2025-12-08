@@ -8,10 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 
 const SETTINGS_SECTIONS = [
-  { id: 'basic', label: 'Basic Info', dot: true },
-  { id: 'physical', label: 'Physical Details', dot: false },
-  { id: 'location', label: 'Location', dot: true },
-  { id: 'preferences', label: 'Preferences', dot: false },
+  { id: 'basic', label: 'Basic Info' },
+  { id: 'physical', label: 'Physical Details' },
+  { id: 'location', label: 'Location' },
+  { id: 'preferences', label: 'Preferences' },
 ];
 
 function CustomerSettingsContent() {
@@ -76,10 +76,7 @@ function CustomerSettingsContent() {
               className="flex items-center justify-between py-4 border-b border-gray-800"
             >
               <span className="text-white">{section.label}</span>
-              <div className="flex items-center gap-2">
-                {section.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                <ChevronRight className="h-5 w-5 text-gray-500" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-gray-500" />
             </Link>
           ))}
         </div>

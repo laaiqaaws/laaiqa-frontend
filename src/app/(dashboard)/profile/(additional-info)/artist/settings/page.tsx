@@ -8,10 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 
 const SETTINGS_SECTIONS = [
-  { id: 'basic', label: 'Basic Info', dot: true },
-  { id: 'location', label: 'Location', dot: true },
-  { id: 'professional', label: 'Professional Information', dot: false },
-  { id: 'booking', label: 'Booking and Scheduling', dot: false },
+  { id: 'basic', label: 'Basic Info' },
+  { id: 'location', label: 'Location' },
+  { id: 'professional', label: 'Professional Information' },
+  { id: 'booking', label: 'Booking and Scheduling' },
 ];
 
 function AccountSettingsContent() {
@@ -64,7 +64,7 @@ function AccountSettingsContent() {
             </Avatar>
           </div>
           <h2 className="text-xl font-bold">{user?.name || 'Artist'}</h2>
-          <p className="text-gray-400 text-sm">Makeup Studio</p>
+          {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
           <p className="text-gray-500 text-sm">{user?.email} | +91 {user?.phone || '0000000000'}</p>
         </div>
 
@@ -77,10 +77,7 @@ function AccountSettingsContent() {
               className="flex items-center justify-between py-4 border-b border-gray-800"
             >
               <span className="text-white">{section.label}</span>
-              <div className="flex items-center gap-2">
-                {section.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                <ChevronRight className="h-5 w-5 text-gray-500" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-gray-500" />
             </Link>
           ))}
         </div>
