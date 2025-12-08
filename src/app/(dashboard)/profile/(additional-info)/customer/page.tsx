@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '@/types/user';
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ interface UserData {
   other?: string | null;
 }
 
-export default function CustomerOnboardingPage() {
+function CustomerOnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
@@ -373,5 +373,18 @@ export default function CustomerOnboardingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+
+export default function CustomerOnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
+      </div>
+    }>
+      <CustomerOnboardingContent />
+    </Suspense>
   );
 }
