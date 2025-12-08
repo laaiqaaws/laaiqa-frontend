@@ -404,13 +404,14 @@ ced ScrollArea for modals */
 
 [data-sonner-toast] [data-close-button] {
   position: absolute !important;
-  top: 8px !important;
-  right: 8px !important;
+  top: 0 !important;
+  right: 0 !important;
   left: auto !important;
   background: transparent !important;
   border: none !important;
   color: #6b7280 !important;
-  padding: 4px !important;
+  padding: 8px !important;
+  margin: 0 !important;
   border-radius: 0 !important;
   transition: color 0.15s ease !important;
   width: auto !important;

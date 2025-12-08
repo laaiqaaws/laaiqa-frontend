@@ -249,7 +249,7 @@ function CustomerDashboardContent() {
         {view === 'home' && (
           <motion.div key="home" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
             <div className="px-4 mb-6">
-              <div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">My Bookings</h2>{upcomingQuotes.length > 0 && <Link href="/customer?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">Show All</Link>}</div>
+              <div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">My Bookings</h2>{upcomingQuotes.length > 0 && <Link href="/customer?view=bookings" className="text-white text-sm border-2 border-white px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">Show All</Link>}</div>
               {upcomingQuotes.length === 0 ? (
                 <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center"><div className="flex justify-center mb-4"><CalendarEmptyIcon /></div><p className="text-gray-300">Looks Like you dont have any bookings yet.</p></div>
               ) : (

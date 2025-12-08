@@ -290,7 +290,7 @@ function ArtistDashboardContent() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold">Upcoming Bookings</h2>
                 {upcomingQuotes.length > 0 && (
-                  <Link href="/artist?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
+                  <Link href="/artist?view=bookings" className="text-white text-sm border-2 border-white px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
                     Show All
                   </Link>
                 )}
