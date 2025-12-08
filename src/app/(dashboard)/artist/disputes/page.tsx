@@ -202,12 +202,20 @@ export default function ArtistDisputesPage() {
               const quote = quotes.find(q => q.id === dispute.quoteId);
               const StatusIcon = STATUS_CONFIG[dispute.status]?.icon || Clock;
               const isInitiator = dispute.initiatorId === user?.id;
+              const raisedByCustomer = dispute.initiatorRole === 'customer';
               
               return (
                 <div key={dispute.id} className="bg-[#1a1a1a] rounded-xl p-4 border border-gray-800">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <p className="text-sm text-gray-400">Quote: {quote?.productType || 'Unknown'}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm text-gray-400">Quote: {quote?.productType || 'Unknown'}</p>
+                        {raisedByCustomer && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            Raised by Customer
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500">
                         {quote?.serviceDate ? format(parseISO(quote.serviceDate), 'dd MMM yyyy') : 'N/A'}
                         {quote?.customerName && ` • ${quote.customerName}`}
@@ -239,9 +247,9 @@ export default function ArtistDisputesPage() {
                         variant="outline" 
                         onClick={() => handleCloseDispute(dispute.id)}
                         disabled={closingDisputeId === dispute.id}
-                        className="text-xs h-7 border-gray-600 text-gray-300 hover:bg-gray-800"
+                        className="text-xs h-9 px-3 border-gray-600 text-gray-300 bg-transparent hover:bg-gray-800"
                       >
-                        {closingDisputeId === dispute.id ? 'Closing...' : 'Close Dispute'}
+                        {closingDisputeId === dispute.id ? 'Closing...' : 'Close'}
                       </Button>
                     )}
                   </div>
@@ -301,7 +309,7 @@ export default function ArtistDisputesPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="border-gray-600 text-gray-300">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="border-gray-600 text-gray-300 bg-transparent hover:bg-gray-800">
               Cancel
             </Button>
             <Button onClick={handleCreateDispute} disabled={isSubmitting} className="bg-[#C40F5A] hover:bg-[#EE2377]">

@@ -577,3 +577,67 @@ textarea:disabled,
   border-color: white !important;
   background-color: #1a1a1a !important;
 }
+
+
+/* Prevent body scroll when dialog is open - fixes jitter */
+body[data-scroll-locked] {
+  overflow: hidden !important;
+  padding-right: 0 !important;
+}
+
+/* Dialog overlay should not cause layout shift */
+[data-radix-dialog-overlay] {
+  position: fixed !important;
+}
+
+/* Ensure dialog content doesn't cause scroll */
+[data-radix-dialog-content] {
+  position: fixed !important;
+}
+
+
+/* Safe area insets for iOS devices with notches */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-20 {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  }
+  
+  .pb-24 {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important;
+  }
+  
+  .pb-16 {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important;
+  }
+  
+  /* Fixed bottom navigation safe area */
+  nav.fixed.bottom-0,
+  div.fixed.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Exception for inline text links */
+  a:not([class*="flex"]):not([class*="button"]):not([class*="btn"]) {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+button, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth momentum scrolling on iOS */
+.overflow-y-auto, .overflow-auto {
+  -webkit-overflow-scrolling: touch;
+}

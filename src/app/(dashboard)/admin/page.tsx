@@ -801,9 +801,9 @@ function AdminDashboardContent() {
                                     <div className="flex flex-col items-end gap-2 shrink-0">
                                         <Badge variant="outline" className={`text-xs ${getStatusColor(d.status)}`}>{d.status}</Badge>
                                         {(d.status === 'Open' || d.status === 'Under Review') && (
-                                            <Button size="sm" variant="outline" onClick={() => { setQuickResolveDispute(d); setQuickResolveNotes(d.resolution || ''); }}
-                                                className="h-7 text-xs border-green-600 text-green-400 hover:bg-green-900/30">
-                                                <Sparkles className="h-3 w-3 mr-1" /> Resolve
+                                            <Button size="sm" onClick={() => { setQuickResolveDispute(d); setQuickResolveNotes(d.resolution || ''); }}
+                                                className="h-7 text-xs bg-green-600/20 border border-green-600 text-green-400 hover:bg-green-600/30">
+                                                Resolve
                                             </Button>
                                         )}
                                     </div>
