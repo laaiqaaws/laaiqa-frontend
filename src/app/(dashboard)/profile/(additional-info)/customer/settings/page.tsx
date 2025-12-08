@@ -18,6 +18,17 @@ function CustomerSettingsContent() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
 
+  // Redirect if not authenticated or wrong role
+  if (!isLoading && !user) {
+    router.replace('/login');
+    return null;
+  }
+  
+  if (!isLoading && user && user.role !== 'customer') {
+    router.replace(user.role === 'artist' ? '/profile/artist/settings' : user.role === 'admin' ? '/admin' : '/signup');
+    return null;
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">

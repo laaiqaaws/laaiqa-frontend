@@ -44,19 +44,29 @@
 }
 
 :root {
+  /* Brand Colors */
   --color-primary: #C40F5A;
+  --color-primary-light: #EE2377;
   --color-secondary: #F46CA4;
   --color-background: #100D0F;
   --color-blue: #0063E4;
   --color-green: #1FC16B;
   --color-red: #D00416;
   --color-yellow: #F5DE78;
+  --color-orange: #F07229;
   --color-surface: #1A1518;
   --color-border: #2A2428;
   --color-muted: #3A3438;
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #E5E5E5;
   --color-text-muted: #A0A0A0;
+  
+  /* Card Colors */
+  --color-card-purple: #CD8FDE;
+  --color-card-pink: #F9B6D2;
+  --color-card-peach: #FACCB2;
+  --color-card-mint: #B5EAD7;
+  --color-card-coral: #FFDAC1;
 
   --radius: 0.625rem;
   --background: oklch(1 0 0);

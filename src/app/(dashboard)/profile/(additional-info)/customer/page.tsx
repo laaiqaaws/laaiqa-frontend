@@ -12,6 +12,7 @@ import { ChevronLeft } from 'lucide-react';
 import { toast as sonnerToast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
+import { INDIAN_STATES, validatePhone, validatePinCode, validateAge, validateHeight } from "@/lib/validation";
 
 interface UserData {
   id: string;
@@ -33,12 +34,34 @@ interface UserData {
   other?: string | null;
 }
 
+// Section mapping
+const SECTION_MAP: Record<string, number> = {
+  'basic': 1,
+  'physical': 2,
+  'location': 3,
+  'preferences': 4,
+};
+
+const SECTION_TITLES: Record<string, string> = {
+  'basic': 'Basic Info',
+  'physical': 'Physical Details',
+  'location': 'Location',
+  'preferences': 'Preferences',
+};
+
 function CustomerOnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
-  const { user: authUser, csrfToken, isLoading: authLoading } = useAuth();
-  const [step, setStep] = useState(1);
+  const sectionParam = searchParams.get('section');
+  const { user: authUser, csrfToken, isLoading: authLoading, refreshUser } = useAuth();
+  
+  // If section is specified, show only that section (single page mode)
+  // Otherwise, show step-by-step wizard
+  const isSingleSectionMode = isEditMode && sectionParam && SECTION_MAP[sectionParam];
+  const initialStep = sectionParam && SECTION_MAP[sectionParam] ? SECTION_MAP[sectionParam] : 1;
+  
+  const [step, setStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -49,7 +72,7 @@ function CustomerOnboardingContent() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
 
-  // Step 2: Physical Details (for makeup services)
+  // Step 2: Physical Details
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [skinColor, setSkinColor] = useState('');
@@ -72,7 +95,6 @@ function CustomerOnboardingContent() {
       return;
     }
 
-    // Fetch full user data from server (not cached) to get accurate role
     const fetchFullUserData = async () => {
       try {
         const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
@@ -84,7 +106,6 @@ function CustomerOnboardingContent() {
         const data = await userRes.json();
         const serverUser = data.user;
         
-        // Check role from server response (most accurate)
         if (serverUser.role !== 'customer') {
           if (serverUser.role === 'artist') {
             router.push('/profile/artist');
@@ -109,10 +130,10 @@ function CustomerOnboardingContent() {
         setEthnicity(serverUser.ethnicity || '');
         setAddress(serverUser.address || '');
         setCity(serverUser.city || '');
-        setState(data.user.state || '');
-        setPincode(data.user.zipCode || '');
-        setOther(data.user.other || '');
-      } catch (error) {
+        setState(serverUser.state || '');
+        setPincode(serverUser.zipCode || '');
+        setOther(serverUser.other || '');
+      } catch {
         sonnerToast.error("Error loading data");
       } finally {
         setIsLoading(false);
@@ -121,35 +142,93 @@ function CustomerOnboardingContent() {
     fetchFullUserData();
   }, [authLoading, authUser, router]);
 
+  const handleBack = () => {
+    if (isSingleSectionMode) {
+      router.back();
+    } else if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
   const handleNext = () => {
     if (step === 1) {
-      if (!name.trim() || !phone.trim() || !age.trim()) {
-        sonnerToast.error("Please fill in required fields");
+      if (!name.trim()) {
+        sonnerToast.error("Please enter your name");
+        return;
+      }
+      const phoneError = validatePhone(phone);
+      if (phoneError) {
+        sonnerToast.error(phoneError);
+        return;
+      }
+      const ageError = validateAge(age);
+      if (ageError) {
+        sonnerToast.error(ageError);
         return;
       }
     }
     if (step === 2) {
-      if (!height.trim() || !skinColor.trim() || !ethnicity.trim()) {
-        sonnerToast.error("Please fill in required fields");
+      const heightError = validateHeight(height);
+      if (heightError) {
+        sonnerToast.error(heightError);
+        return;
+      }
+      if (!skinColor.trim()) {
+        sonnerToast.error("Please select your skin color");
+        return;
+      }
+      if (!ethnicity.trim()) {
+        sonnerToast.error("Please select your ethnicity");
         return;
       }
     }
     if (step === 3) {
-      if (!address.trim() || !city.trim() || !state.trim() || !pincode.trim()) {
-        sonnerToast.error("Please fill in all address fields");
+      if (!address.trim()) {
+        sonnerToast.error("Please enter your address");
+        return;
+      }
+      if (!city.trim()) {
+        sonnerToast.error("Please enter your city");
+        return;
+      }
+      if (!state) {
+        sonnerToast.error("Please select your state");
+        return;
+      }
+      const pincodeError = validatePinCode(pincode);
+      if (pincodeError) {
+        sonnerToast.error(pincodeError);
         return;
       }
     }
     setStep(step + 1);
   };
 
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (!csrfToken) {
       sonnerToast.error("Security token missing. Please refresh.");
+      return;
+    }
+
+    // Validate before saving
+    const phoneError = validatePhone(phone);
+    if (phoneError) {
+      sonnerToast.error(phoneError);
+      return;
+    }
+    const ageError = validateAge(age);
+    if (ageError) {
+      sonnerToast.error(ageError);
+      return;
+    }
+    const heightError = validateHeight(height);
+    if (heightError) {
+      sonnerToast.error(heightError);
+      return;
+    }
+    const pincodeError = validatePinCode(pincode);
+    if (pincodeError) {
+      sonnerToast.error(pincodeError);
       return;
     }
 
@@ -180,13 +259,32 @@ function CustomerOnboardingContent() {
       });
 
       if (response.ok) {
-        sonnerToast.success(isEditMode ? "Profile updated!" : "Profile completed!");
-        router.push('/customer?view=profile');
+        // Force refresh auth context to update user data and prevent redirect loops
+        const updatedUser = await refreshUser(true);
+        sonnerToast.success(isSingleSectionMode ? "Section updated!" : "Profile completed!");
+        
+        // Clear any stale session data
+        try {
+          sessionStorage.removeItem('laaiqa_user');
+          sessionStorage.removeItem('laaiqa_session_expiry');
+        } catch {
+          // Ignore
+        }
+        
+        // Small delay to ensure state is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        if (isSingleSectionMode) {
+          router.back();
+        } else {
+          // Use replace to prevent back button issues
+          router.replace('/customer?view=profile');
+        }
       } else {
         const errorData = await response.json();
         sonnerToast.error(errorData.message || "Failed to save profile");
       }
-    } catch (error) {
+    } catch {
       sonnerToast.error("Network error. Please try again.");
     } finally {
       setIsSaving(false);
@@ -201,16 +299,16 @@ function CustomerOnboardingContent() {
     );
   }
 
+  const currentSectionTitle = sectionParam ? SECTION_TITLES[sectionParam] || 'Edit Profile' : 'Complete Your Profile';
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
-        {step > 1 && (
-          <button onClick={handleBack} className="p-2 -ml-2">
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-        )}
-        <h1 className="text-lg font-semibold flex-1 text-center">Complete Your Profile</h1>
+        <button onClick={handleBack} className="p-2 -ml-2">
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-lg font-semibold flex-1 text-center">{currentSectionTitle}</h1>
         <Avatar className="h-8 w-8">
           {userData?.image && <AvatarImage src={userData.image} />}
           <AvatarFallback className="bg-orange-500 text-white text-sm">
@@ -219,12 +317,14 @@ function CustomerOnboardingContent() {
         </Avatar>
       </div>
 
-      {/* Progress Indicator */}
-      <div className="px-4 py-3 flex gap-2">
-        {[1, 2, 3, 4].map(s => (
-          <div key={s} className={`flex-1 h-1 rounded-full ${s <= step ? 'bg-[#C40F5A]' : 'bg-gray-700'}`} />
-        ))}
-      </div>
+      {/* Progress Indicator - only show in wizard mode */}
+      {!isSingleSectionMode && (
+        <div className="px-4 py-3 flex gap-2">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`flex-1 h-1 rounded-full ${s <= step ? 'bg-[#C40F5A]' : 'bg-gray-700'}`} />
+          ))}
+        </div>
+      )}
 
       <div className="px-4 pb-32">
         {/* Step 1: Basic Info */}
@@ -239,15 +339,37 @@ function CustomerOnboardingContent() {
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Phone Number*</Label>
-              <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" placeholder="+91 98765 43210" />
+              <Label className="text-gray-400 text-sm">Phone Number* (10 digits)</Label>
+              <Input 
+                value={phone} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(val);
+                }} 
+                type="tel"
+                maxLength={10}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" 
+                placeholder="9876543210" 
+              />
+              {phone && phone.length > 0 && phone.length < 10 && (
+                <p className="text-orange-400 text-xs mt-1">{10 - phone.length} more digits needed</p>
+              )}
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Age*</Label>
-              <Input value={age} onChange={e => setAge(e.target.value)} type="number"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" placeholder="25" />
+              <Label className="text-gray-400 text-sm">Age* (18+)</Label>
+              <Input 
+                value={age} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 3);
+                  setAge(val);
+                }} 
+                type="number"
+                min={18}
+                max={120}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" 
+                placeholder="25" 
+              />
             </div>
             
             <div>
@@ -337,15 +459,34 @@ function CustomerOnboardingContent() {
               </div>
               <div>
                 <Label className="text-gray-400 text-sm">State*</Label>
-                <Input value={state} onChange={e => setState(e.target.value)}
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1" />
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2a2a2a] border-gray-700 max-h-[300px]">
+                    {INDIAN_STATES.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Pincode*</Label>
-              <Input value={pincode} onChange={e => setPincode(e.target.value)}
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" />
+              <Label className="text-gray-400 text-sm">Pincode* (6 digits)</Label>
+              <Input 
+                value={pincode} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setPincode(val);
+                }}
+                maxLength={6}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" 
+                placeholder="560001"
+              />
+              {pincode && pincode.length > 0 && pincode.length < 6 && (
+                <p className="text-orange-400 text-xs mt-1">{6 - pincode.length} more digits needed</p>
+              )}
             </div>
           </div>
         )}
@@ -367,27 +508,37 @@ function CustomerOnboardingContent() {
 
       {/* Bottom Buttons */}
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
-        {step > 1 && (
-          <Button onClick={handleBack} variant="outline" 
-            className="flex-1 h-12 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
-            Back
-          </Button>
-        )}
-        {step < 4 ? (
-          <Button onClick={handleNext} className="flex-1 h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white">
-            Next
+        {isSingleSectionMode ? (
+          // Single section mode - just Save button
+          <Button onClick={handleSave} disabled={isSaving}
+            className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isSaving}
-            className="flex-1 h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white">
-            {isSaving ? 'Saving...' : 'Complete Profile'}
-          </Button>
+          // Wizard mode - Back/Next/Complete buttons
+          <>
+            {step > 1 && (
+              <Button onClick={handleBack} variant="outline" 
+                className="flex-1 h-14 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
+                Back
+              </Button>
+            )}
+            {step < 4 ? (
+              <Button onClick={handleNext} className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+                Next
+              </Button>
+            ) : (
+              <Button onClick={handleSave} disabled={isSaving}
+                className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+                {isSaving ? 'Saving...' : 'Complete Profile'}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
-
 
 export default function CustomerOnboardingPage() {
   return (

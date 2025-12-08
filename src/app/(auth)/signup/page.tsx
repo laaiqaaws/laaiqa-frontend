@@ -78,10 +78,22 @@ function SignupContent() {
         credentials: 'include',
       });
       if (response.ok) {
-        // Clear session cache so profile page fetches fresh user data with new role
-        sessionStorage.removeItem('laaiqa_user');
-        sessionStorage.removeItem('laaiqa_session_expiry');
-        router.push(getProfileRoute(selectedRole));
+        // Clear ALL session cache to ensure fresh data after role change
+        try {
+          sessionStorage.removeItem('laaiqa_user');
+          sessionStorage.removeItem('laaiqa_session_expiry');
+          sessionStorage.removeItem('laaiqa_csrf');
+          // Set flag to force refresh on next auth context load
+          sessionStorage.setItem('laaiqa_role_changed', 'true');
+        } catch {
+          // Ignore session storage errors
+        }
+        
+        // Small delay to ensure cookie is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Use replace to prevent back button issues
+        router.replace(getProfileRoute(selectedRole));
       } else {
         const errorData = await response.json().catch(() => ({}));
         sonnerToast.error("Failed to set role", { description: errorData.message || "Please try again." });

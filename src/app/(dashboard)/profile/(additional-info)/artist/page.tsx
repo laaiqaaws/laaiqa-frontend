@@ -13,6 +13,7 @@ import { ChevronLeft, Check } from 'lucide-react';
 import { toast as sonnerToast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
+import { INDIAN_STATES, validatePhone, validatePinCode } from "@/lib/validation";
 
 interface UserData {
   id: string;
@@ -43,12 +44,33 @@ const EXPERIENCE_OPTIONS = [
   '0-1 years', '1-3 years', '3-5 years', '5-10 years', '10+ years'
 ];
 
+// Section mapping
+const SECTION_MAP: Record<string, number> = {
+  'basic': 1,
+  'location': 2,
+  'professional': 3,
+  'booking': 4,
+};
+
+const SECTION_TITLES: Record<string, string> = {
+  'basic': 'Basic Info',
+  'location': 'Location',
+  'professional': 'Professional Information',
+  'booking': 'Booking and Scheduling',
+};
+
 function ArtistOnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
-  const { user: authUser, csrfToken, isLoading: authLoading } = useAuth();
-  const [step, setStep] = useState(1);
+  const sectionParam = searchParams.get('section');
+  const { user: authUser, csrfToken, isLoading: authLoading, refreshUser } = useAuth();
+  
+  // If section is specified, show only that section (single page mode)
+  const isSingleSectionMode = isEditMode && sectionParam && SECTION_MAP[sectionParam];
+  const initialStep = sectionParam && SECTION_MAP[sectionParam] ? SECTION_MAP[sectionParam] : 1;
+  
+  const [step, setStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -88,7 +110,6 @@ function ArtistOnboardingContent() {
       return;
     }
 
-    // Fetch full user data from server (not cached) to get accurate role
     const fetchFullUserData = async () => {
       try {
         const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
@@ -100,7 +121,6 @@ function ArtistOnboardingContent() {
         const data = await userRes.json();
         const serverUser = data.user;
         
-        // Check role from server response (most accurate)
         if (serverUser.role !== 'artist') {
           if (serverUser.role === 'customer') {
             router.push('/profile/customer');
@@ -128,7 +148,7 @@ function ArtistOnboardingContent() {
         setBio(serverUser.bio || '');
         if (serverUser.services) setSelectedServices(serverUser.services);
         if (serverUser.availableLocations) setAvailableLocations(serverUser.availableLocations);
-      } catch (error) {
+      } catch {
         sonnerToast.error("Error loading data");
       } finally {
         setIsLoading(false);
@@ -148,18 +168,42 @@ function ArtistOnboardingContent() {
     setAvailableLocations(availableLocations.filter(l => l !== loc));
   };
 
-
+  const handleBack = () => {
+    if (isSingleSectionMode) {
+      router.back();
+    } else if (step > 1) {
+      setStep(step - 1);
+    }
+  };
 
   const handleNext = () => {
     if (step === 1) {
-      if (!firstName.trim() || !phone.trim()) {
-        sonnerToast.error("Please fill in required fields");
+      if (!firstName.trim()) {
+        sonnerToast.error("Please enter your first name");
+        return;
+      }
+      const phoneError = validatePhone(phone);
+      if (phoneError) {
+        sonnerToast.error(phoneError);
         return;
       }
     }
     if (step === 2) {
-      if (!addressLine1.trim() || !city.trim() || !state.trim() || !pincode.trim()) {
-        sonnerToast.error("Please fill in all address fields");
+      if (!addressLine1.trim()) {
+        sonnerToast.error("Please enter your address");
+        return;
+      }
+      if (!city.trim()) {
+        sonnerToast.error("Please enter your city");
+        return;
+      }
+      if (!state) {
+        sonnerToast.error("Please select your state");
+        return;
+      }
+      const pincodeError = validatePinCode(pincode);
+      if (pincodeError) {
+        sonnerToast.error(pincodeError);
         return;
       }
     }
@@ -172,13 +216,21 @@ function ArtistOnboardingContent() {
     setStep(step + 1);
   };
 
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (!csrfToken) {
       sonnerToast.error("Security token missing. Please refresh.");
+      return;
+    }
+
+    // Validate before saving
+    const phoneError = validatePhone(phone);
+    if (phoneError) {
+      sonnerToast.error(phoneError);
+      return;
+    }
+    const pincodeError = validatePinCode(pincode);
+    if (pincodeError) {
+      sonnerToast.error(pincodeError);
       return;
     }
 
@@ -213,13 +265,32 @@ function ArtistOnboardingContent() {
       });
 
       if (response.ok) {
-        sonnerToast.success(isEditMode ? "Profile updated!" : "Profile completed!");
-        router.push('/artist?view=profile');
+        // Force refresh auth context to update user data and prevent redirect loops
+        const updatedUser = await refreshUser(true);
+        sonnerToast.success(isSingleSectionMode ? "Section updated!" : "Profile completed!");
+        
+        // Clear any stale session data
+        try {
+          sessionStorage.removeItem('laaiqa_user');
+          sessionStorage.removeItem('laaiqa_session_expiry');
+        } catch {
+          // Ignore
+        }
+        
+        // Small delay to ensure state is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        if (isSingleSectionMode) {
+          router.back();
+        } else {
+          // Use replace to prevent back button issues
+          router.replace('/artist?view=profile');
+        }
       } else {
         const errorData = await response.json();
         sonnerToast.error(errorData.message || "Failed to save profile");
       }
-    } catch (error) {
+    } catch {
       sonnerToast.error("Network error. Please try again.");
     } finally {
       setIsSaving(false);
@@ -234,16 +305,16 @@ function ArtistOnboardingContent() {
     );
   }
 
+  const currentSectionTitle = sectionParam ? SECTION_TITLES[sectionParam] || 'Edit Profile' : 'Vendor Details';
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
-        {step > 1 && (
-          <button onClick={handleBack} className="p-2 -ml-2">
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-        )}
-        <h1 className="text-lg font-semibold flex-1 text-center">Vendor Details</h1>
+        <button onClick={handleBack} className="p-2 -ml-2">
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-lg font-semibold flex-1 text-center">{currentSectionTitle}</h1>
         <Avatar className="h-8 w-8">
           {userData?.image && <AvatarImage src={userData.image} />}
           <AvatarFallback className="bg-orange-500 text-white text-sm">
@@ -252,12 +323,14 @@ function ArtistOnboardingContent() {
         </Avatar>
       </div>
 
-      {/* Progress Indicator */}
-      <div className="px-4 py-3 flex gap-2">
-        {[1, 2, 3, 4].map(s => (
-          <div key={s} className={`flex-1 h-1 rounded-full ${s <= step ? 'bg-[#C40F5A]' : 'bg-gray-700'}`} />
-        ))}
-      </div>
+      {/* Progress Indicator - only show in wizard mode */}
+      {!isSingleSectionMode && (
+        <div className="px-4 py-3 flex gap-2">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`flex-1 h-1 rounded-full ${s <= step ? 'bg-[#C40F5A]' : 'bg-gray-700'}`} />
+          ))}
+        </div>
+      )}
 
       <div className="px-4 pb-32">
         {/* Step 1: Basic Info */}
@@ -284,9 +357,22 @@ function ArtistOnboardingContent() {
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Phone Number*</Label>
-              <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" placeholder="+91 98765 43210" />
+              <Label className="text-gray-400 text-sm">Phone Number* (10 digits)</Label>
+              <Input 
+                value={phone} 
+                onChange={e => {
+                  // Only allow digits, max 10
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(val);
+                }} 
+                type="tel"
+                maxLength={10}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" 
+                placeholder="9876543210" 
+              />
+              {phone && phone.length > 0 && phone.length < 10 && (
+                <p className="text-orange-400 text-xs mt-1">{10 - phone.length} more digits needed</p>
+              )}
             </div>
             
             <div>
@@ -319,8 +405,16 @@ function ArtistOnboardingContent() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-gray-400 text-sm">State*</Label>
-                <Input value={state} onChange={e => setState(e.target.value)}
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1" />
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2a2a2a] border-gray-700 max-h-[300px]">
+                    {INDIAN_STATES.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-gray-400 text-sm">City*</Label>
@@ -330,9 +424,20 @@ function ArtistOnboardingContent() {
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Pincode*</Label>
-              <Input value={pincode} onChange={e => setPincode(e.target.value)}
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" />
+              <Label className="text-gray-400 text-sm">Pincode* (6 digits)</Label>
+              <Input 
+                value={pincode} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setPincode(val);
+                }}
+                maxLength={6}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1" 
+                placeholder="560001"
+              />
+              {pincode && pincode.length > 0 && pincode.length < 6 && (
+                <p className="text-orange-400 text-xs mt-1">{6 - pincode.length} more digits needed</p>
+              )}
             </div>
             
             <div>
@@ -341,13 +446,13 @@ function ArtistOnboardingContent() {
                 <Input value={locationInput} onChange={e => setLocationInput(e.target.value)}
                   className="bg-[#2a2a2a] border-gray-700 text-white" placeholder="Add location" 
                   onKeyDown={e => e.key === 'Enter' && addLocation()} />
-                <Button onClick={addLocation} size="sm" className="bg-[#C40F5A] hover:bg-[#EE2377]">Add</Button>
+                <Button onClick={addLocation} size="sm" className="bg-[#EE2377] hover:bg-[#C40F5A]">Add</Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {availableLocations.map(loc => (
-                  <span key={loc} className="bg-[#C40F5A]/20 text-[#EE2377] px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  <span key={loc} className="bg-[#CD8FDE]/30 text-[#CD8FDE] px-3 py-1 rounded-full text-sm flex items-center gap-1">
                     {loc}
-                    <button onClick={() => removeLocation(loc)} className="ml-1 hover:text-[#C40F5A]">×</button>
+                    <button onClick={() => removeLocation(loc)} className="ml-1 hover:text-white">×</button>
                   </span>
                 ))}
               </div>
@@ -405,10 +510,9 @@ function ArtistOnboardingContent() {
                   ))}
                 </SelectContent>
               </Select>
-              {/* Selected services as tag chips */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {selectedServices.map(service => (
-                  <span key={service} className="bg-[#C40F5A] text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2">
+                  <span key={service} className="bg-[#F46CA4] text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2">
                     {service}
                     <button onClick={() => setSelectedServices(selectedServices.filter(s => s !== service))} 
                       className="hover:text-[#EE2377] font-bold">×</button>
@@ -488,7 +592,7 @@ function ArtistOnboardingContent() {
             <div className="flex items-center justify-between">
               <Label className="text-white">Allow Partial payment</Label>
               <button onClick={() => setAllowPartialPayment(!allowPartialPayment)}
-                className={`w-12 h-6 rounded-full transition-colors ${allowPartialPayment ? 'bg-[#C40F5A]' : 'bg-gray-600'}`}>
+                className={`w-12 h-6 rounded-full transition-colors ${allowPartialPayment ? 'bg-[#EE2377]' : 'bg-gray-600'}`}>
                 <div className={`w-5 h-5 bg-white rounded-full transition-transform ${allowPartialPayment ? 'translate-x-6' : 'translate-x-0.5'}`} />
               </button>
             </div>
@@ -498,27 +602,37 @@ function ArtistOnboardingContent() {
 
       {/* Bottom Buttons */}
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
-        {step > 1 && (
-          <Button onClick={handleBack} variant="outline" 
-            className="flex-1 h-12 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
-            Back
-          </Button>
-        )}
-        {step < 4 ? (
-          <Button onClick={handleNext} className="flex-1 h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white">
-            Next
+        {isSingleSectionMode ? (
+          // Single section mode - just Save button
+          <Button onClick={handleSave} disabled={isSaving}
+            className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isSaving}
-            className="flex-1 h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white">
-            {isSaving ? 'Saving...' : 'Submit'}
-          </Button>
+          // Wizard mode - Back/Next/Submit buttons
+          <>
+            {step > 1 && (
+              <Button onClick={handleBack} variant="outline" 
+                className="flex-1 h-14 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
+                Back
+              </Button>
+            )}
+            {step < 4 ? (
+              <Button onClick={handleNext} className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+                Next
+              </Button>
+            ) : (
+              <Button onClick={handleSave} disabled={isSaving}
+                className="flex-1 h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white">
+                {isSaving ? 'Saving...' : 'Submit'}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
-
 
 export default function ArtistOnboardingPage() {
   return (

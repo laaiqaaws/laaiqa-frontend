@@ -43,13 +43,23 @@ function LoginContent() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.AUTH_ME, { credentials: 'include' });
+        const response = await fetch(API_ENDPOINTS.AUTH_ME, { 
+          credentials: 'include',
+          cache: 'no-store'
+        });
         if (response.ok) {
           const data: { user: User } = await response.json();
           const role = data.user?.role;
           if (['artist', 'customer', 'admin'].includes(role)) {
+            // Clear any stale session data
+            try {
+              sessionStorage.removeItem('laaiqa_user');
+              sessionStorage.removeItem('laaiqa_session_expiry');
+            } catch {
+              // Ignore
+            }
             router.replace(getDashboardRoute(role));
-          } else {
+          } else if (role === 'user') {
             router.replace(ROUTES.SIGNUP);
           }
           return;

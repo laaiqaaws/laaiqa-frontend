@@ -7,11 +7,22 @@ export interface ValidationResult {
   errors: Record<string, string>;
 }
 
-// Indian phone number regex (10 digits, optionally with +91 or 0 prefix)
-const INDIAN_PHONE_REGEX = /^(?:\+91|91|0)?[6-9]\d{9}$/;
+// Indian phone number regex (exactly 10 digits starting with 6-9)
+const INDIAN_PHONE_REGEX = /^[6-9]\d{9}$/;
 
 // Indian PIN code regex (6 digits)
 const INDIAN_PIN_CODE_REGEX = /^[1-9][0-9]{5}$/;
+
+// Indian states list
+export const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+];
 
 // Email regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,14 +34,36 @@ const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
 const NAME_REGEX = /^[a-zA-Z\s'-]{2,100}$/;
 
 /**
- * Validate phone number (Indian format)
+ * Validate phone number (Indian format - exactly 10 digits)
  */
 export function validatePhone(phone: string | null | undefined): string | null {
   if (!phone) return 'Phone number is required';
 
-  const cleaned = phone.replace(/[\s-]/g, '');
-  if (!INDIAN_PHONE_REGEX.test(cleaned)) {
-    return 'Please enter a valid 10-digit Indian phone number';
+  // Remove all non-digit characters
+  const cleaned = phone.replace(/\D/g, '');
+  
+  // Remove country code if present
+  let digits = cleaned;
+  if (digits.startsWith('91') && digits.length === 12) digits = digits.slice(2);
+  if (digits.startsWith('0') && digits.length === 11) digits = digits.slice(1);
+  
+  if (digits.length !== 10) {
+    return 'Phone number must be exactly 10 digits';
+  }
+  
+  if (!INDIAN_PHONE_REGEX.test(digits)) {
+    return 'Phone number must start with 6, 7, 8, or 9';
+  }
+  return null;
+}
+
+/**
+ * Validate Indian state
+ */
+export function validateState(state: string | null | undefined): string | null {
+  if (!state) return 'State is required';
+  if (!INDIAN_STATES.includes(state.trim())) {
+    return 'Please select a valid Indian state';
   }
   return null;
 }
@@ -200,14 +233,16 @@ export function validateAddress(data: {
   const cityError = validateRequiredString(data.city, 'City', 2, 100);
   if (cityError) errors.city = cityError;
 
-  const stateError = validateRequiredString(data.state, 'State', 2, 100);
+  const stateError = validateState(data.state);
   if (stateError) errors.state = stateError;
 
   const zipCodeError = validatePinCode(data.zipCode);
   if (zipCodeError) errors.zipCode = zipCodeError;
 
-  const countryError = validateRequiredString(data.country, 'Country', 2, 100);
-  if (countryError) errors.country = countryError;
+  // Country is always India for now
+  if (data.country && data.country !== 'India') {
+    errors.country = 'Currently only India is supported';
+  }
 
   return errors;
 }

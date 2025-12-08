@@ -36,14 +36,15 @@ const QUOTES_CACHE_KEY = 'laaiqa_artist_quotes';
 const QUOTES_CACHE_EXPIRY_KEY = 'laaiqa_artist_quotes_expiry';
 const QUOTES_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Pastel colors matching BookingsView - brand colors
 const CARD_COLORS = [
-  'bg-pink-200', 'bg-orange-200', 'bg-purple-300', 'bg-yellow-200', 'bg-green-200'
+  'bg-[#CD8FDE]', 'bg-[#FACCB2]', 'bg-[#F9B6D2]', 'bg-[#B5EAD7]', 'bg-[#FFDAC1]'
 ];
 
 // Calendar icon component for empty state
 function CalendarEmptyIcon() {
   return (
-    <div className="w-20 h-20 bg-orange-400 rounded-xl flex flex-col items-center justify-center shadow-lg">
+    <div className="w-20 h-20 bg-[#F07229] rounded-xl flex flex-col items-center justify-center shadow-lg">
       <div className="flex gap-1 mb-1">
         <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
         <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
@@ -103,12 +104,17 @@ function ArtistDashboardContent() {
     // Redirect if not artist
     if (!authLoading && user) {
       if (user.role !== 'artist') {
-        router.push(user.role === 'customer' ? '/customer' : '/');
+        router.replace(user.role === 'customer' ? '/customer' : user.role === 'admin' ? '/admin' : '/signup');
+        return;
+      }
+      // Check if profile is complete - if not, redirect to profile completion
+      if (user.profileComplete === false) {
+        router.replace('/profile/artist');
         return;
       }
       loadQuotes();
     } else if (!authLoading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [authLoading, user, router, loadQuotes]);
 
@@ -248,7 +254,7 @@ function ArtistDashboardContent() {
                   </div>
                   <p className="text-gray-300 mb-6">Looks Like you dont have any slots booked yet.</p>
                   <Link href="/artist/create-quote">
-                    <Button className="bg-[#C40F5A] hover:bg-[#EE2377] px-8 py-3 rounded-xl text-white font-medium transition-all">
+                    <Button className="bg-[#EE2377] hover:bg-[#C40F5A] px-10 py-4 h-14 rounded-xl text-white font-medium transition-all">
                       <Plus className="mr-2 h-5 w-5" /> Add First Booking
                     </Button>
                   </Link>
@@ -350,13 +356,26 @@ function ArtistDashboardContent() {
           >
             <h2 className="text-xl font-bold mb-6">Analytics</h2>
             
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Revenue Card */}
+            <div className="bg-gradient-to-r from-[#C40F5A] to-[#EE2377] rounded-2xl p-5 mb-6">
+              <p className="text-white/80 text-sm mb-1">Total Revenue</p>
+              <p className="text-3xl font-bold text-white">
+                ₹{quotes.filter(q => ['Booked', 'Completed'].includes(q.status))
+                  .reduce((sum, q) => sum + parseFloat(q.price || '0'), 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-white/60 text-xs mt-2">
+                From {quotes.filter(q => ['Booked', 'Completed'].includes(q.status)).length} paid bookings
+              </p>
+            </div>
+            
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Total Bookings</p>
+                <p className="text-gray-400 text-xs">Total Bookings</p>
                 <p className="text-2xl font-bold text-white">{quotes.length}</p>
               </div>
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">This Month</p>
+                <p className="text-gray-400 text-xs">This Month</p>
                 <p className="text-2xl font-bold text-white">
                   {quotes.filter(q => {
                     const date = parseISO(q.serviceDate);
@@ -366,20 +385,84 @@ function ArtistDashboardContent() {
                 </p>
               </div>
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Completed</p>
+                <p className="text-gray-400 text-xs">Completed</p>
                 <p className="text-2xl font-bold text-green-500">
                   {quotes.filter(q => q.status === 'Completed').length}
                 </p>
               </div>
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Pending</p>
+                <p className="text-gray-400 text-xs">Pending</p>
                 <p className="text-2xl font-bold text-yellow-500">
                   {quotes.filter(q => q.status === 'Pending').length}
                 </p>
               </div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+                <p className="text-gray-400 text-xs">Booked</p>
+                <p className="text-2xl font-bold text-blue-500">
+                  {quotes.filter(q => q.status === 'Booked').length}
+                </p>
+              </div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+                <p className="text-gray-400 text-xs">Cancelled</p>
+                <p className="text-2xl font-bold text-red-500">
+                  {quotes.filter(q => q.status === 'Cancelled').length}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+            {/* Monthly Revenue */}
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
+              <h3 className="text-white font-semibold mb-4">This Month's Revenue</h3>
+              <p className="text-2xl font-bold text-[#C40F5A]">
+                ₹{quotes.filter(q => {
+                  const date = parseISO(q.serviceDate);
+                  const now = new Date();
+                  return date.getMonth() === now.getMonth() && 
+                         date.getFullYear() === now.getFullYear() &&
+                         ['Booked', 'Completed'].includes(q.status);
+                }).reduce((sum, q) => sum + parseFloat(q.price || '0'), 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-gray-500 text-sm mt-1">
+                vs ₹{quotes.filter(q => {
+                  const date = parseISO(q.serviceDate);
+                  const now = new Date();
+                  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                  return date.getMonth() === lastMonth.getMonth() && 
+                         date.getFullYear() === lastMonth.getFullYear() &&
+                         ['Booked', 'Completed'].includes(q.status);
+                }).reduce((sum, q) => sum + parseFloat(q.price || '0'), 0).toLocaleString('en-IN')} last month
+              </p>
+            </div>
+
+            {/* Conversion Rate */}
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
+              <h3 className="text-white font-semibold mb-3">Conversion Rate</h3>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#C40F5A] to-[#EE2377] rounded-full"
+                      style={{ 
+                        width: `${quotes.length > 0 
+                          ? Math.round((quotes.filter(q => ['Booked', 'Completed'].includes(q.status)).length / quotes.length) * 100) 
+                          : 0}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+                <span className="text-white font-bold">
+                  {quotes.length > 0 
+                    ? Math.round((quotes.filter(q => ['Booked', 'Completed'].includes(q.status)).length / quotes.length) * 100) 
+                    : 0}%
+                </span>
+              </div>
+              <p className="text-gray-500 text-xs mt-2">
+                {quotes.filter(q => ['Booked', 'Completed'].includes(q.status)).length} of {quotes.length} quotes converted
+              </p>
+            </div>
+
+            {/* Popular Services */}
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
               <h3 className="text-white font-semibold mb-4">Popular Services</h3>
               <div className="space-y-3">
                 {Object.entries(
@@ -387,9 +470,12 @@ function ArtistDashboardContent() {
                     acc[quote.productType] = (acc[quote.productType] || 0) + 1;
                     return acc;
                   }, {} as Record<string, number>)
-                ).slice(0, 5).map(([service, count]) => (
-                  <div key={service} className="flex justify-between items-center">
-                    <span className="text-white">{service}</span>
+                ).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([service, count], idx) => (
+                  <div key={service} className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#C40F5A]/20 text-[#C40F5A] text-xs flex items-center justify-center font-bold">
+                      {idx + 1}
+                    </span>
+                    <span className="text-white flex-1 truncate">{service}</span>
                     <span className="text-[#C40F5A] font-semibold">{count}</span>
                   </div>
                 ))}
@@ -397,6 +483,17 @@ function ArtistDashboardContent() {
                   <p className="text-gray-500 text-center py-4">No data available</p>
                 )}
               </div>
+            </div>
+
+            {/* Average Booking Value */}
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <h3 className="text-white font-semibold mb-3">Average Booking Value</h3>
+              <p className="text-2xl font-bold text-white">
+                ₹{quotes.length > 0 
+                  ? Math.round(quotes.reduce((sum, q) => sum + parseFloat(q.price || '0'), 0) / quotes.length).toLocaleString('en-IN')
+                  : 0}
+              </p>
+              <p className="text-gray-500 text-xs mt-1">Based on all bookings</p>
             </div>
           </motion.div>
         )}
@@ -430,7 +527,7 @@ function ArtistDashboardContent() {
             </div>
 
             {/* Send Booking Form Button */}
-            <Button className="w-full h-14 bg-[#C40F5A] hover:bg-[#EE2377] rounded-2xl mb-4 flex items-center justify-center gap-2 transition-colors">
+            <Button className="w-full h-16 bg-[#EE2377] hover:bg-[#C40F5A] rounded-2xl mb-4 flex items-center justify-center gap-2 transition-colors">
               <FileText className="h-5 w-5" /> Send Booking Form
             </Button>
 
@@ -505,7 +602,7 @@ function ArtistDashboardContent() {
       {/* FAB - New Booking */}
       {(view === 'home' || view === 'bookings') && quotes.length > 0 && (
         <Link href="/artist/create-quote"
-          className="fixed bottom-24 right-4 bg-[#C40F5A] text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#EE2377] transition-all active:scale-95 z-20">
+          className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20">
           <Plus className="h-5 w-5" /> Add Booking
         </Link>
       )}

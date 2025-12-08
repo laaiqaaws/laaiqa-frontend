@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { format, parseISO, isValid, differenceInDays, startOfDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from "date-fns";
+import { format, parseISO, isValid, differenceInDays, startOfDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown, Clock, ExternalLink } from "lucide-react";
+import { Plus, ChevronDown, Clock, ExternalLink, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Quote {
@@ -27,26 +27,44 @@ interface BookingsViewProps {
   createQuoteLink?: string;
 }
 
-const CARD_COLORS = ['bg-[#FACCB2]', 'bg-[#F9B6D2]', 'bg-[#CD8FDE]', 'bg-[#A2D9CE]', 'bg-[#FFD8A9]'];
+// Pastel colors matching the design - exact hex codes from brand
+const PASTEL_COLORS = [
+  'bg-[#CD8FDE]', // Purple
+  'bg-[#FACCB2]', // Peach/Orange
+  'bg-[#F9B6D2]', // Pink
+  'bg-[#B5EAD7]', // Mint green
+  'bg-[#FFDAC1]', // Coral
+];
 
-function getDaysUntil(dateStr: string): string {
+function getDaysUntil(dateStr: string): { text: string; isPast: boolean } {
   const date = parseISO(dateStr);
-  if (!isValid(date)) return '';
+  if (!isValid(date)) return { text: '', isPast: false };
   const days = differenceInDays(startOfDay(date), startOfDay(new Date()));
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Tomorrow';
-  if (days < 0) return `${Math.abs(days)}d ago`;
-  return `In ${days} Days`;
+  if (days === 0) return { text: 'Today', isPast: false };
+  if (days === 1) return { text: 'Tomorrow', isPast: false };
+  if (days < 0) return { text: `${Math.abs(days)}d ago`, isPast: true };
+  return { text: `In ${days} Days`, isPast: false };
 }
 
 function getStatusBadge(status: string): { text: string; style: string } {
   switch (status) {
-    case 'Booked': return { text: '$ Fully Paid', style: 'border border-black/30' };
-    case 'Accepted': return { text: '$ Pending', style: 'border border-black/30' };
-    case 'Pending': return { text: '$ Pending', style: 'border border-black/30' };
-    case 'Completed': return { text: '✓ Completed', style: 'bg-purple-500/20 text-purple-600' };
-    case 'Cancelled': return { text: '✗ Cancelled', style: 'bg-red-500/20 text-red-600' };
-    default: return { text: status, style: 'border border-black/30' };
+    case 'Booked': return { text: '$ Fully Paid', style: 'border border-black/40 text-black' };
+    case 'Accepted': return { text: '$ Pending', style: 'border border-black/40 text-black' };
+    case 'Pending': return { text: '$ Pending', style: 'border border-black/40 text-black' };
+    case 'Completed': return { text: '✓ Completed', style: 'bg-green-600 text-white' };
+    case 'Cancelled': return { text: '✗ Cancelled', style: 'bg-red-600 text-white' };
+    default: return { text: status, style: 'border border-black/40 text-black' };
+  }
+}
+
+function getStatusTag(status: string): { text: string; bgColor: string; textColor: string } {
+  switch (status) {
+    case 'Booked': return { text: 'Booked', bgColor: 'bg-[#1FC16B]', textColor: 'text-white' }; // Status green
+    case 'Accepted': return { text: 'Accepted', bgColor: 'bg-[#0063E4]', textColor: 'text-white' }; // Blue
+    case 'Pending': return { text: 'Pending', bgColor: 'bg-[#F07229]', textColor: 'text-white' }; // Orange
+    case 'Completed': return { text: 'Completed', bgColor: 'bg-[#CD8FDE]', textColor: 'text-black' }; // Purple
+    case 'Cancelled': return { text: 'Cancelled', bgColor: 'bg-gray-500', textColor: 'text-white' };
+    default: return { text: status, bgColor: 'bg-gray-500', textColor: 'text-white' };
   }
 }
 
@@ -62,18 +80,34 @@ function parseDetails(details: string): Record<string, string> {
   return result;
 }
 
-// Expandable Booking Card
-function BookingCard({ quote, index, isExpanded, onToggle }: { 
+function formatServiceDate(dateStr: string): string {
+  try {
+    const date = parseISO(dateStr);
+    return format(date, 'dd/MM/yyyy');
+  } catch {
+    return dateStr;
+  }
+}
+
+// Expandable Booking Card with pastel colors
+function BookingCard({ quote, index, isExpanded, onToggle, userRole }: { 
   quote: Quote; 
   index: number; 
   isExpanded: boolean;
   onToggle: () => void;
+  userRole: 'artist' | 'customer';
 }) {
-  const cardColor = CARD_COLORS[index % CARD_COLORS.length];
+  const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
   const statusBadge = getStatusBadge(quote.status);
+  const statusTag = getStatusTag(quote.status);
   const parsedDetails = parseDetails(quote.details);
   const isCancelled = quote.status === 'Cancelled';
   const isCompleted = quote.status === 'Completed';
+  const daysInfo = getDaysUntil(quote.serviceDate);
+  
+  // Can raise dispute for Accepted, Booked, or Completed quotes
+  const canRaiseDispute = ['Accepted', 'Booked', 'Completed'].includes(quote.status);
+  const disputeLink = userRole === 'artist' ? '/artist/disputes' : '/customer/disputes';
 
   return (
     <div className="mb-3">
@@ -81,30 +115,58 @@ function BookingCard({ quote, index, isExpanded, onToggle }: {
       <button
         onClick={onToggle}
         className={`w-full text-left rounded-2xl p-4 transition-all ${
-          isCancelled ? 'bg-[#1a1a1a] opacity-60' : 
-          isCompleted ? 'bg-[#2a2a2a]' : cardColor
+          isCancelled ? 'bg-gray-700 opacity-70' : 
+          isCompleted ? 'bg-gray-600' : pastelColor
         } ${isExpanded ? 'rounded-b-none' : ''}`}
       >
-        <div className="flex gap-2 mb-2 flex-wrap">
-          <span className="bg-black/80 text-white text-xs px-3 py-1 rounded-full font-medium">
-            {getDaysUntil(quote.serviceDate)}
+        {/* Tags Row */}
+        <div className="flex gap-2 mb-3 flex-wrap">
+          {/* Days until / Date tag */}
+          <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+            isCancelled || isCompleted 
+              ? 'bg-gray-800 text-gray-300' 
+              : 'bg-black/80 text-white'
+          }`}>
+            {daysInfo.isPast ? formatServiceDate(quote.serviceDate) : daysInfo.text}
           </span>
-          <span className={`text-xs px-3 py-1 rounded-full ${statusBadge.style} ${isCancelled || isCompleted ? 'text-gray-400' : 'text-black'}`}>
+          
+          {/* Payment status tag */}
+          <span className={`text-xs px-3 py-1 rounded-full ${
+            isCancelled || isCompleted ? 'bg-gray-800 text-gray-300' : statusBadge.style
+          }`}>
             {statusBadge.text}
           </span>
+          
+          {/* Time tag */}
           {quote.serviceTime && (
-            <span className={`text-xs px-3 py-1 rounded-full border ${isCancelled || isCompleted ? 'border-gray-600 text-gray-400' : 'border-black/30 text-black'} flex items-center gap-1`}>
-              <Clock className="h-3 w-3" /> {quote.serviceTime.includes('-') ? quote.serviceTime.split('-')[0].trim() : quote.serviceTime}
+            <span className={`text-xs px-3 py-1 rounded-full flex items-center gap-1 ${
+              isCancelled || isCompleted 
+                ? 'bg-gray-800 text-gray-300' 
+                : 'border border-black/40 text-black'
+            }`}>
+              <Clock className="h-3 w-3" /> 
+              {quote.serviceTime.includes('-') 
+                ? quote.serviceTime.split('-').map(t => t.trim()).join(' - ')
+                : quote.serviceTime}
             </span>
           )}
         </div>
-        <p className={`text-xs mb-1 ${isCancelled || isCompleted ? 'text-gray-500' : 'opacity-70'}`}>
+        
+        {/* Booking ID */}
+        <p className={`text-xs mb-1 ${isCancelled || isCompleted ? 'text-gray-400' : 'text-black/60'}`}>
           Booking # {quote.id.slice(0, 8).toUpperCase()}
         </p>
-        <h3 className={`font-bold text-lg ${isCancelled ? 'line-through text-gray-400' : isCompleted ? 'text-white' : 'text-black'}`}>
+        
+        {/* Title */}
+        <h3 className={`font-bold text-lg ${
+          isCancelled ? 'line-through text-gray-400' : 
+          isCompleted ? 'text-white' : 'text-black'
+        }`}>
           {quote.productType}
         </h3>
-        <p className={`text-sm ${isCancelled || isCompleted ? 'text-gray-500' : 'opacity-80'}`}>
+        
+        {/* Subtitle */}
+        <p className={`text-sm ${isCancelled || isCompleted ? 'text-gray-400' : 'text-black/70'}`}>
           {quote.customerName || quote.artistName || 'Customer'} | {quote.serviceTime}
         </p>
       </button>
@@ -120,6 +182,14 @@ function BookingCard({ quote, index, isExpanded, onToggle }: {
             className="overflow-hidden"
           >
             <div className="bg-black border border-gray-800 border-t-0 rounded-b-2xl p-4 space-y-4">
+              {/* Status Tag */}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-sm">Status:</span>
+                <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusTag.bgColor} ${statusTag.textColor}`}>
+                  {statusTag.text}
+                </span>
+              </div>
+
               {/* Basic Booking Info */}
               {(parsedDetails['Client'] || quote.customerName) && (
                 <div>
@@ -152,7 +222,7 @@ function BookingCard({ quote, index, isExpanded, onToggle }: {
                     <span className="text-gray-300">: {format(parseISO(quote.serviceDate), 'dd MMM yyyy')}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-32">Time</span>
+                    <span className="text-gray-500 w-32">Time to be Ready</span>
                     <span className="text-gray-300">: {quote.serviceTime}</span>
                   </div>
                 </div>
@@ -207,16 +277,29 @@ function BookingCard({ quote, index, isExpanded, onToggle }: {
               )}
 
               {/* Price */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-800">
-                <div>
-                  <span className="text-gray-500 text-sm">Total Amount</span>
-                  <p className="text-white font-bold text-lg">₹{quote.price}</p>
+              <div className="pt-2 border-t border-gray-800">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-gray-500 text-sm">Total Amount</span>
+                    <p className="text-white font-bold text-lg">₹{quote.price}</p>
+                  </div>
                 </div>
-                <Link href={`/quote/${quote.id}`}>
-                  <Button className="bg-[#C40F5A] hover:bg-[#EE2377] text-white rounded-xl px-6">
-                    View Quote <ExternalLink className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Link href={`/quote/${quote.id}`} className="flex-1">
+                    <Button className="w-full bg-[#EE2377] hover:bg-[#C40F5A] text-white rounded-xl">
+                      <ExternalLink className="mr-2 h-4 w-4" /> View Quote
+                    </Button>
+                  </Link>
+                  {canRaiseDispute && (
+                    <Link href={disputeLink} className="flex-1">
+                      <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl">
+                        <AlertTriangle className="mr-2 h-4 w-4" /> Raise Dispute
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -237,7 +320,6 @@ function CalendarViewNew({ quotes, currentMonth, onMonthChange }: {
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startDayOfWeek = getDay(monthStart);
 
-  // Get bookings by date
   const bookingsByDate = quotes.reduce((acc, quote) => {
     try {
       const dateKey = format(parseISO(quote.serviceDate), 'yyyy-MM-dd');
@@ -251,9 +333,8 @@ function CalendarViewNew({ quotes, currentMonth, onMonthChange }: {
 
   return (
     <div className="space-y-6">
-      {/* Month Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[#C40F5A] font-semibold text-lg uppercase">
+        <h3 className="text-[#F07229] font-bold text-lg uppercase tracking-wide">
           {format(currentMonth, 'MMMM')}
         </h3>
         <div className="flex items-center gap-4">
@@ -267,21 +348,17 @@ function CalendarViewNew({ quotes, currentMonth, onMonthChange }: {
         </div>
       </div>
 
-      {/* Day Headers */}
       <div className="grid grid-cols-7 gap-1">
         {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
           <div key={day} className="text-center text-xs text-gray-500 py-2">{day}</div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-1">
-        {/* Empty cells for days before month starts */}
         {Array.from({ length: startDayOfWeek }).map((_, i) => (
           <div key={`empty-${i}`} className="h-12" />
         ))}
 
-        {/* Days of the month */}
         {daysInMonth.map(day => {
           const dateKey = format(day, 'yyyy-MM-dd');
           const hasBooking = bookingsByDate[dateKey]?.length > 0;
@@ -295,7 +372,7 @@ function CalendarViewNew({ quotes, currentMonth, onMonthChange }: {
                 {format(day, 'd')}
               </span>
               {hasBooking && (
-                <div className="absolute bottom-0 w-4 h-0.5 bg-orange-500 rounded-full" />
+                <div className="absolute bottom-0 w-4 h-0.5 bg-[#F07229] rounded-full" />
               )}
             </div>
           );
@@ -311,7 +388,6 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [filterMonth, setFilterMonth] = useState<string>('this-month');
 
-  // Filter quotes based on selected month
   const filteredQuotes = quotes.filter(q => {
     if (filterMonth === 'all') return true;
     const quoteDate = parseISO(q.serviceDate);
@@ -322,7 +398,6 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
     return true;
   });
 
-  // Sort: Active first, then by date
   const sortedQuotes = [...filteredQuotes].sort((a, b) => {
     const statusOrder: Record<string, number> = { 'Booked': 0, 'Accepted': 1, 'Pending': 2, 'Completed': 3, 'Cancelled': 4 };
     const statusDiff = (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
@@ -336,13 +411,13 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
 
   return (
     <div>
-      {/* Tab Switcher - Pill Style */}
+      {/* Tab Switcher */}
       <div className="bg-[#2a2a2a] rounded-xl p-1 flex mb-4">
         <button
           onClick={() => setActiveTab('bookings')}
           className={`flex-1 py-2.5 rounded-lg font-medium text-sm transition-all ${
             activeTab === 'bookings' 
-              ? 'bg-[#C40F5A] text-white' 
+              ? 'bg-[#EE2377] text-white' 
               : 'text-gray-400 hover:text-white'
           }`}
         >
@@ -352,7 +427,7 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
           onClick={() => setActiveTab('calendar')}
           className={`flex-1 py-2.5 rounded-lg font-medium text-sm transition-all ${
             activeTab === 'calendar' 
-              ? 'bg-[#C40F5A] text-white' 
+              ? 'bg-[#EE2377] text-white' 
               : 'text-gray-400 hover:text-white'
           }`}
         >
@@ -362,7 +437,6 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
 
       {activeTab === 'bookings' ? (
         <>
-          {/* Month Filter */}
           <div className="flex items-center justify-between mb-4">
             <button 
               onClick={() => setFilterMonth(filterMonth === 'this-month' ? 'all' : 'this-month')}
@@ -373,7 +447,6 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
             </button>
           </div>
 
-          {/* Booking Cards */}
           {sortedQuotes.length === 0 ? (
             <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center">
               <div className="w-20 h-20 bg-orange-400 rounded-xl flex flex-col items-center justify-center shadow-lg mx-auto mb-4">
@@ -386,7 +459,7 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
               <p className="text-gray-300 mb-6">No bookings found</p>
               {userRole === 'artist' && (
                 <Link href={createQuoteLink}>
-                  <Button className="bg-[#C40F5A] hover:bg-[#EE2377] px-8 py-3 rounded-xl text-white font-medium">
+                  <Button className="bg-[#EE2377] hover:bg-[#C40F5A] px-10 py-4 h-14 rounded-xl text-white font-medium">
                     <Plus className="mr-2 h-5 w-5" /> Add First Booking
                   </Button>
                 </Link>
@@ -401,6 +474,7 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
                   index={index}
                   isExpanded={expandedQuoteId === quote.id}
                   onToggle={() => toggleExpand(quote.id)}
+                  userRole={userRole}
                 />
               ))}
             </div>
@@ -414,11 +488,10 @@ export default function BookingsView({ quotes, userRole, createQuoteLink = '/art
         />
       )}
 
-      {/* FAB for new booking (artist only) */}
       {userRole === 'artist' && sortedQuotes.length > 0 && (
         <Link
           href={createQuoteLink}
-          className="fixed bottom-24 right-4 bg-[#C40F5A] text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#EE2377] transition-all active:scale-95 z-20"
+          className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20"
         >
           <Plus className="h-5 w-5" /> New Booking
         </Link>

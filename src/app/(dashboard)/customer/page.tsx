@@ -34,11 +34,12 @@ const QUOTES_CACHE_KEY = 'laaiqa_customer_quotes';
 const QUOTES_CACHE_EXPIRY_KEY = 'laaiqa_customer_quotes_expiry';
 const QUOTES_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-const CARD_COLORS = ['bg-pink-200', 'bg-orange-200', 'bg-purple-300', 'bg-yellow-200', 'bg-green-200'];
+// Pastel colors matching BookingsView - brand colors
+const CARD_COLORS = ['bg-[#CD8FDE]', 'bg-[#FACCB2]', 'bg-[#F9B6D2]', 'bg-[#B5EAD7]', 'bg-[#FFDAC1]'];
 
 function CalendarEmptyIcon() {
   return (
-    <div className="w-20 h-20 bg-orange-400 rounded-xl flex flex-col items-center justify-center shadow-lg">
+    <div className="w-20 h-20 bg-[#F07229] rounded-xl flex flex-col items-center justify-center shadow-lg">
       <div className="flex gap-1 mb-1">
         <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
         <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
@@ -124,10 +125,19 @@ function CustomerDashboardContent() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      if (user.role !== 'customer') { router.push(user.role === 'artist' ? '/artist' : '/'); return; }
+      if (user.role !== 'customer') { 
+        router.replace(user.role === 'artist' ? '/artist' : user.role === 'admin' ? '/admin' : '/signup'); 
+        return; 
+      }
+      // Check if profile is complete - if not, redirect to profile completion
+      // Only check on initial load, not on every render
+      if (user.profileComplete === false) {
+        router.replace('/profile/customer');
+        return;
+      }
       loadQuotes();
     } else if (!authLoading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [authLoading, user, router, loadQuotes]);
 
@@ -221,8 +231,8 @@ function CustomerDashboardContent() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-green-500">{quotes.filter(q => q.status === 'Completed').length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Active</p><p className="text-2xl font-bold text-yellow-500">{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-[#1FC16B]">{quotes.filter(q => q.status === 'Completed').length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Active</p><p className="text-2xl font-bold text-[#F07229]">{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length}</p></div>
             </div>
             <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><h3 className="text-white font-semibold mb-4">Favorite Services</h3><div className="space-y-3">{Object.entries(quotes.reduce((a, q) => { a[q.productType] = (a[q.productType] || 0) + 1; return a; }, {} as Record<string, number>)).slice(0, 5).map(([s, c]) => <div key={s} className="flex justify-between items-center"><span className="text-white">{s}</span><span className="text-[#C40F5A] font-semibold">{c}</span></div>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
           </motion.div>

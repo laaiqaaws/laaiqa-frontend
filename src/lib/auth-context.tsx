@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { API_BASE_URL } from '@/types/user';
 
 interface UserData {
@@ -10,6 +10,7 @@ interface UserData {
   image?: string | null;
   phone?: string | null;
   role: string;
+  profileComplete?: boolean;
 }
 
 interface AuthContextType {
@@ -17,7 +18,7 @@ interface AuthContextType {
   csrfToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  refreshUser: () => Promise<void>;
+  refreshUser: (forceRefresh?: boolean) => Promise<UserData | null>;
   logout: () => Promise<boolean>;
   clearSession: () => void;
 }
@@ -28,43 +29,62 @@ const SESSION_KEY = 'laaiqa_user';
 const CSRF_KEY = 'laaiqa_csrf';
 const SESSION_EXPIRY_KEY = 'laaiqa_session_expiry';
 const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+const ROLE_CHANGE_KEY = 'laaiqa_role_changed'; // Flag to force refresh after role change
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initRef = useRef(false);
 
   const clearSession = useCallback(() => {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(CSRF_KEY);
-    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(CSRF_KEY);
+      sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+      sessionStorage.removeItem(ROLE_CHANGE_KEY);
+    } catch {
+      // Session storage might not be available
+    }
     setUser(null);
     setCsrfToken(null);
   }, []);
 
   const isSessionValid = useCallback(() => {
-    const expiry = sessionStorage.getItem(SESSION_EXPIRY_KEY);
-    if (!expiry) return false;
-    return Date.now() < parseInt(expiry, 10);
+    try {
+      // Check if role was recently changed - force refresh
+      const roleChanged = sessionStorage.getItem(ROLE_CHANGE_KEY);
+      if (roleChanged) {
+        sessionStorage.removeItem(ROLE_CHANGE_KEY);
+        return false;
+      }
+      
+      const expiry = sessionStorage.getItem(SESSION_EXPIRY_KEY);
+      if (!expiry) return false;
+      return Date.now() < parseInt(expiry, 10);
+    } catch {
+      return false;
+    }
   }, []);
 
-  const loadFromSession = useCallback(() => {
+  const loadFromSession = useCallback((): UserData | null => {
     try {
       if (!isSessionValid()) {
         clearSession();
-        return false;
+        return null;
       }
       const cachedUser = sessionStorage.getItem(SESSION_KEY);
       const cachedCsrf = sessionStorage.getItem(CSRF_KEY);
       if (cachedUser) {
-        setUser(JSON.parse(cachedUser));
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
         if (cachedCsrf) setCsrfToken(cachedCsrf);
-        return true;
+        return userData;
       }
     } catch {
       clearSession();
     }
-    return false;
+    return null;
   }, [isSessionValid, clearSession]);
 
   const saveToSession = useCallback((userData: UserData, csrf: string | null) => {
@@ -77,21 +97,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (forceRefresh: boolean = false): Promise<UserData | null> => {
     try {
+      // If force refresh, clear session first to ensure fresh data
+      if (forceRefresh) {
+        try {
+          sessionStorage.removeItem(SESSION_KEY);
+          sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+        } catch {
+          // Ignore
+        }
+      }
+
       const [userRes, csrfRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-        fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
+        fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include', cache: 'no-store' })
       ]);
 
       if (!userRes.ok) {
         clearSession();
-        return;
+        return null;
       }
 
       const userData = await userRes.json();
       // Filter out base64 images to prevent storage issues
-      const sanitizedUser = {
+      const sanitizedUser: UserData = {
         ...userData.user,
         image: userData.user.image && userData.user.image.startsWith('http') ? userData.user.image : null
       };
@@ -105,33 +135,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       saveToSession(sanitizedUser, csrf);
+      return sanitizedUser;
     } catch {
       clearSession();
+      return null;
     }
   }, [clearSession, saveToSession]);
 
   const logout = useCallback(async (): Promise<boolean> => {
-    if (!csrfToken) return false;
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'CSRF-Token': csrfToken }
-      });
-      if (res.ok) {
+      // Try to get CSRF token if we don't have one
+      let token = csrfToken;
+      if (!token) {
+        try {
+          const csrfRes = await fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' });
+          if (csrfRes.ok) {
+            const data = await csrfRes.json();
+            token = data.csrfToken;
+          }
+        } catch {
+          // Continue without CSRF
+        }
+      }
+      
+      if (!token) {
+        // Even without CSRF, clear local session
         clearSession();
         return true;
       }
+      
+      const res = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'CSRF-Token': token }
+      });
+      
+      // Clear session regardless of response
+      clearSession();
+      return res.ok;
     } catch {
-      // Logout failed
+      // Clear session even on error
+      clearSession();
+      return true;
     }
-    return false;
   }, [csrfToken, clearSession]);
 
   useEffect(() => {
+    // Prevent double initialization in strict mode
+    if (initRef.current) return;
+    initRef.current = true;
+    
     const init = async () => {
       // Try loading from session first
-      if (loadFromSession()) {
+      const cachedUser = loadFromSession();
+      if (cachedUser) {
         setIsLoading(false);
         // Refresh in background to keep session fresh (but don't block UI)
         refreshUser();

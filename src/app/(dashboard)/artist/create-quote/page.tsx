@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useAuth } from "@/lib/auth-context";
+import { INDIAN_STATES } from "@/lib/validation";
 
 const EVENT_TYPES = [
   'Bridal Makeup',
@@ -71,7 +72,9 @@ export default function CreateQuotePage() {
   const [eventType, setEventType] = useState('');
   const [otherEventType, setOtherEventType] = useState('');
   const [eventDate, setEventDate] = useState<Date | undefined>();
-  const [startTime, setStartTime] = useState('');
+  const [timeSlot, setTimeSlot] = useState('');
+  const [customStartTime, setCustomStartTime] = useState('');
+  const [customEndTime, setCustomEndTime] = useState('');
 
   // Location & Venue
   const [venueType, setVenueType] = useState('');
@@ -113,8 +116,12 @@ export default function CreateQuotePage() {
       sonnerToast.error("Please select an event date");
       return;
     }
-    if (!startTime) {
-      sonnerToast.error("Please enter a start time");
+    if (!timeSlot) {
+      sonnerToast.error("Please select a time slot");
+      return;
+    }
+    if (timeSlot === 'Custom' && (!customStartTime || !customEndTime)) {
+      sonnerToast.error("Please select both start and end times for custom slot");
       return;
     }
     if (!totalPrice || parseFloat(totalPrice) <= 0) {
@@ -146,12 +153,17 @@ export default function CreateQuotePage() {
       if (numberOfLooks !== '1') detailsParts.push(`Looks: ${numberOfLooks}`);
       if (serviceDetails) detailsParts.push(`Notes: ${serviceDetails}`);
 
+      // Determine final service time
+      const finalServiceTime = timeSlot === 'Custom' 
+        ? `${customStartTime} - ${customEndTime}`
+        : timeSlot;
+
       const payload = {
         productType: finalEventType,
         details: detailsParts.join(' | ') || 'Booking details pending',
         price: parseFloat(totalPrice),
         serviceDate: format(eventDate, 'yyyy-MM-dd'),
-        serviceTime: startTime,
+        serviceTime: finalServiceTime,
       };
 
       const response = await fetch(`${API_BASE_URL}/api/quotes`, {
@@ -255,23 +267,20 @@ export default function CreateQuotePage() {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-sm">Phone Number*</Label>
-              <div className="flex gap-2 mt-1">
-                <Select defaultValue="+91">
-                  <SelectTrigger className="w-20 bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#2a2a2a] border-gray-700">
-                    <SelectItem value="+91">+91</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input 
-                  value={clientPhone} 
-                  onChange={e => setClientPhone(e.target.value)}
-                  placeholder="Phone number"
-                  className="flex-1 bg-[#2a2a2a] border-gray-700 text-white"
-                />
-              </div>
+              <Label className="text-gray-400 text-sm">Phone Number* (10 digits)</Label>
+              <Input 
+                value={clientPhone} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setClientPhone(val);
+                }}
+                placeholder="9876543210"
+                maxLength={10}
+                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+              />
+              {clientPhone && clientPhone.length > 0 && clientPhone.length < 10 && (
+                <p className="text-orange-400 text-xs mt-1">{10 - clientPhone.length} more digits needed</p>
+              )}
             </div>
 
             <div>
@@ -336,7 +345,7 @@ export default function CreateQuotePage() {
 
             <div>
               <Label className="text-gray-400 text-sm">Service Time Slot*</Label>
-              <Select value={startTime} onValueChange={setStartTime}>
+              <Select value={timeSlot} onValueChange={setTimeSlot}>
                 <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
                   <SelectValue placeholder="Select time slot" />
                 </SelectTrigger>
@@ -350,10 +359,108 @@ export default function CreateQuotePage() {
                   <SelectItem value="06:00 - 08:00 PM">6:00 PM - 8:00 PM (Late Evening)</SelectItem>
                   <SelectItem value="08:00 - 10:00 PM">8:00 PM - 10:00 PM (Night)</SelectItem>
                   <SelectItem value="Full Day">Full Day Service</SelectItem>
-                  <SelectItem value="Custom">Custom (Discuss with client)</SelectItem>
+                  <SelectItem value="Custom">Custom Time</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Custom Time Pickers - Only show when Custom is selected */}
+            {timeSlot === 'Custom' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-400 text-sm">Start Time*</Label>
+                  <Select value={customStartTime} onValueChange={setCustomStartTime}>
+                    <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                      <SelectValue placeholder="From" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[250px]">
+                      <SelectItem value="5:00 AM">5:00 AM</SelectItem>
+                      <SelectItem value="5:30 AM">5:30 AM</SelectItem>
+                      <SelectItem value="6:00 AM">6:00 AM</SelectItem>
+                      <SelectItem value="6:30 AM">6:30 AM</SelectItem>
+                      <SelectItem value="7:00 AM">7:00 AM</SelectItem>
+                      <SelectItem value="7:30 AM">7:30 AM</SelectItem>
+                      <SelectItem value="8:00 AM">8:00 AM</SelectItem>
+                      <SelectItem value="8:30 AM">8:30 AM</SelectItem>
+                      <SelectItem value="9:00 AM">9:00 AM</SelectItem>
+                      <SelectItem value="9:30 AM">9:30 AM</SelectItem>
+                      <SelectItem value="10:00 AM">10:00 AM</SelectItem>
+                      <SelectItem value="10:30 AM">10:30 AM</SelectItem>
+                      <SelectItem value="11:00 AM">11:00 AM</SelectItem>
+                      <SelectItem value="11:30 AM">11:30 AM</SelectItem>
+                      <SelectItem value="12:00 PM">12:00 PM</SelectItem>
+                      <SelectItem value="12:30 PM">12:30 PM</SelectItem>
+                      <SelectItem value="1:00 PM">1:00 PM</SelectItem>
+                      <SelectItem value="1:30 PM">1:30 PM</SelectItem>
+                      <SelectItem value="2:00 PM">2:00 PM</SelectItem>
+                      <SelectItem value="2:30 PM">2:30 PM</SelectItem>
+                      <SelectItem value="3:00 PM">3:00 PM</SelectItem>
+                      <SelectItem value="3:30 PM">3:30 PM</SelectItem>
+                      <SelectItem value="4:00 PM">4:00 PM</SelectItem>
+                      <SelectItem value="4:30 PM">4:30 PM</SelectItem>
+                      <SelectItem value="5:00 PM">5:00 PM</SelectItem>
+                      <SelectItem value="5:30 PM">5:30 PM</SelectItem>
+                      <SelectItem value="6:00 PM">6:00 PM</SelectItem>
+                      <SelectItem value="6:30 PM">6:30 PM</SelectItem>
+                      <SelectItem value="7:00 PM">7:00 PM</SelectItem>
+                      <SelectItem value="7:30 PM">7:30 PM</SelectItem>
+                      <SelectItem value="8:00 PM">8:00 PM</SelectItem>
+                      <SelectItem value="8:30 PM">8:30 PM</SelectItem>
+                      <SelectItem value="9:00 PM">9:00 PM</SelectItem>
+                      <SelectItem value="9:30 PM">9:30 PM</SelectItem>
+                      <SelectItem value="10:00 PM">10:00 PM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-gray-400 text-sm">End Time*</Label>
+                  <Select value={customEndTime} onValueChange={setCustomEndTime}>
+                    <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                      <SelectValue placeholder="To" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[250px]">
+                      <SelectItem value="5:00 AM">5:00 AM</SelectItem>
+                      <SelectItem value="5:30 AM">5:30 AM</SelectItem>
+                      <SelectItem value="6:00 AM">6:00 AM</SelectItem>
+                      <SelectItem value="6:30 AM">6:30 AM</SelectItem>
+                      <SelectItem value="7:00 AM">7:00 AM</SelectItem>
+                      <SelectItem value="7:30 AM">7:30 AM</SelectItem>
+                      <SelectItem value="8:00 AM">8:00 AM</SelectItem>
+                      <SelectItem value="8:30 AM">8:30 AM</SelectItem>
+                      <SelectItem value="9:00 AM">9:00 AM</SelectItem>
+                      <SelectItem value="9:30 AM">9:30 AM</SelectItem>
+                      <SelectItem value="10:00 AM">10:00 AM</SelectItem>
+                      <SelectItem value="10:30 AM">10:30 AM</SelectItem>
+                      <SelectItem value="11:00 AM">11:00 AM</SelectItem>
+                      <SelectItem value="11:30 AM">11:30 AM</SelectItem>
+                      <SelectItem value="12:00 PM">12:00 PM</SelectItem>
+                      <SelectItem value="12:30 PM">12:30 PM</SelectItem>
+                      <SelectItem value="1:00 PM">1:00 PM</SelectItem>
+                      <SelectItem value="1:30 PM">1:30 PM</SelectItem>
+                      <SelectItem value="2:00 PM">2:00 PM</SelectItem>
+                      <SelectItem value="2:30 PM">2:30 PM</SelectItem>
+                      <SelectItem value="3:00 PM">3:00 PM</SelectItem>
+                      <SelectItem value="3:30 PM">3:30 PM</SelectItem>
+                      <SelectItem value="4:00 PM">4:00 PM</SelectItem>
+                      <SelectItem value="4:30 PM">4:30 PM</SelectItem>
+                      <SelectItem value="5:00 PM">5:00 PM</SelectItem>
+                      <SelectItem value="5:30 PM">5:30 PM</SelectItem>
+                      <SelectItem value="6:00 PM">6:00 PM</SelectItem>
+                      <SelectItem value="6:30 PM">6:30 PM</SelectItem>
+                      <SelectItem value="7:00 PM">7:00 PM</SelectItem>
+                      <SelectItem value="7:30 PM">7:30 PM</SelectItem>
+                      <SelectItem value="8:00 PM">8:00 PM</SelectItem>
+                      <SelectItem value="8:30 PM">8:30 PM</SelectItem>
+                      <SelectItem value="9:00 PM">9:00 PM</SelectItem>
+                      <SelectItem value="9:30 PM">9:30 PM</SelectItem>
+                      <SelectItem value="10:00 PM">10:00 PM</SelectItem>
+                      <SelectItem value="10:30 PM">10:30 PM</SelectItem>
+                      <SelectItem value="11:00 PM">11:00 PM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -395,11 +502,16 @@ export default function CreateQuotePage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-gray-400 text-sm">State</Label>
-                <Input 
-                  value={state} 
-                  onChange={e => setState(e.target.value)}
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
-                />
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2a2a2a] border-gray-700 max-h-[300px]">
+                    {INDIAN_STATES.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-gray-400 text-sm">City</Label>
@@ -412,10 +524,15 @@ export default function CreateQuotePage() {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-sm">Pincode</Label>
+              <Label className="text-gray-400 text-sm">Pincode (6 digits)</Label>
               <Input 
                 value={pincode} 
-                onChange={e => setPincode(e.target.value)}
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setPincode(val);
+                }}
+                maxLength={6}
+                placeholder="560001"
                 className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
               />
             </div>
@@ -472,21 +589,24 @@ export default function CreateQuotePage() {
               <Label className="text-white">Extra Add-ons</Label>
               <button 
                 onClick={() => setExtraAddons(!extraAddons)}
-                className={`w-12 h-6 rounded-full transition-colors ${extraAddons ? 'bg-[#C40F5A]' : 'bg-gray-600'}`}
+                className={`w-12 h-6 rounded-full transition-colors ${extraAddons ? 'bg-[#EE2377]' : 'bg-gray-600'}`}
               >
                 <div className={`w-5 h-5 bg-white rounded-full transition-transform ${extraAddons ? 'translate-x-6' : 'translate-x-0.5'}`} />
               </button>
             </div>
 
-            <div>
-              <Label className="text-gray-400 text-sm">Additional Notes</Label>
-              <Textarea 
-                value={serviceDetails} 
-                onChange={e => setServiceDetails(e.target.value)}
-                placeholder="Any special requests or notes..."
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1 min-h-[80px]"
-              />
-            </div>
+            {/* Additional Notes - Only show when Extra Add-ons is enabled */}
+            {extraAddons && (
+              <div>
+                <Label className="text-gray-400 text-sm">Additional Notes</Label>
+                <Textarea 
+                  value={serviceDetails} 
+                  onChange={e => setServiceDetails(e.target.value)}
+                  placeholder="Any special requests or notes..."
+                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1 min-h-[80px]"
+                />
+              </div>
+            )}
           </div>
         </section>
 
@@ -543,7 +663,7 @@ export default function CreateQuotePage() {
         <Button 
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white font-medium rounded-xl"
+          className="w-full h-14 bg-[#EE2377] hover:bg-[#C40F5A] text-white font-medium rounded-xl"
         >
           {isSubmitting ? 'Creating...' : 'Save & Continue'}
         </Button>
