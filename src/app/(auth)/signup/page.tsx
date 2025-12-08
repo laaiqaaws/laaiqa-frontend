@@ -126,9 +126,7 @@ function SignupContent() {
           <div className="flex gap-4 w-full max-w-sm">
             <button onClick={() => setSelectedRole('artist')}
               className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'artist' ? 'bg-[#2a2a2a] border-2 border-[#C40F5A]' : 'bg-[#2a2a2a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3 flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full" />
-              </div>
+              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Vendor</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You are a service provider, and in need of a platform to organise your work.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'artist' && <Check className="h-6 w-6 text-green-500" />}</div>
@@ -136,9 +134,7 @@ function SignupContent() {
 
             <button onClick={() => setSelectedRole('customer')}
               className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'customer' ? 'bg-[#2a2a2a] border-2 border-[#C40F5A]' : 'bg-[#2a2a2a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3 flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full" />
-              </div>
+              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Customer</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You have upcoming functions to prepare and need to find best professionals.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'customer' && <Check className="h-6 w-6 text-green-500" />}</div>

@@ -234,22 +234,25 @@ function ArtistOnboardingContent() {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
       const dataToSend = {
         name: fullName,
+        companyName: companyName.trim() || null,
         phone: phone.trim(),
         address: addressLine1.trim(),
+        addressLine2: addressLine2.trim() || null,
         city: city.trim(),
         state: state.trim(),
         zipCode: pincode.trim(),
         country: 'India',
-        bio: bio.trim() || `Professional ${category} with ${experience} of experience.`,
+        category: category,
+        experience: experience || null,
+        bio: bio.trim() || null,
         specialties: selectedServices.slice(0, 3).join(', '),
         services: selectedServices,
         availableLocations: availableLocations.length > 0 ? availableLocations : [city.trim()],
-        bookingInfo: [
-          `Advance booking: ${advanceBookingDays} days`,
-          `Booking type: ${bookingType === 'approval' ? 'Approval needed' : 'Instant booking'}`,
-          `Payment: ${paymentMethods.join(', ')}`,
-          allowPartialPayment ? 'Partial payment accepted' : 'Full payment required'
-        ]
+        advanceBookingDays: parseInt(advanceBookingDays, 10),
+        bookingType: bookingType,
+        paymentMethods: paymentMethods,
+        allowPartialPayment: allowPartialPayment,
+        bookingInfo: [] // Keep for backward compatibility
       };
 
       const response = await fetch(`${API_BASE_URL}/auth/me`, {

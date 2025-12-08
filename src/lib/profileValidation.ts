@@ -29,12 +29,16 @@ export const PROFILE_FIELD_CONFIG = {
   artist: {
     // Minimum required fields for artist profile completion
     required: ['phone', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
-    optional: ['bio', 'specialties', 'services', 'availableLocations', 'bookingInfo', 'portfolioLink'] as string[]
+    optional: [
+      'companyName', 'category', 'experience', 'bio', 'specialties', 
+      'services', 'availableLocations', 'bookingInfo', 'portfolioLink',
+      'addressLine2', 'advanceBookingDays', 'bookingType', 'paymentMethods', 'allowPartialPayment'
+    ] as string[]
   },
   customer: {
     // Minimum required fields for customer profile completion
     required: ['phone', 'age', 'height', 'color', 'ethnicity', 'address', 'city', 'state', 'zipCode', 'country'] as string[],
-    optional: ['weight', 'other', 'gender', 'bookingPreferences', 'preferredArtists'] as string[]
+    optional: ['weight', 'other', 'gender', 'addressLine2', 'bookingPreferences', 'preferredArtists'] as string[]
   },
   admin: {
     required: [] as string[],
@@ -150,6 +154,7 @@ export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   bio: 'Bio',
   specialties: 'Specialties',
   address: 'Street Address',
+  addressLine2: 'Address Line 2',
   city: 'City',
   state: 'State',
   zipCode: 'ZIP Code',
@@ -161,7 +166,14 @@ export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   bookingInfo: 'Booking Information',
   portfolioLink: 'Portfolio Link',
   bookingPreferences: 'Booking Preferences',
-  preferredArtists: 'Preferred Artists'
+  preferredArtists: 'Preferred Artists',
+  companyName: 'Company/Studio Name',
+  category: 'Category',
+  experience: 'Experience',
+  advanceBookingDays: 'Advance Booking Days',
+  bookingType: 'Booking Type',
+  paymentMethods: 'Payment Methods',
+  allowPartialPayment: 'Allow Partial Payment'
 };
 
 export function getMissingFieldNames(missingFields: string[]): string[] {

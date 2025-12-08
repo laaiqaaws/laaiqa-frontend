@@ -514,8 +514,7 @@ function ArtistDashboardContent() {
             <div className="flex items-center justify-between py-6">
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
-                <p className="text-gray-400 text-sm">Makeup Studio</p>
-
+                {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
               </div>
               <div className="relative">
                 <Avatar className="h-16 w-16">
@@ -602,7 +601,7 @@ function ArtistDashboardContent() {
       </AnimatePresence>
 
       {/* FAB - New Booking - Only on home page */}
-      {view === 'home' && quotes.length > 0 && (
+      {view === 'home' && (
         <Link href="/artist/create-quote"
           className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20">
           <Plus className="h-5 w-5" /> Add Booking

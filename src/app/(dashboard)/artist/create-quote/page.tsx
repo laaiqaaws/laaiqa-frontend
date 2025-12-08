@@ -138,32 +138,40 @@ export default function CreateQuotePage() {
     try {
       const finalEventType = eventType === 'Other' ? otherEventType : eventType;
       
-      // Build details string
-      const detailsParts = [];
-      if (clientFirstName || clientLastName) {
-        detailsParts.push(`Client: ${clientFirstName} ${clientLastName}`.trim());
-      }
-      if (clientPhone) detailsParts.push(`Phone: ${clientPhone}`);
-      if (venueType) detailsParts.push(`Venue: ${venueType}`);
-      if (addressLine1) {
-        const fullAddress = [addressLine1, addressLine2, city, state, pincode].filter(Boolean).join(', ');
-        detailsParts.push(`Address: ${fullAddress}`);
-      }
-      if (makeupType) detailsParts.push(`Makeup: ${makeupType}`);
-      if (numberOfLooks !== '1') detailsParts.push(`Looks: ${numberOfLooks}`);
-      if (serviceDetails) detailsParts.push(`Notes: ${serviceDetails}`);
-
       // Determine final service time
       const finalServiceTime = timeSlot === 'Custom' 
         ? `${customStartTime} - ${customEndTime}`
         : timeSlot;
 
       const payload = {
+        // Event & Schedule
         productType: finalEventType,
-        details: detailsParts.join(' | ') || 'Booking details pending',
-        price: parseFloat(totalPrice),
         serviceDate: format(eventDate, 'yyyy-MM-dd'),
         serviceTime: finalServiceTime,
+        // Client Info
+        clientFirstName: clientFirstName.trim() || null,
+        clientLastName: clientLastName.trim() || null,
+        clientGender: clientGender || null,
+        clientDob: clientDob ? format(clientDob, 'yyyy-MM-dd') : null,
+        clientPhone: clientPhone.trim() || null,
+        clientEmail: clientEmail.trim() || null,
+        // Location & Venue
+        venueType: venueType || null,
+        venueAddress: addressLine1.trim() || null,
+        venueAddress2: addressLine2.trim() || null,
+        venueCity: city.trim() || null,
+        venueState: state || null,
+        venuePincode: pincode.trim() || null,
+        // Services Requested
+        makeupType: makeupType || null,
+        numberOfLooks: parseInt(numberOfLooks, 10) || 1,
+        packageType: packageType || null,
+        extraAddons: extraAddons,
+        serviceNotes: serviceDetails.trim() || null,
+        // Payment Details
+        paymentType: paymentType,
+        price: parseFloat(totalPrice),
+        advanceAmount: advanceAmount ? parseFloat(advanceAmount) : null,
       };
 
       const response = await fetch(`${API_BASE_URL}/api/quotes`, {
@@ -215,7 +223,7 @@ export default function CreateQuotePage() {
       <div className="px-4 py-4 space-y-6">
         {/* Basic Booking Info */}
         <section>
-          <h2 className="text-[#C40F5A] font-semibold mb-4">Basic Booking Info</h2>
+          <h2 className="text-white font-semibold mb-4">Basic Booking Info</h2>
           
           <div className="space-y-3">
             <div>
@@ -225,13 +233,13 @@ export default function CreateQuotePage() {
                   value={clientFirstName} 
                   onChange={e => setClientFirstName(e.target.value)}
                   placeholder="First Name"
-                  className="bg-[#2a2a2a] border-gray-700 text-white"
+                  className="bg-[#2a2a2a] border-white text-white"
                 />
                 <Input 
                   value={clientLastName} 
                   onChange={e => setClientLastName(e.target.value)}
                   placeholder="Last Name"
-                  className="bg-[#2a2a2a] border-gray-700 text-white"
+                  className="bg-[#2a2a2a] border-white text-white"
                 />
               </div>
             </div>
@@ -240,10 +248,10 @@ export default function CreateQuotePage() {
               <div>
                 <Label className="text-gray-400 text-sm">Gender</Label>
                 <Select value={clientGender} onValueChange={setClientGender}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                  <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                     <SelectValue placeholder="Gender" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                  <SelectContent className="bg-[#2a2a2a] border-white">
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
@@ -254,12 +262,12 @@ export default function CreateQuotePage() {
                 <Label className="text-gray-400 text-sm">Date of Birth</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full mt-1 bg-[#2a2a2a] border-gray-700 text-white justify-start">
+                    <Button variant="outline" className="w-full mt-1 bg-[#2a2a2a] border-white text-white justify-start">
                       {clientDob ? format(clientDob, 'dd/MM/yyyy') : <span className="text-gray-500">Select</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 text-gray-500" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-[#2a2a2a] border-gray-700">
+                  <PopoverContent className="w-auto p-0 bg-[#2a2a2a] border-white">
                     <Calendar mode="single" selected={clientDob} onSelect={setClientDob} />
                   </PopoverContent>
                 </Popover>
@@ -276,7 +284,7 @@ export default function CreateQuotePage() {
                 }}
                 placeholder="9876543210"
                 maxLength={10}
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
               {clientPhone && clientPhone.length > 0 && clientPhone.length < 10 && (
                 <p className="text-orange-400 text-xs mt-1">{10 - clientPhone.length} more digits needed</p>
@@ -290,7 +298,7 @@ export default function CreateQuotePage() {
                 onChange={e => setClientEmail(e.target.value)}
                 placeholder="example@email.com"
                 type="email"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
             </div>
           </div>
@@ -298,16 +306,16 @@ export default function CreateQuotePage() {
 
         {/* Event & Schedule */}
         <section>
-          <h2 className="text-[#C40F5A] font-semibold mb-4">Event & Schedule</h2>
+          <h2 className="text-white font-semibold mb-4">Event & Schedule</h2>
           
           <div className="space-y-3">
             <div>
               <Label className="text-gray-400 text-sm">Event Type*</Label>
               <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue placeholder="Select Function Type" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                <SelectContent className="bg-[#2a2a2a] border-white">
                   {EVENT_TYPES.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -318,7 +326,7 @@ export default function CreateQuotePage() {
                   value={otherEventType}
                   onChange={e => setOtherEventType(e.target.value)}
                   placeholder="Specify event type"
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-2"
+                  className="bg-[#2a2a2a] border-white text-white mt-2"
                 />
               )}
             </div>
@@ -327,12 +335,12 @@ export default function CreateQuotePage() {
               <Label className="text-gray-400 text-sm">Event Date*</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full mt-1 bg-[#2a2a2a] border-gray-700 text-white justify-start">
+                  <Button variant="outline" className="w-full mt-1 bg-[#2a2a2a] border-white text-white justify-start">
                     {eventDate ? format(eventDate, 'dd/MM/yyyy') : <span className="text-gray-500">Enter Event Date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 text-gray-500" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-[#2a2a2a] border-gray-700">
+                <PopoverContent className="w-auto p-0 bg-[#2a2a2a] border-white">
                   <Calendar 
                     mode="single" 
                     selected={eventDate} 
@@ -346,10 +354,10 @@ export default function CreateQuotePage() {
             <div>
               <Label className="text-gray-400 text-sm">Service Time Slot*</Label>
               <Select value={timeSlot} onValueChange={setTimeSlot}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue placeholder="Select time slot" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[300px]">
+                <SelectContent className="bg-[#1a1a1a] border-white max-h-[300px]">
                   <SelectItem value="06:00 - 08:00 AM">6:00 AM - 8:00 AM (Early Morning)</SelectItem>
                   <SelectItem value="08:00 - 10:00 AM">8:00 AM - 10:00 AM (Morning)</SelectItem>
                   <SelectItem value="10:00 - 12:00 PM">10:00 AM - 12:00 PM (Late Morning)</SelectItem>
@@ -370,10 +378,10 @@ export default function CreateQuotePage() {
                 <div>
                   <Label className="text-gray-400 text-sm">Start Time*</Label>
                   <Select value={customStartTime} onValueChange={setCustomStartTime}>
-                    <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                    <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                       <SelectValue placeholder="From" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[250px]">
+                    <SelectContent className="bg-[#1a1a1a] border-white max-h-[250px]">
                       <SelectItem value="5:00 AM">5:00 AM</SelectItem>
                       <SelectItem value="5:30 AM">5:30 AM</SelectItem>
                       <SelectItem value="6:00 AM">6:00 AM</SelectItem>
@@ -415,10 +423,10 @@ export default function CreateQuotePage() {
                 <div>
                   <Label className="text-gray-400 text-sm">End Time*</Label>
                   <Select value={customEndTime} onValueChange={setCustomEndTime}>
-                    <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                    <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                       <SelectValue placeholder="To" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[250px]">
+                    <SelectContent className="bg-[#1a1a1a] border-white max-h-[250px]">
                       <SelectItem value="5:00 AM">5:00 AM</SelectItem>
                       <SelectItem value="5:30 AM">5:30 AM</SelectItem>
                       <SelectItem value="6:00 AM">6:00 AM</SelectItem>
@@ -466,16 +474,16 @@ export default function CreateQuotePage() {
 
         {/* Location & Venue */}
         <section>
-          <h2 className="text-[#C40F5A] font-semibold mb-4">Location & Venue</h2>
+          <h2 className="text-white font-semibold mb-4">Location & Venue</h2>
           
           <div className="space-y-3">
             <div>
               <Label className="text-gray-400 text-sm">Venue Type*</Label>
               <Select value={venueType} onValueChange={setVenueType}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue placeholder="Select Venue Type" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                <SelectContent className="bg-[#2a2a2a] border-white">
                   {VENUE_TYPES.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -489,13 +497,13 @@ export default function CreateQuotePage() {
                 value={addressLine1} 
                 onChange={e => setAddressLine1(e.target.value)}
                 placeholder="Address Line 1"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
               <Input 
                 value={addressLine2} 
                 onChange={e => setAddressLine2(e.target.value)}
                 placeholder="Address Line 2"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-2"
+                className="bg-[#2a2a2a] border-white text-white mt-2"
               />
             </div>
 
@@ -503,10 +511,10 @@ export default function CreateQuotePage() {
               <div>
                 <Label className="text-gray-400 text-sm">State</Label>
                 <Select value={state} onValueChange={setState}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                  <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#2a2a2a] border-gray-700 max-h-[300px]">
+                  <SelectContent className="bg-[#2a2a2a] border-white max-h-[300px]">
                     {INDIAN_STATES.map(s => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
@@ -518,7 +526,7 @@ export default function CreateQuotePage() {
                 <Input 
                   value={city} 
                   onChange={e => setCity(e.target.value)}
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                  className="bg-[#2a2a2a] border-white text-white mt-1"
                 />
               </div>
             </div>
@@ -533,7 +541,7 @@ export default function CreateQuotePage() {
                 }}
                 maxLength={6}
                 placeholder="560001"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
             </div>
           </div>
@@ -541,16 +549,16 @@ export default function CreateQuotePage() {
 
         {/* Services Requested */}
         <section>
-          <h2 className="text-[#C40F5A] font-semibold mb-4">Services Requested</h2>
+          <h2 className="text-white font-semibold mb-4">Services Requested</h2>
           
           <div className="space-y-3">
             <div>
               <Label className="text-gray-400 text-sm">Makeup Type*</Label>
               <Select value={makeupType} onValueChange={setMakeupType}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue placeholder="Select Makeup Type" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                <SelectContent className="bg-[#2a2a2a] border-white">
                   {MAKEUP_TYPES.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -566,17 +574,17 @@ export default function CreateQuotePage() {
                 placeholder="Ex. 2"
                 type="number"
                 min="1"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
             </div>
 
             <div>
               <Label className="text-gray-400 text-sm">Package</Label>
               <Select value={packageType} onValueChange={setPackageType}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue placeholder="Please Select a Package" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                <SelectContent className="bg-[#2a2a2a] border-white">
                   <SelectItem value="basic">Basic Package</SelectItem>
                   <SelectItem value="standard">Standard Package</SelectItem>
                   <SelectItem value="premium">Premium Package</SelectItem>
@@ -603,7 +611,7 @@ export default function CreateQuotePage() {
                   value={serviceDetails} 
                   onChange={e => setServiceDetails(e.target.value)}
                   placeholder="Any special requests or notes..."
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1 min-h-[80px]"
+                  className="bg-[#2a2a2a] border-white text-white mt-1 min-h-[80px]"
                 />
               </div>
             )}
@@ -612,16 +620,16 @@ export default function CreateQuotePage() {
 
         {/* Payment Details */}
         <section>
-          <h2 className="text-[#C40F5A] font-semibold mb-4">Payment Details</h2>
+          <h2 className="text-white font-semibold mb-4">Payment Details</h2>
           
           <div className="space-y-3">
             <div>
               <Label className="text-gray-400 text-sm">Payment Type*</Label>
               <Select value={paymentType} onValueChange={setPaymentType}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-[#2a2a2a] border-white text-white mt-1">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                <SelectContent className="bg-[#2a2a2a] border-white">
                   {PAYMENT_TYPES.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -637,7 +645,7 @@ export default function CreateQuotePage() {
                 placeholder="Enter amount"
                 type="number"
                 min="0"
-                className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                className="bg-[#2a2a2a] border-white text-white mt-1"
               />
             </div>
 
@@ -650,7 +658,7 @@ export default function CreateQuotePage() {
                   placeholder="Enter advance amount"
                   type="number"
                   min="0"
-                  className="bg-[#2a2a2a] border-gray-700 text-white mt-1"
+                  className="bg-[#2a2a2a] border-white text-white mt-1"
                 />
               </div>
             )}
