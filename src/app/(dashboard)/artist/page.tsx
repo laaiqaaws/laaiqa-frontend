@@ -626,10 +626,14 @@ function ArtistDashboardContent() {
 
       {/* FAB - New Booking - Only on home page */}
       {view === 'home' && (
-        <Link href="/artist/create-quote"
-          className="fixed bottom-24 right-4 bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 z-20">
-          <Plus className="h-5 w-5" /> Add Booking
-        </Link>
+        <div className="fixed bottom-24 left-0 right-0 z-20 pointer-events-none">
+          <div className="max-w-3xl mx-auto px-4 flex justify-end">
+            <Link href="/artist/create-quote"
+              className="bg-[#EE2377] text-white px-6 py-4 rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#C40F5A] transition-all active:scale-95 pointer-events-auto">
+              <Plus className="h-5 w-5" /> Add Booking
+            </Link>
+          </div>
+        </div>
       )}
 
       {/* Bottom Navigation */}

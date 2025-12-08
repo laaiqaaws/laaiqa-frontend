@@ -10,7 +10,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       toastOptions={{
         classNames: {
-          toast: "group toast bg-[#1a1a1a] border-gray-700 shadow-xl rounded-lg p-4 w-full max-w-[calc(100vw-2rem)] mx-auto",
+          toast: "group toast bg-[#1a1a1a] border-gray-700 shadow-xl rounded-lg p-4 w-full max-w-[calc(100vw-2rem)] md:max-w-3xl mx-auto",
           title: "text-white font-semibold text-base",
           description: "text-gray-300 text-sm",
           actionButton: "bg-[#C40F5A] text-white hover:bg-[#EE2377] !rounded-md px-4 py-2",
