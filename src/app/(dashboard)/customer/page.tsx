@@ -172,62 +172,68 @@ function CustomerDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div><p className="text-gray-400 text-sm">{getGreeting()},</p><h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1></div>
+      {/* Header - hide on profile view */}
+      {view !== 'profile' && (
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              {view === 'home' && <p className="text-gray-400 text-sm">{getGreeting()},</p>}
+              <h1 className="text-2xl font-bold">{view === 'home' ? (user?.name?.split(' ')[0] || 'Customer') : (view === 'bookings' ? 'Bookings' : view === 'analytics' ? 'Analytics' : '')}</h1>
+            </div>
+            {view === 'home' && (
+              <button 
+                className="relative p-2 hover:bg-gray-800 rounded-full transition-colors" 
+                onClick={() => {
+                  setNotificationViewed(true);
+                  const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
+                  const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
+                  const total = acceptedQuotesList.length + bookedQuotesList.length;
+                  
+                  if (total === 0) {
+                    sonnerToast.info('All caught up! ✨', { description: 'No active bookings at the moment.' });
+                  } else {
+                    sonnerToast('Booking Summary', {
+                      description: (
+                        <div className="space-y-2 mt-2">
+                          {acceptedQuotesList.length > 0 && (
+                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                                <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
+                              </div>
+                              <span className="text-gray-400 text-xs ml-4">₹{acceptedQuotesList[0]?.price}</span>
+                            </div>
+                          )}
+                          {bookedQuotesList.length > 0 && (
+                            <div className="flex items-center justify-between py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                <span className="text-green-400 font-medium">{bookedQuotesList.length} Upcoming</span>
+                              </div>
+                              <span className="text-gray-400 text-xs ml-4">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    });
+                  }
+                }}
+              >
+                <BellIcon className="h-6 w-6 text-white" />
+                {!notificationViewed && quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
+                )}
+              </button>
+            )}
+          </div>
           {view === 'home' && (
-            <button 
-              className="relative p-2 hover:bg-gray-800 rounded-full transition-colors" 
-              onClick={() => {
-                setNotificationViewed(true);
-                const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
-                const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
-                const total = acceptedQuotesList.length + bookedQuotesList.length;
-                
-                if (total === 0) {
-                  sonnerToast.info('All caught up! ✨', { description: 'No active bookings at the moment.' });
-                } else {
-                  sonnerToast('Booking Summary', {
-                    description: (
-                      <div className="space-y-2 mt-1">
-                        {acceptedQuotesList.length > 0 && (
-                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-                              <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
-                            </div>
-                            <span className="text-gray-500 text-xs">₹{acceptedQuotesList[0]?.price}</span>
-                          </div>
-                        )}
-                        {bookedQuotesList.length > 0 && (
-                          <div className="flex items-center justify-between py-1.5">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                              <span className="text-green-400 font-medium">{bookedQuotesList.length} Upcoming</span>
-                            </div>
-                            <span className="text-gray-500 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                    ),
-                  });
-                }
-              }}
-            >
-              <BellIcon className="h-6 w-6 text-white" />
-              {!notificationViewed && quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
-              )}
-            </button>
+            <div className="relative mb-6">
+              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors" />
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
+            </div>
           )}
         </div>
-        {view === 'home' && (
-          <div className="relative mb-6">
-            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors" />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
-          </div>
-        )}
-      </div>
+      )}
       <AnimatePresence mode="wait">
         {view === 'home' && (
           <motion.div key="home" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
@@ -254,29 +260,25 @@ function CustomerDashboardContent() {
           <motion.div key="analytics" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
             <h2 className="text-xl font-bold mb-6">My Analytics</h2>
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-[#1FC16B]">{quotes.filter(q => q.status === 'Completed').length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Active</p><p className="text-2xl font-bold text-[#F07229]">{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length}</p></div>
+              <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
+              <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>
+              <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-[#1FC16B]">{quotes.filter(q => q.status === 'Completed').length}</p></div>
+              <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Active</p><p className="text-2xl font-bold text-[#F07229]">{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length}</p></div>
             </div>
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><h3 className="text-white font-semibold mb-4">Favorite Services</h3><div className="space-y-3">{Object.entries(quotes.reduce((a, q) => { a[q.productType] = (a[q.productType] || 0) + 1; return a; }, {} as Record<string, number>)).slice(0, 5).map(([s, c]) => <div key={s} className="flex justify-between items-center"><span className="text-white">{s}</span><span className="text-[#C40F5A] font-semibold">{c}</span></div>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
+            <div className="bg-black rounded-2xl p-4 border border-gray-800"><h3 className="text-white font-semibold mb-4">Favorite Services</h3><div className="space-y-3">{Object.entries(quotes.reduce((a, q) => { a[q.productType] = (a[q.productType] || 0) + 1; return a; }, {} as Record<string, number>)).slice(0, 5).map(([s, c]) => <div key={s} className="flex justify-between items-center"><span className="text-white">{s}</span><span className="text-[#C40F5A] font-semibold">{c}</span></div>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
           </motion.div>
         )}
         {view === 'profile' && (
           <motion.div key="profile" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
-            {/* Profile Header - Name left, Avatar right */}
-            <div className="flex items-center justify-between py-6">
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-white">{user?.name || 'Customer'}</h2>
-                <p className="text-gray-400 text-sm">{user?.email}</p>
-                {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
-              </div>
-              <div className="relative">
-                <Avatar className="h-16 w-16">
-                  {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
-                  <AvatarFallback className="bg-[#C40F5A] text-white text-xl">{user?.name?.[0] || 'C'}</AvatarFallback>
-                </Avatar>
-              </div>
+            {/* Profile Header - Avatar centered with name below */}
+            <div className="flex flex-col items-center py-6">
+              <Avatar className="h-20 w-20 mb-3">
+                {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
+                <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">{user?.name?.[0] || 'C'}</AvatarFallback>
+              </Avatar>
+              <h2 className="text-xl font-bold text-white">{user?.name || 'Customer'}</h2>
+              <p className="text-gray-400 text-sm">{user?.email}</p>
+              {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
             </div>
             <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
             <div className="space-y-1">

@@ -170,89 +170,91 @@ function ArtistDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-gray-400 text-sm">{getGreeting()},</p>
-            <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Artist'}</h1>
+      {/* Header - hide on profile view */}
+      {view !== 'profile' && (
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              {view === 'home' && <p className="text-gray-400 text-sm">{getGreeting()},</p>}
+              <h1 className="text-2xl font-bold">{view === 'home' ? (user?.name?.split(' ')[0] || 'Artist') : (view === 'bookings' ? 'Bookings' : view === 'analytics' ? 'Analytics' : '')}</h1>
+            </div>
+            {view === 'home' && (
+              <button 
+                className="relative p-2 hover:bg-gray-800 rounded-full transition-colors"
+                onClick={() => {
+                  // Mark as viewed when clicked
+                  setNotificationViewed(true);
+                  
+                  const pendingQuotesList = quotes.filter(q => q.status === 'Pending');
+                  const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
+                  const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
+                  const total = pendingQuotesList.length + acceptedQuotesList.length + bookedQuotesList.length;
+                  
+                  if (total === 0) {
+                    sonnerToast.info('All caught up! ✨', {
+                      description: 'No pending bookings at the moment.',
+                    });
+                  } else {
+                    sonnerToast('Booking Summary', {
+                      description: (
+                        <div className="space-y-2 mt-2">
+                          {pendingQuotesList.length > 0 && (
+                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                                <span className="text-yellow-400 font-medium">{pendingQuotesList.length} Pending</span>
+                              </div>
+                              <span className="text-gray-400 text-xs ml-4">{pendingQuotesList[0]?.productType}</span>
+                            </div>
+                          )}
+                          {acceptedQuotesList.length > 0 && (
+                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                                <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
+                              </div>
+                              <span className="text-gray-400 text-xs ml-4">₹{acceptedQuotesList[0]?.price}</span>
+                            </div>
+                          )}
+                          {bookedQuotesList.length > 0 && (
+                            <div className="flex items-center justify-between py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                <span className="text-green-400 font-medium">{bookedQuotesList.length} Confirmed</span>
+                              </div>
+                              <span className="text-gray-400 text-xs ml-4">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    });
+                  }
+                }}
+              >
+                <BellIcon className="h-6 w-6 text-white" />
+                {!notificationViewed && quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
+                )}
+              </button>
+            )}
           </div>
+
+          {/* Search Bar - only on home */}
           {view === 'home' && (
-            <button 
-              className="relative p-2 hover:bg-gray-800 rounded-full transition-colors"
-              onClick={() => {
-                // Mark as viewed when clicked
-                setNotificationViewed(true);
-                
-                const pendingQuotesList = quotes.filter(q => q.status === 'Pending');
-                const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
-                const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
-                const total = pendingQuotesList.length + acceptedQuotesList.length + bookedQuotesList.length;
-                
-                if (total === 0) {
-                  sonnerToast.info('All caught up! ✨', {
-                    description: 'No pending bookings at the moment.',
-                  });
-                } else {
-                  sonnerToast('Booking Summary', {
-                    description: (
-                      <div className="space-y-2 mt-1">
-                        {pendingQuotesList.length > 0 && (
-                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                              <span className="text-yellow-400 font-medium">{pendingQuotesList.length} Pending</span>
-                            </div>
-                            <span className="text-gray-500 text-xs">{pendingQuotesList[0]?.productType}</span>
-                          </div>
-                        )}
-                        {acceptedQuotesList.length > 0 && (
-                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                              <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
-                            </div>
-                            <span className="text-gray-500 text-xs">₹{acceptedQuotesList[0]?.price}</span>
-                          </div>
-                        )}
-                        {bookedQuotesList.length > 0 && (
-                          <div className="flex items-center justify-between py-1.5">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                              <span className="text-green-400 font-medium">{bookedQuotesList.length} Confirmed</span>
-                            </div>
-                            <span className="text-gray-500 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                    ),
-                  });
-                }
-              }}
-            >
-              <BellIcon className="h-6 w-6 text-white" />
-              {!notificationViewed && quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
-              )}
-            </button>
+            <div className="relative mb-6">
+              <Input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search event name or date"
+                className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors"
+              />
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
+                <Search className="h-4 w-4 text-white" />
+              </button>
+            </div>
           )}
         </div>
-
-        {/* Search Bar - only on home */}
-        {view === 'home' && (
-          <div className="relative mb-6">
-            <Input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search event name or date"
-              className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors"
-            />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
-              <Search className="h-4 w-4 text-white" />
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       <AnimatePresence mode="wait">
         {view === 'home' && (
@@ -374,11 +376,11 @@ function ArtistDashboardContent() {
             
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">Total Bookings</p>
                 <p className="text-2xl font-bold text-white">{quotes.length}</p>
               </div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">This Month</p>
                 <p className="text-2xl font-bold text-white">
                   {quotes.filter(q => {
@@ -388,25 +390,25 @@ function ArtistDashboardContent() {
                   }).length}
                 </p>
               </div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">Completed</p>
                 <p className="text-2xl font-bold text-green-500">
                   {quotes.filter(q => q.status === 'Completed').length}
                 </p>
               </div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">Pending</p>
                 <p className="text-2xl font-bold text-yellow-500">
                   {quotes.filter(q => q.status === 'Pending').length}
                 </p>
               </div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">Booked</p>
                 <p className="text-2xl font-bold text-blue-500">
                   {quotes.filter(q => q.status === 'Booked').length}
                 </p>
               </div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+              <div className="bg-black rounded-2xl p-4 border border-gray-800">
                 <p className="text-gray-400 text-xs">Cancelled</p>
                 <p className="text-2xl font-bold text-red-500">
                   {quotes.filter(q => q.status === 'Cancelled').length}
@@ -415,7 +417,7 @@ function ArtistDashboardContent() {
             </div>
 
             {/* Monthly Revenue */}
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
+            <div className="bg-black rounded-2xl p-4 border border-gray-800 mb-6">
               <h3 className="text-white font-semibold mb-4">This Month's Revenue</h3>
               <p className="text-2xl font-bold text-[#C40F5A]">
                 ₹{quotes.filter(q => {
@@ -439,7 +441,7 @@ function ArtistDashboardContent() {
             </div>
 
             {/* Conversion Rate */}
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
+            <div className="bg-black rounded-2xl p-4 border border-gray-800 mb-6">
               <h3 className="text-white font-semibold mb-3">Conversion Rate</h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
@@ -466,7 +468,7 @@ function ArtistDashboardContent() {
             </div>
 
             {/* Popular Services */}
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800 mb-6">
+            <div className="bg-black rounded-2xl p-4 border border-gray-800 mb-6">
               <h3 className="text-white font-semibold mb-4">Popular Services</h3>
               <div className="space-y-3">
                 {Object.entries(
@@ -490,7 +492,7 @@ function ArtistDashboardContent() {
             </div>
 
             {/* Average Booking Value */}
-            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
+            <div className="bg-black rounded-2xl p-4 border border-gray-800">
               <h3 className="text-white font-semibold mb-3">Average Booking Value</h3>
               <p className="text-2xl font-bold text-white">
                 ₹{quotes.length > 0 
@@ -512,21 +514,16 @@ function ArtistDashboardContent() {
             transition={{ duration: 0.2 }}
             className="px-4"
           >
-            {/* Profile Header - Name left, Avatar right */}
-            <div className="flex items-center justify-between py-6">
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
-                {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
-              </div>
-              <div className="relative">
-                <Avatar className="h-16 w-16">
-                  {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
-                  <AvatarFallback className="bg-[#C40F5A] text-white text-xl">
-                    {user?.name?.[0] || 'A'}
-                  </AvatarFallback>
-                </Avatar>
-  
-              </div>
+            {/* Profile Header - Avatar centered with name below */}
+            <div className="flex flex-col items-center py-6">
+              <Avatar className="h-20 w-20 mb-3">
+                {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
+                <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">
+                  {user?.name?.[0] || 'A'}
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
+              {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
             </div>
 
             {/* Send Booking Form Button */}

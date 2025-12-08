@@ -363,7 +363,8 @@ ced ScrollArea for modals */
 /* Sonner Toast Animations & Styling */
 [data-sonner-toaster] {
   --width: calc(100vw - 2rem) !important;
-  max-width: 400px !important;
+  max-width: 380px !important;
+  padding: 0 1rem !important;
 }
 
 [data-sonner-toast] {
@@ -371,59 +372,72 @@ ced ScrollArea for modals */
   --normal-border: #374151 !important;
   --normal-text: #ffffff !important;
   background: #1a1a1a !important;
-  border: 1px solid #374151 !important;
-  border-radius: 12px !important;
-  padding: 16px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+  gap: 12px !important;
+}
+
+[data-sonner-toast] [data-content] {
+  padding-right: 24px !important;
 }
 
 [data-sonner-toast] [data-title] {
   color: #ffffff !important;
   font-weight: 600 !important;
-  font-size: 15px !important;
+  font-size: 16px !important;
+  margin-bottom: 8px !important;
 }
 
 [data-sonner-toast] [data-description] {
-  color: #d1d5db !important;
-  font-size: 13px !important;
+  color: #e5e7eb !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
 }
 
 [data-sonner-toast] [data-close-button] {
   position: absolute !important;
-  top: 8px !important;
-  right: 8px !important;
+  top: 12px !important;
+  right: 12px !important;
   left: auto !important;
-  background: transparent !important;
+  background: #374151 !important;
   border: none !important;
-  color: #6b7280 !important;
-  padding: 4px !important;
-  border-radius: 6px !important;
-  transition: all 0.2s !important;
+  color: #9ca3af !important;
+  padding: 6px !important;
+  border-radius: 4px !important;
+  transition: all 0.15s ease !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 [data-sonner-toast] [data-close-button]:hover {
-  background: #374151 !important;
+  background: #4b5563 !important;
   color: #ffffff !important;
 }
 
 [data-sonner-toast] [data-close-button] svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2.5 !important;
 }
 
 /* Toast enter/exit animations */
 [data-sonner-toast][data-mounted="true"] {
-  animation: toast-enter 0.3s ease-out !important;
+  animation: toast-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 [data-sonner-toast][data-removed="true"] {
-  animation: toast-exit 0.2s ease-in forwards !important;
+  animation: toast-exit 0.2s ease-out forwards !important;
 }
 
 @keyframes toast-enter {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-16px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -438,7 +452,7 @@ ced ScrollArea for modals */
   }
   to {
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
+    transform: translateY(-8px) scale(0.96);
   }
 }
 
@@ -455,4 +469,83 @@ ced ScrollArea for modals */
 /* Info toast */
 [data-sonner-toast][data-type="info"] {
   border-left: 3px solid #3b82f6 !important;
+}
+
+/* Global button radius - more rectangular */
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.rounded-xl {
+  border-radius: 0.75rem; /* 12px - slightly less rounded */
+}
+
+.rounded-2xl {
+  border-radius: 1rem; /* 16px */
+}
+
+.rounded-lg {
+  border-radius: 0.5rem; /* 8px */
+}
+
+.rounded-md {
+  border-radius: 0.375rem; /* 6px */
+}
+
+
+/* Force white borders on ALL input fields - high specificity */
+input[type],
+input:not([type]),
+textarea,
+select,
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"],
+button[role="combobox"] {
+  border-color: white !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  background-color: #1a1a1a !important;
+  color: white !important;
+}
+
+/* Focus states */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+[data-slot="input"]:focus,
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus,
+[data-slot="textarea"]:focus-visible,
+[data-slot="select-trigger"]:focus,
+[data-slot="select-trigger"]:focus-visible,
+button[role="combobox"]:focus,
+button[role="combobox"]:focus-visible {
+  border-color: white !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Remove textarea resize handle (white dots in corners) */
+textarea,
+[data-slot="textarea"] {
+  resize: none !important;
+}
+
+/* Disabled inputs should be darker */
+input:disabled,
+textarea:disabled,
+[data-slot="input"]:disabled,
+[data-slot="textarea"]:disabled {
+  background-color: #0d0d0d !important;
+  color: #6b7280 !important;
+  border-color: #4b5563 !important;
+}
+
+/* Select content dropdown */
+[data-slot="select-content"] {
+  border-color: white !important;
+  background-color: #1a1a1a !important;
 }
