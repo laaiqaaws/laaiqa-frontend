@@ -71,39 +71,46 @@ export default function Home() {
   }
 
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen p-4 bg-black"
-      style={{
-        backgroundImage: isMobileView ? `url(${BACKGROUND_IMAGES[currentImageIndex]})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        transition: 'background-image 1s ease-in-out',
-      }}
-    >
+    <div className="relative h-screen overflow-hidden bg-black">
+      {/* Background Images with crossfade - mobile only */}
+      {isMobileView && BACKGROUND_IMAGES.map((img, index) => (
+        <div 
+          key={img}
+          className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url(${img})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: index === currentImageIndex ? 1 : 0,
+          }}
+        />
+      ))}
       <div className="absolute inset-0 bg-black opacity-50 md:opacity-100 z-0"></div>
       
-      <div className="relative z-10 text-center max-w-lg">
-        <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-          Welcome to <span className="text-[#C40F5A]">Laaiqa</span>
-        </h1>
-        <p className="text-gray-300 text-lg mb-8">
-          Connect with professional makeup artists and bring your beauty vision to life.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            asChild
-            className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white rounded-lg"
-          >
-            <Link href={ROUTES.SIGNUP}>Sign Up</Link>
-          </Button>
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4">
+        <div className="text-center max-w-lg">
+          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            Welcome to <span className="text-[#C40F5A]">Laaiqa</span>
+          </h1>
+          <p className="text-gray-300 text-lg mb-8">
+            Connect with professional makeup artists and bring your beauty vision to life.
+          </p>
           
-          <Button
-            asChild
-            className="h-12 px-8 text-lg bg-white hover:bg-gray-100 text-gray-800 rounded-lg"
-          >
-            <Link href={ROUTES.LOGIN}>Login</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              asChild
+              className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white rounded-lg"
+            >
+              <Link href={ROUTES.SIGNUP}>Sign Up</Link>
+            </Button>
+            
+            <Button
+              asChild
+              className="h-12 px-8 text-lg bg-white hover:bg-gray-100 text-gray-800 rounded-lg"
+            >
+              <Link href={ROUTES.LOGIN}>Login</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

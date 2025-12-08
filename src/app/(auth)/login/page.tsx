@@ -88,20 +88,23 @@ function LoginContent() {
 
   return (
     <div className="relative min-h-screen bg-[#1a1a1a] overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 transition-opacity duration-1000"
-        style={{
-          backgroundImage: `url(${BACKGROUND_IMAGES[currentImageIndex]})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
-      </div>
+      {/* Background Images with crossfade */}
+      {BACKGROUND_IMAGES.map((img, index) => (
+        <div 
+          key={img}
+          className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url(${img})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            opacity: index === currentImageIndex ? 1 : 0,
+          }}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen px-6 pt-[40vh]">
+      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20">
         {/* Tagline - matching screenshot font */}
         <div className="mb-10">
           <h1 className="text-[2.75rem] font-semibold text-white leading-[1.1]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>

@@ -261,11 +261,11 @@ function ArtistDashboardContent() {
           {/* Search Bar - only on home */}
           {view === 'home' && (
             <div className="relative mb-6">
-              <Input
+              <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search event name or date"
-                className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors"
+                className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors"
               />
               <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
                 <Search className="h-4 w-4 text-white" />
@@ -290,7 +290,7 @@ function ArtistDashboardContent() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold">Upcoming Bookings</h2>
                 {upcomingQuotes.length > 0 && (
-                  <Link href="/artist?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors">
+                  <Link href="/artist?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
                     Show All
                   </Link>
                 )}
@@ -554,7 +554,7 @@ function ArtistDashboardContent() {
             </Button>
 
             {/* Quick Actions */}
-            <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30">
+            <div className="flex justify-around mb-6 py-4">
               <button className="flex flex-col items-center gap-2 flex-1">
                 <ImageIcon className="h-6 w-6 text-white" />
                 <span className="text-xs text-white">My Portfolio</span>
@@ -576,13 +576,10 @@ function ArtistDashboardContent() {
               <Link href="/profile/artist/settings"
                 className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
                 <span className="text-white">Account Settings</span>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>
-                  <ChevronRight className="h-5 w-5 text-gray-500" />
-                </div>
+                <ChevronRight className="h-5 w-5 text-gray-500" />
               </Link>
               {[
-                { label: 'Payment Settings', dot: true },
+                { label: 'Payment Settings' },
                 { label: 'Transactions' },
                 { label: 'Disputes', href: '/artist/disputes' },
                 { label: 'Privacy Policy' },
@@ -592,20 +589,14 @@ function ArtistDashboardContent() {
                   <Link key={item.label} href={item.href}
                     className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
                     <span className="text-white">{item.label}</span>
-                    <div className="flex items-center gap-2">
-                      {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                      <ChevronRight className="h-5 w-5 text-gray-500" />
-                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-500" />
                   </Link>
                 ) : (
                   <button key={item.label}
                     onClick={() => sonnerToast.info('Coming soon!')}
                     className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left">
                     <span className="text-white">{item.label}</span>
-                    <div className="flex items-center gap-2">
-                      {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                      <ChevronRight className="h-5 w-5 text-gray-500" />
-                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-500" />
                   </button>
                 )
               ))}

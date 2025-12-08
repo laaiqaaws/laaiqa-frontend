@@ -239,7 +239,7 @@ function CustomerDashboardContent() {
           </div>
           {view === 'home' && (
             <div className="relative mb-6">
-              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors" />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors" />
               <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
             </div>
           )}
@@ -249,7 +249,7 @@ function CustomerDashboardContent() {
         {view === 'home' && (
           <motion.div key="home" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
             <div className="px-4 mb-6">
-              <div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">My Bookings</h2>{upcomingQuotes.length > 0 && <Link href="/customer?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors">Show All</Link>}</div>
+              <div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">My Bookings</h2>{upcomingQuotes.length > 0 && <Link href="/customer?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">Show All</Link>}</div>
               {upcomingQuotes.length === 0 ? (
                 <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center"><div className="flex justify-center mb-4"><CalendarEmptyIcon /></div><p className="text-gray-300">Looks Like you dont have any bookings yet.</p></div>
               ) : (
@@ -293,14 +293,11 @@ function CustomerDashboardContent() {
                 <AvatarFallback className="bg-[#C40F5A] text-white text-xl">{user?.name?.[0] || 'C'}</AvatarFallback>
               </Avatar>
             </div>
-            <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
+            <div className="flex justify-around mb-6 py-4"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
             <div className="space-y-1">
               <Link href="/profile/customer/settings" className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
                 <span className="text-white">Account Settings</span>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>
-                  <ChevronRight className="h-5 w-5 text-gray-500" />
-                </div>
+                <ChevronRight className="h-5 w-5 text-gray-500" />
               </Link>
               {[{ label: 'Payment Methods' }, { label: 'Booking History', href: '/customer?view=bookings' }, { label: 'Disputes', href: '/customer/disputes' }, { label: 'Privacy Policy' }, { label: 'Terms and Conditions' }].map(i => i.href ? <Link key={i.label} href={i.href} className="flex items-center justify-between py-4 border-b border-gray-800"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></Link> : <button key={i.label} onClick={() => sonnerToast.info('Coming soon!')} className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></button>)}
             </div>
