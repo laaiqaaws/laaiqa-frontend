@@ -128,7 +128,7 @@ function ArtistDashboardContent() {
       sessionStorage.removeItem(QUOTES_CACHE_EXPIRY_KEY);
       window.location.href = '/login';
     } else {
-      sonnerToast.error("Logout failed");
+      setTimeout(() => sonnerToast.error("Logout failed"), 100);
     }
   };
 

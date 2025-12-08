@@ -125,16 +125,16 @@ function SignupContent() {
 
           <div className="flex gap-4 w-full max-w-sm">
             <button onClick={() => setSelectedRole('artist')}
-              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'artist' ? 'bg-[#1a1a1a] border-2 border-[#C40F5A]' : 'bg-[#1a1a1a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#222] rounded-xl mb-3" />
+              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col bg-black ${selectedRole === 'artist' ? 'border-2 border-[#C40F5A]' : 'border-2 border-gray-800'}`}>
+              <div className="aspect-square bg-[#1a1a1a] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Vendor</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You are a service provider, and in need of a platform to organise your work.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'artist' && <Check className="h-6 w-6 text-green-500" />}</div>
             </button>
 
             <button onClick={() => setSelectedRole('customer')}
-              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'customer' ? 'bg-[#1a1a1a] border-2 border-[#C40F5A]' : 'bg-[#1a1a1a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#222] rounded-xl mb-3" />
+              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col bg-black ${selectedRole === 'customer' ? 'border-2 border-[#C40F5A]' : 'border-2 border-gray-800'}`}>
+              <div className="aspect-square bg-[#1a1a1a] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Customer</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You have upcoming functions to prepare and need to find best professionals.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'customer' && <Check className="h-6 w-6 text-green-500" />}</div>

@@ -83,14 +83,14 @@ function AdminLoginContent() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-[#1a1a1a] overflow-hidden">
+    <div className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Images with crossfade */}
       {BACKGROUND_IMAGES.map((img, index) => (
         <div 
@@ -104,7 +104,7 @@ function AdminLoginContent() {
           }}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20 max-w-3xl mx-auto w-full">
@@ -152,7 +152,7 @@ function AdminLoginContent() {
 export default function AdminLoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     }>

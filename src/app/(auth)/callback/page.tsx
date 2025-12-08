@@ -104,7 +104,7 @@ function AuthCallbackContent() {
   }, [router, searchParams]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1a1a1a] text-gray-300">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-300">
       {status === 'loading' ? (
         <>
           <p className="text-lg mb-4">Verifying authentication...</p>
@@ -123,7 +123,7 @@ function AuthCallbackContent() {
 export default function AuthCallback() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#1a1a1a] text-gray-300">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-300">
         <p className="text-lg mb-4">Loading...</p>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
