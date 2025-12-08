@@ -260,7 +260,7 @@ function CustomerOnboardingContent() {
 
       if (response.ok) {
         // Force refresh auth context to update user data and prevent redirect loops
-        const updatedUser = await refreshUser(true);
+        await refreshUser(true);
         sonnerToast.success(isSingleSectionMode ? "Section updated!" : "Profile completed!");
         
         // Clear any stale session data
@@ -282,7 +282,13 @@ function CustomerOnboardingContent() {
         }
       } else {
         const errorData = await response.json();
-        sonnerToast.error(errorData.message || "Failed to save profile");
+        const errorMsg = errorData.error || errorData.message || "Failed to save profile";
+        if (errorData.details) {
+          const detailErrors = Object.values(errorData.details).join(', ');
+          sonnerToast.error(`${errorMsg}: ${detailErrors}`);
+        } else {
+          sonnerToast.error(errorMsg);
+        }
       }
     } catch {
       sonnerToast.error("Network error. Please try again.");

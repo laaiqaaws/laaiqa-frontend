@@ -34,12 +34,6 @@ interface UserData {
   bookingInfo?: string[] | null;
 }
 
-const SERVICE_OPTIONS = [
-  'Bridal Makeup', 'Engagement Makeup', 'Reception Makeup', 'Party Makeup',
-  'Photoshoot Makeup', 'Pre-wedding Makeup', 'Fashion Makeup', 'HD Makeup',
-  'Airbrush Makeup', 'Hair Styling', 'Mehndi/Henna', 'Saree Draping'
-];
-
 const EXPERIENCE_OPTIONS = [
   '0-1 years', '1-3 years', '3-5 years', '5-10 years', '10+ years'
 ];
@@ -94,6 +88,7 @@ function ArtistOnboardingContent() {
   const [category, setCategory] = useState('Makeup Artist');
   const [experience, setExperience] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [serviceInput, setServiceInput] = useState('');
   const [bio, setBio] = useState('');
 
   // Step 4: Booking & Scheduling
@@ -266,7 +261,7 @@ function ArtistOnboardingContent() {
 
       if (response.ok) {
         // Force refresh auth context to update user data and prevent redirect loops
-        const updatedUser = await refreshUser(true);
+        await refreshUser(true);
         sonnerToast.success(isSingleSectionMode ? "Section updated!" : "Profile completed!");
         
         // Clear any stale session data
@@ -288,7 +283,13 @@ function ArtistOnboardingContent() {
         }
       } else {
         const errorData = await response.json();
-        sonnerToast.error(errorData.message || "Failed to save profile");
+        const errorMsg = errorData.error || errorData.message || "Failed to save profile";
+        if (errorData.details) {
+          const detailErrors = Object.values(errorData.details).join(', ');
+          sonnerToast.error(`${errorMsg}: ${detailErrors}`);
+        } else {
+          sonnerToast.error(errorMsg);
+        }
       }
     } catch {
       sonnerToast.error("Network error. Please try again.");
@@ -441,18 +442,23 @@ function ArtistOnboardingContent() {
             </div>
             
             <div>
-              <Label className="text-gray-400 text-sm">Available Locations</Label>
+              <Label className="text-gray-400 text-sm">Available Locations*</Label>
               <div className="flex gap-2 mt-1">
                 <Input value={locationInput} onChange={e => setLocationInput(e.target.value)}
-                  className="bg-[#2a2a2a] border-gray-700 text-white" placeholder="Add location" 
-                  onKeyDown={e => e.key === 'Enter' && addLocation()} />
+                  className="bg-[#2a2a2a] border-white text-white" placeholder="Type a location and press Enter" 
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addLocation();
+                    }
+                  }} />
                 <Button onClick={addLocation} size="sm" className="bg-[#EE2377] hover:bg-[#C40F5A]">Add</Button>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {availableLocations.map(loc => (
-                  <span key={loc} className="bg-[#CD8FDE]/30 text-[#CD8FDE] px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  <span key={loc} className="bg-[#F46CA4] text-white px-4 py-2 rounded-md text-sm flex items-center gap-2">
                     {loc}
-                    <button onClick={() => removeLocation(loc)} className="ml-1 hover:text-white">×</button>
+                    <button onClick={() => removeLocation(loc)} className="hover:text-[#EE2377] font-bold text-lg">×</button>
                   </span>
                 ))}
               </div>
@@ -496,26 +502,42 @@ function ArtistOnboardingContent() {
             
             <div>
               <Label className="text-gray-400 text-sm">Services Offered*</Label>
-              <Select onValueChange={(value) => {
-                if (value && !selectedServices.includes(value)) {
-                  setSelectedServices([...selectedServices, value]);
-                }
-              }}>
-                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
-                  <SelectValue placeholder="Search services" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2a2a2a] border-gray-700">
-                  {SERVICE_OPTIONS.filter(s => !selectedServices.includes(s)).map(service => (
-                    <SelectItem key={service} value={service}>{service}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2 mt-1">
+                <Input 
+                  value={serviceInput} 
+                  onChange={e => setServiceInput(e.target.value)}
+                  className="bg-[#2a2a2a] border-white text-white" 
+                  placeholder="Type a service and press Enter" 
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (serviceInput.trim() && !selectedServices.includes(serviceInput.trim())) {
+                        setSelectedServices([...selectedServices, serviceInput.trim()]);
+                        setServiceInput('');
+                      }
+                    }
+                  }} 
+                />
+                <Button 
+                  type="button"
+                  onClick={() => {
+                    if (serviceInput.trim() && !selectedServices.includes(serviceInput.trim())) {
+                      setSelectedServices([...selectedServices, serviceInput.trim()]);
+                      setServiceInput('');
+                    }
+                  }} 
+                  size="sm" 
+                  className="bg-[#EE2377] hover:bg-[#C40F5A]"
+                >
+                  Add
+                </Button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {selectedServices.map(service => (
-                  <span key={service} className="bg-[#F46CA4] text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2">
+                  <span key={service} className="bg-[#F46CA4] text-white px-4 py-2 rounded-md text-sm flex items-center gap-2">
                     {service}
                     <button onClick={() => setSelectedServices(selectedServices.filter(s => s !== service))} 
-                      className="hover:text-[#EE2377] font-bold">×</button>
+                      className="hover:text-[#EE2377] font-bold text-lg">×</button>
                   </span>
                 ))}
               </div>

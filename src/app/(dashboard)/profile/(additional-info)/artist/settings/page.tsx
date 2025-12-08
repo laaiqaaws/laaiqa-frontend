@@ -72,14 +72,6 @@ function AccountSettingsContent() {
           <p className="text-gray-500 text-sm">{user?.email} | +91 {user?.phone || '0000000000'}</p>
         </div>
 
-        {/* HERO Membership */}
-        <div className="flex items-center justify-between py-4 border-b border-gray-800 mb-2">
-          <span className="text-[#C40F5A]">HERO Membership</span>
-          <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-            <span className="text-xs">👑</span>
-          </div>
-        </div>
-
         {/* Settings Sections */}
         <div className="space-y-1">
           {SETTINGS_SECTIONS.map(section => (
