@@ -375,17 +375,19 @@ ced ScrollArea for modals */
   --normal-text: #ffffff !important;
   background: #1a1a1a !important;
   border: 1px solid #4b5563 !important;
-  border-radius: 8px !important;
-  padding: 14px 16px !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  padding-right: 40px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
   gap: 8px !important;
   width: calc(100vw - 2rem) !important;
   max-width: 360px !important;
   margin: 0 auto !important;
+  position: relative !important;
+  overflow: visible !important;
 }
 
 [data-sonner-toast] [data-content] {
-  padding-right: 24px !important;
   flex: 1 !important;
 }
 
@@ -393,7 +395,7 @@ ced ScrollArea for modals */
   color: #ffffff !important;
   font-weight: 600 !important;
   font-size: 16px !important;
-  margin-bottom: 8px !important;
+  margin-bottom: 6px !important;
 }
 
 [data-sonner-toast] [data-description] {
@@ -404,21 +406,22 @@ ced ScrollArea for modals */
 
 [data-sonner-toast] [data-close-button] {
   position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
+  top: 12px !important;
+  right: 12px !important;
   left: auto !important;
   background: transparent !important;
   border: none !important;
-  color: #6b7280 !important;
-  padding: 8px !important;
+  color: #9ca3af !important;
+  padding: 0 !important;
   margin: 0 !important;
   border-radius: 0 !important;
   transition: color 0.15s ease !important;
-  width: auto !important;
-  height: auto !important;
+  width: 20px !important;
+  height: 20px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  cursor: pointer !important;
 }
 
 [data-sonner-toast] [data-close-button]:hover {
@@ -427,9 +430,9 @@ ced ScrollArea for modals */
 }
 
 [data-sonner-toast] [data-close-button] svg {
-  width: 16px !important;
-  height: 16px !important;
-  stroke-width: 2 !important;
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2.5 !important;
 }
 
 /* Toast enter/exit animations */
