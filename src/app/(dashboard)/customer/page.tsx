@@ -183,13 +183,13 @@ function CustomerDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      {/* Header - hide on profile view */}
-      {view !== 'profile' && (
+      {/* Header - only on home view */}
+      {view === 'home' && (
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              {view === 'home' && <p className="text-gray-400 text-sm">{getGreeting()},</p>}
-              <h1 className="text-2xl font-bold">{view === 'home' ? (user?.name?.split(' ')[0] || 'Customer') : (view === 'bookings' ? 'Bookings' : view === 'analytics' ? 'Analytics' : '')}</h1>
+              <p className="text-gray-400 text-sm">{getGreeting()},</p>
+              <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1>
             </div>
             {view === 'home' && (
               <button 
@@ -237,12 +237,10 @@ function CustomerDashboardContent() {
               </button>
             )}
           </div>
-          {view === 'home' && (
-            <div className="relative mb-6">
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors" />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
-            </div>
-          )}
+          <div className="relative mb-6">
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors" />
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
+          </div>
         </div>
       )}
       <AnimatePresence mode="wait">
@@ -263,13 +261,12 @@ function CustomerDashboardContent() {
           </motion.div>
         )}
         {view === 'bookings' && (
-          <motion.div key="bookings" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
+          <motion.div key="bookings" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4 pt-4">
             <BookingsView quotes={quotes} userRole="customer" />
           </motion.div>
         )}
         {view === 'analytics' && (
-          <motion.div key="analytics" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
-            <h2 className="text-xl font-bold mb-6">My Analytics</h2>
+          <motion.div key="analytics" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4 pt-4">
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
               <div className="bg-black rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>

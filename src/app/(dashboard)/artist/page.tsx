@@ -189,13 +189,13 @@ function ArtistDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      {/* Header - hide on profile view */}
-      {view !== 'profile' && (
+      {/* Header - only on home view */}
+      {view === 'home' && (
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              {view === 'home' && <p className="text-gray-400 text-sm">{getGreeting()},</p>}
-              <h1 className="text-2xl font-bold">{view === 'home' ? (user?.name?.split(' ')[0] || 'Artist') : (view === 'bookings' ? 'Bookings' : view === 'analytics' ? 'Analytics' : '')}</h1>
+              <p className="text-gray-400 text-sm">{getGreeting()},</p>
+              <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Artist'}</h1>
             </div>
             {view === 'home' && (
               <button 
@@ -258,20 +258,18 @@ function ArtistDashboardContent() {
             )}
           </div>
 
-          {/* Search Bar - only on home */}
-          {view === 'home' && (
-            <div className="relative mb-6">
-              <input
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search event name or date"
-                className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
-                <Search className="h-4 w-4 text-white" />
-              </button>
-            </div>
-          )}
+          {/* Search Bar */}
+          <div className="relative mb-6">
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search event name or date"
+              className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors"
+            />
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
+              <Search className="h-4 w-4 text-white" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -363,7 +361,7 @@ function ArtistDashboardContent() {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="px-4"
+            className="px-4 pt-4"
           >
             <BookingsView quotes={quotes} userRole="artist" createQuoteLink="/artist/create-quote" />
           </motion.div>
@@ -377,9 +375,8 @@ function ArtistDashboardContent() {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="px-4"
+            className="px-4 pt-4"
           >
-            <h2 className="text-xl font-bold mb-6">Analytics</h2>
             
             {/* Revenue Card */}
             <div className="bg-gradient-to-r from-[#C40F5A] to-[#EE2377] rounded-2xl p-5 mb-6">
