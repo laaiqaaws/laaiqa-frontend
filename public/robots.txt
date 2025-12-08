@@ -15,4 +15,4 @@ Disallow: /quote*
 Disallow: /api*
 
 # Sitemap
-Sitemap: https://laaiqa.com/sitemap.xml
+Sitemap: https://laaiqa.app/sitemap.xml

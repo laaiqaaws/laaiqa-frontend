@@ -671,7 +671,7 @@ export default function IndividualQuotePage() {
                  </Button>
              )}
              {quoteErrorType === 'auth-required' && !currentUser && (
-                  <Button onClick={() => router.push('/signup-options')} className="w-full mt-3 bg-[#0063E4] hover:bg-[#0052C1] text-white transition-colors">
+                  <Button onClick={() => router.push('/signup')} className="w-full mt-3 bg-[#0063E4] hover:bg-[#0052C1] text-white transition-colors">
                       Sign Up
                   </Button>
              )}
@@ -929,7 +929,7 @@ export default function IndividualQuotePage() {
                                           placeholder={hasReview ? "Update your comment..." : "Add a comment about your experience..."}
                                           rows={3}
                                           disabled={disableActions}
-                                          className="bg-[#2a2a2a] text-gray-100 border-[#3a3a3a] focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
+                                          className="bg-[#2a2a2a] text-gray-100 border-[#3a3a3a] focus-visible:ring-2 focus-visible:ring-[#C40F5A] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
                                       />
                                   </div>
                              </div>
@@ -953,7 +953,7 @@ export default function IndividualQuotePage() {
                                   <Button
                                        onClick={handleReviewSubmit}
                                        disabled={disableActions || reviewRating === null || reviewRating < 1 || reviewRating > 5}
-                                       className={`h-10 text-sm ${hasReview ? 'bg-green-600 hover:bg-green-700 border-green-500' : 'bg-pink-600 hover:bg-pink-700 border-pink-500'} text-white transition-colors`}
+                                       className={`h-10 text-sm ${hasReview ? 'bg-green-600 hover:bg-green-700 border-green-500' : 'bg-[#C40F5A] hover:bg-[#EE2377] border-[#C40F5A]'} text-white transition-colors`}
                                   >
                                       {isSubmittingReview ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div> : <Send className="mr-2 h-4 w-4" />}
                                       {isSubmittingReview ? (hasReview ? 'Updating...' : 'Submitting...') : (hasReview ? 'Update Review' : 'Submit Review')}
@@ -967,7 +967,7 @@ export default function IndividualQuotePage() {
         )}
 
         <CardFooter className="px-4 py-3 sm:p-4 border-t border-[#2a2a2a]">
-           <Button variant="ghost" className="w-full bg-transparent text-pink-500 hover:text-pink-400 hover:bg-pink-900/20 transition-colors" asChild>
+           <Button variant="ghost" className="w-full bg-transparent text-[#C40F5A] hover:text-[#EE2377] hover:bg-[#C40F5A]/10 transition-colors" asChild>
                <Link href={getDashboardLink()}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
            </Button>
         </CardFooter>

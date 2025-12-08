@@ -1,100 +1,113 @@
 'use client';
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_BASE_URL, User } from '@/types/user'; // Assuming User type includes 'role'
+import { User } from '@/types/user';
+import { API_ENDPOINTS, ROUTES, getDashboardRoute, getProfileRoute } from '@/lib/config';
 
 export default function AuthCallback() {
   const router = useRouter();
+  const [status, setStatus] = useState<'loading' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Fetch the authenticated user data to get their role
-        const response = await fetch(`${API_BASE_URL}/auth/me`, {
-          credentials: 'include', // Important to send the cookie
+        // Small delay to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const response = await fetch(API_ENDPOINTS.AUTH_ME, {
+          credentials: 'include',
         });
 
-        if (response.ok) {
-          const data: { user: User } = await response.json();
-
-          if (data.user && data.user.role) {
-            const user = data.user;
-
-            // --- Redirect based on role ---
-            if (user.role === 'admin') {
-              // If the user is an admin, redirect to the admin dashboard
-              router.push('/admin/dashboard');
-            } else if (user.role === 'artist' || user.role === 'customer') {
-              // For artists and customers, check for profile completion
-
-              let isAdditionalInfoRequired = false;
-
-              if (user.role === 'customer') {
-                  // Check required fields for customer profile completion - simplified
-                  if (!user.phone || !user.age || !user.height || !user.color) {
-                      isAdditionalInfoRequired = true;
-                  }
-              } else if (user.role === 'artist') {
-                  // Check required fields for artist profile completion - removed optional fields
-                  if (!user.bio || !user.specialties || !user.phone) {
-                      isAdditionalInfoRequired = true;
-                  }
-              }
-
-              if (isAdditionalInfoRequired) {
-                  // Redirect to profile completion page if info is missing
-                  if (user.role === 'customer') {
-                       router.push('/profile/customer');
-                  } else if (user.role === 'artist') {
-                       router.push('/profile/artist');
-                  } else {
-                      // Fallback, though should be covered by role check
-                      router.push('/login');
-                  }
-              } else {
-                  // Redirect to respective dashboards if profile is complete
-                  if (user.role === 'artist') {
-                      router.push('/artist'); // Assuming this is the artist dashboard route
-                  } else if (user.role === 'customer') {
-                      router.push('/customer'); // Assuming this is the customer dashboard route
-                  } else {
-                       // Fallback
-                       router.push('/login');
-                  }
-              }
-            } else {
-                // Handle unexpected roles
-                console.warn(`User logged in with unexpected role: ${user.role}`);
-                router.push('/login?error=invalid_role');
-            }
-          } else {
-            // User data or role is missing in the response
-            console.error('User data or role missing from /auth/me response');
-            router.push('/login?error=user_data_missing');
-          }
-        } else {
-          // API response was not OK (e.g., 401, 403)
-          console.error('Failed to fetch user data after callback:', response.status);
-          router.push('/login?error=auth_fetch_failed');
+        if (!response.ok) {
+          setStatus('error');
+          setErrorMessage('Failed to verify authentication. Please try logging in again.');
+          setTimeout(() => router.push(`${ROUTES.LOGIN}?error=auth_fetch_failed`), 2000);
+          return;
         }
+
+        const data: { user: User } = await response.json();
+
+        if (!data.user) {
+          setStatus('error');
+          setErrorMessage('User data not found. Please try logging in again.');
+          setTimeout(() => router.push(`${ROUTES.LOGIN}?error=user_data_missing`), 2000);
+          return;
+        }
+
+        const user = data.user;
+
+        // Check if user has a valid role
+        if (!user.role || !['artist', 'customer', 'admin'].includes(user.role)) {
+          // User needs to select a role - redirect to signup
+          router.replace(ROUTES.SIGNUP);
+          return;
+        }
+
+        // Admin goes directly to admin dashboard
+        if (user.role === 'admin') {
+          router.replace(getDashboardRoute('admin'));
+          return;
+        }
+
+        // Check profile completion for artists and customers using proper validation
+        let isProfileIncomplete = false;
+
+        if (user.role === 'customer') {
+          // Required fields for customer: name, phone, age, height, color, ethnicity, address, city, state, zipCode, country
+          const requiredCustomerFields = [
+            user.name, user.phone, user.age, user.height, user.color, user.ethnicity,
+            user.address, user.city, user.state, user.zipCode, user.country
+          ];
+          isProfileIncomplete = requiredCustomerFields.some(field => 
+            field === null || field === undefined || 
+            (typeof field === 'string' && field.trim() === '')
+          );
+        } else if (user.role === 'artist') {
+          // Required fields for artist: name, bio, specialties, phone, address, city, state, zipCode, country
+          const requiredArtistFields = [
+            user.name, user.bio, user.specialties, user.phone,
+            user.address, user.city, user.state, user.zipCode, user.country
+          ];
+          isProfileIncomplete = requiredArtistFields.some(field => 
+            field === null || field === undefined || 
+            (typeof field === 'string' && field.trim() === '')
+          );
+        }
+
+        if (isProfileIncomplete) {
+          // Redirect to profile completion page
+          router.replace(getProfileRoute(user.role));
+        } else {
+          // Profile is complete, go to dashboard
+          router.replace(getDashboardRoute(user.role));
+        }
+
       } catch (error) {
         console.error('Error during auth callback processing:', error);
-        router.push('/login?error=callback_processing_failed');
+        setStatus('error');
+        setErrorMessage('An error occurred. Please try logging in again.');
+        setTimeout(() => router.push(`${ROUTES.LOGIN}?error=callback_processing_failed`), 2000);
       }
     };
 
-    // Small delay to ensure cookie is set
-    const timer = setTimeout(() => {
-      handleAuthCallback();
-    }, 500); // Reduced timeout slightly, adjust if needed
-
-    return () => clearTimeout(timer);
+    handleAuthCallback();
   }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-300">
-      <p className="text-lg mb-4">Verifying authentication...</p>
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-pink-600"></div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1a1a1a] text-gray-300">
+      {status === 'loading' ? (
+        <>
+          <p className="text-lg mb-4">Verifying authentication...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
+        </>
+      ) : (
+        <>
+          <p className="text-lg mb-4 text-red-400">{errorMessage}</p>
+          <p className="text-sm text-gray-500">Redirecting to login...</p>
+        </>
+      )}
     </div>
   );
 }

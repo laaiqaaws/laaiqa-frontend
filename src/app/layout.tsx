@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, JetBrains_Mono } from "next/font/google";
+import { Poppins, JetBrains_Mono, Cormorant } from "next/font/google";
 import "./globals.css";
 import { StructuredData } from "@/components/seo/structured-data";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -11,8 +12,15 @@ const poppins = Poppins({
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono", // Fixed variable name
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"], 
+  display: "swap",
+});
+
+const cormorant = Cormorant({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -114,11 +122,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable} ${cormorant.variable}`}>
       <body className={`font-sans antialiased`}>
         <StructuredData type="organization" />
         <StructuredData type="website" />
         {children}
+        <Toaster 
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid #2a2a2a',
+            },
+          }}
+          richColors
+          closeButton
+        />
       </body>
     </html>
   );

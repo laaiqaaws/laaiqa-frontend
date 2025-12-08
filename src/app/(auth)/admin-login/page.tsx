@@ -1,21 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from '@/types/user';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { User } from '@/types/user';
+import { API_ENDPOINTS, UI, getDashboardRoute } from '@/lib/config';
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { toast as sonnerToast } from "sonner"; // Assuming you want to keep the toast functionality
+import { useSearchParams, useRouter } from 'next/navigation';
+import { toast as sonnerToast } from "sonner";
 
-function AdminLoginErrorDisplay() {
+const { BACKGROUND_IMAGES, BACKGROUND_INTERVAL } = UI;
+
+function AdminLoginContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
     const authError = searchParams.get('error');
     if (authError) {
-      // Add specific error messages related to admin login
       switch (authError) {
         case 'google_auth_failed':
           setError("Google authentication failed. Please ensure you've granted necessary permissions and try again.");
@@ -26,18 +32,18 @@ function AdminLoginErrorDisplay() {
         case 'callback_processing_failed':
           setError("There was an issue processing your login after Google authentication. Please try again.");
           break;
-        case 'admin_signup_not_allowed': // This error comes from backend if someone tries to sign up as admin (shouldn't happen from this page, but good to handle)
-             setError("Admin accounts cannot be created through the standard signup process.");
-             break;
-        case 'admin_not_found': // Error if user exists but isn't admin (old logic)
-             setError("No admin account found for this email.");
-             break;
-        case 'not_an_admin': // Error if user exists but isn't admin (current logic)
-             setError("Your account is not authorized as an administrator.");
-             break;
-        case 'invalid_role_assigned': // Error if the final role from DB is unexpected
-             setError("Your account has an invalid role. Please contact support.");
-             break;
+        case 'admin_signup_not_allowed':
+          setError("Admin accounts cannot be created through the standard signup process.");
+          break;
+        case 'admin_not_found':
+          setError("No admin account found for this email.");
+          break;
+        case 'not_an_admin':
+          setError("Your account is not authorized as an administrator.");
+          break;
+        case 'invalid_role_assigned':
+          setError("Your account has an invalid role. Please contact support.");
+          break;
         default:
           setError("An unknown error occurred during the login process. Please try again.");
       }
@@ -46,68 +52,77 @@ function AdminLoginErrorDisplay() {
     }
   }, [searchParams]);
 
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <div className="mb-4 p-3 bg-red-900/30 text-red-300 border border-red-700/50 rounded-md text-sm" role="alert">
-      {error}
-    </div>
-  );
-}
-
-// Keeping background logic consistent with your original component
-const BACKGROUND_IMAGES = [
-  '/bg1.jpg',
-  '/bg2.jpg',
-  '/bg3.jpg',
-];
-
-const BACKGROUND_INTERVAL = 8000;
-
-export default function AdminLoginPage() {
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isMobileView, setIsMobileView] = useState(false);
-
   useEffect(() => {
     const checkMobile = () => {
       setIsMobileView(window.matchMedia('(max-width: 767px)').matches);
     };
-
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
-     let intervalId: NodeJS.Timeout;
-
+    let intervalId: NodeJS.Timeout;
     if (isMobileView) {
       intervalId = setInterval(() => {
-        setCurrentImageIndex(prevIndex =>
-          (prevIndex + 1) % BACKGROUND_IMAGES.length
-        );
+        setCurrentImageIndex(prevIndex => (prevIndex + 1) % BACKGROUND_IMAGES.length);
       }, BACKGROUND_INTERVAL);
     }
-
     return () => clearInterval(intervalId);
   }, [isMobileView]);
 
-  // This handles the standard Google login redirect
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.AUTH_ME, {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data: { user: User } = await response.json();
+          const role = data.user?.role;
+
+          if (role === 'admin') {
+            router.replace(getDashboardRoute('admin'));
+          } else if (role === 'artist') {
+            sonnerToast.info("Access Denied", { description: "You are logged in as an artist, not an admin." });
+            router.replace(getDashboardRoute('artist'));
+          } else if (role === 'customer') {
+            sonnerToast.info("Access Denied", { description: "You are logged in as a customer, not an admin." });
+            router.replace(getDashboardRoute('customer'));
+          } else {
+            setIsCheckingAuth(false);
+          }
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
   const handleGoogleLogin = () => {
     setIsRedirecting(true);
-    // No special query param needed here anymore.
-    // The backend will handle the role check after successful Google auth.
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = API_ENDPOINTS.AUTH_GOOGLE;
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
+      </div>
+    );
+  }
 
   return (
     <div
       className="flex items-center justify-center min-h-screen p-4 bg-black md:bg-none"
-       style={{
+      style={{
         backgroundImage: isMobileView ? `url(${BACKGROUND_IMAGES[currentImageIndex]})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -119,22 +134,22 @@ export default function AdminLoginPage() {
 
       <Card className="w-full max-w-sm shadow-xl bg-[#161616]/80 border-[#2a2a2a] text-white relative z-10">
         <CardHeader className="space-y-1.5 border-b border-[#2a2a2a] pb-4">
-            {/* Adjusted title for admin login */}
-            <CardTitle className="text-2xl font-bold text-center text-pink-600">Admin Login</CardTitle>
-            <CardDescription className="text-center text-gray-300 pt-1">
-              Sign in with your authorized Google account to access the admin panel.
-            </CardDescription>
-         </CardHeader>
+          <CardTitle className="text-2xl font-bold text-center text-[#C40F5A]">Admin Login</CardTitle>
+          <CardDescription className="text-center text-gray-300 pt-1">
+            Sign in with your authorized Google account to access the admin panel.
+          </CardDescription>
+        </CardHeader>
         <CardContent className="py-6">
-          <Suspense fallback={<div className="mb-4 h-12 rounded-md bg-[#2a2a2a] animate-pulse"></div>}>
-            {/* Use the specific AdminLoginErrorDisplay */}
-            <AdminLoginErrorDisplay />
-          </Suspense>
+          {error && (
+            <div className="mb-4 p-3 bg-red-900/30 text-red-300 border border-red-700/50 rounded-md text-sm" role="alert">
+              {error}
+            </div>
+          )}
 
           <Button
             type="button"
             variant="outline"
-            className="w-full h-12 text-base bg-[#2a2a2a] border-[#4a4a4a] text-white hover:bg-[#3a3a3a] hover:text-white focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="w-full h-12 text-base bg-[#2a2a2a] border-[#4a4a4a] text-white hover:bg-[#3a3a3a] hover:text-white focus-visible:ring-2 focus-visible:ring-[#C40F5A] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             onClick={handleGoogleLogin}
             disabled={isRedirecting}
           >
@@ -158,5 +173,17 @@ export default function AdminLoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
+      </div>
+    }>
+      <AdminLoginContent />
+    </Suspense>
   );
 }

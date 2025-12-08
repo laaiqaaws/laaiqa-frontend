@@ -1,6 +1,10 @@
 // Laaiqa color palette
 export const COLORS = {
-  primary: '#C40F5A',
+  primary: {
+    300: '#EE2377',  // Brighter pink - for highlights, hover states
+    400: '#C40F5A',  // Darker pink - for text, buttons, accents
+    DEFAULT: '#C40F5A'
+  },
   secondary: '#F46CA4',
   background: '#100D0F',
   blue: '#0063E4',
@@ -14,6 +18,6 @@ export const COLORS = {
     primary: '#FFFFFF',
     secondary: '#E5E5E5',
     muted: '#A0A0A0',
-    accent: '#F46CA4'
+    accent: '#C40F5A'  // Using primary 400 for accent text
   }
 } as const;

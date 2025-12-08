@@ -37,6 +37,11 @@ export const PROFILE_FIELD_CONFIG = {
   admin: {
     required: [] as string[],
     optional: [] as string[]
+  },
+  user: {
+    // User role is temporary - they need to select artist or customer
+    required: [] as string[],
+    optional: [] as string[]
   }
 };
 
@@ -63,7 +68,7 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
     };
   }
 
-  const roleConfig = PROFILE_FIELD_CONFIG[user.role as 'artist' | 'customer' | 'admin'];
+  const roleConfig = PROFILE_FIELD_CONFIG[user.role as 'artist' | 'customer' | 'admin' | 'user'];
   
   if (!roleConfig) {
     return {
@@ -73,6 +78,17 @@ export function validateProfileCompletion(user: UserProfile): ProfileValidationR
       optionalFields: []
     };
   }
+
+  // User role is temporary - profile is incomplete until they select artist/customer
+  if (user.role === 'user') {
+    return {
+      isComplete: false,
+      missingFields: ['role_selection'],
+      requiredFields: ['role_selection'],
+      optionalFields: []
+    };
+  }
+
   if (user.role === 'admin') {
     return {
       isComplete: true,
@@ -102,18 +118,18 @@ export function isFieldRequired(fieldName: string, role: string): boolean {
   const basicRequired = ['name'];
   if (basicRequired.includes(fieldName)) return true;
 
-  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
+  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin' | 'user'];
   return roleConfig ? roleConfig.required.includes(fieldName) : false;
 }
 
 export function isFieldOptional(fieldName: string, role: string): boolean {
-  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
+  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin' | 'user'];
   return roleConfig ? roleConfig.optional.includes(fieldName) : false;
 }
 
 export function getAllowedFields(role: string): string[] {
   const basicFields = ['name', 'role'];
-  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin'];
+  const roleConfig = PROFILE_FIELD_CONFIG[role as 'artist' | 'customer' | 'admin' | 'user'];
   
   if (!roleConfig) return basicFields;
   

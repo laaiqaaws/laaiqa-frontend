@@ -3,7 +3,7 @@ export interface User {
     email: string;
     name?: string | null;
     image?: string | null;
-    role: 'artist' | 'customer' | 'admin' | string;
+    role: 'artist' | 'customer' | 'admin' | 'user' | string;
 
     address?: string | null;
     city?: string | null;
@@ -34,4 +34,5 @@ export interface User {
     profileComplete?: boolean;
 }
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.laaiqa.app';
+// Re-export API_BASE_URL from config for backward compatibility
+export { API_BASE_URL } from '@/lib/config';

@@ -134,25 +134,11 @@ export const pageMetadata = {
         path: '/login',
     }),
 
-    signupOptions: generatePageMetadata({
-        title: 'Join Laaiqa - Choose Your Path',
-        description: 'Choose your account type - Join as an artist to showcase your work or as a customer to find creative talent.',
-        path: '/signup-options',
+    signup: generatePageMetadata({
+        title: 'Join Laaiqa - Sign Up',
+        description: 'Join Laaiqa as an artist to showcase your work or as a customer to find creative talent.',
+        path: '/signup',
         keywords: ['join laaiqa', 'artist signup', 'customer signup'],
-    }),
-
-    artistSignup: generatePageMetadata({
-        title: 'Artist Signup - Laaiqa',
-        description: 'Join Laaiqa as an artist - Showcase your creative work, connect with clients, and grow your artistic business.',
-        path: '/signup-artist',
-        keywords: ['artist signup', 'creative professional', 'art portfolio', 'freelance artist'],
-    }),
-
-    customerSignup: generatePageMetadata({
-        title: 'Customer Signup - Laaiqa',
-        description: 'Join Laaiqa as a customer - Discover talented artists, request custom work, and bring your creative projects to life.',
-        path: '/signup-customer',
-        keywords: ['find artists', 'custom art', 'art commission', 'hire artist'],
     }),
 
     artistDashboard: generatePageMetadata({

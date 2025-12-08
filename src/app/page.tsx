@@ -1,44 +1,112 @@
-import { redirect } from "next/navigation";
-import { cookies as getCookies } from "next/headers";
-import { API_BASE_URL, User } from "@/types/user";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { User } from "@/types/user";
+import { API_ENDPOINTS, UI, ROUTES, getDashboardRoute } from "@/lib/config";
 
-async function getUserRole(): Promise<string | null> {
-  try {
-    const cookieStore = await Promise.resolve(getCookies());
-    const sessionCookie = cookieStore.get("token");
+const { BACKGROUND_IMAGES, BACKGROUND_INTERVAL } = UI;
 
-    if (!sessionCookie) return null;
+export default function Home() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isMobileView, setIsMobileView] = useState(false);
 
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      headers: {
-        Cookie: `${sessionCookie.name}=${sessionCookie.value}`,
-      },
-      cache: "no-store",
-    });
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.matchMedia('(max-width: 767px)').matches);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-    if (response.ok) {
-      const data: { user: User } = await response.json();
-      return data.user?.role ?? null;
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (isMobileView) {
+      intervalId = setInterval(() => {
+        setCurrentImageIndex(prevIndex => (prevIndex + 1) % BACKGROUND_IMAGES.length);
+      }, BACKGROUND_INTERVAL);
     }
-  } catch (error) {
+    return () => clearInterval(intervalId);
+  }, [isMobileView]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.AUTH_ME, {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (response.ok) {
+          const data: { user: User } = await response.json();
+          const role = data.user?.role;
+          
+          if (['artist', 'customer', 'admin'].includes(role)) {
+            router.replace(getDashboardRoute(role));
+          } else {
+            setIsLoading(false);
+          }
+        } else {
+          setIsLoading(false);
+        }
+      } catch {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
+      </div>
+    );
   }
 
-  return null;
-}
-
-export default async function Home() {
-  const userRole = await getUserRole();
-
-  if (userRole === "artist") redirect("/artist");
-  else if (userRole === "customer") redirect("/customer");
-  else if (userRole === "admin") redirect("/admin");
-  else redirect("/login");
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#100D0F]">
-      <p className="text-[#E5E5E5]">Loading...</p>
+    <div
+      className="flex flex-col items-center justify-center min-h-screen p-4 bg-black"
+      style={{
+        backgroundImage: isMobileView ? `url(${BACKGROUND_IMAGES[currentImageIndex]})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        transition: 'background-image 1s ease-in-out',
+      }}
+    >
+      <div className="absolute inset-0 bg-black opacity-50 md:opacity-100 z-0"></div>
+      
+      <div className="relative z-10 text-center max-w-lg">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          Welcome to <span className="text-[#C40F5A]">Laaiqa</span>
+        </h1>
+        <p className="text-gray-300 text-lg mb-8">
+          Connect with professional makeup artists and bring your beauty vision to life.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button
+            asChild
+            className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white"
+          >
+            <Link href={ROUTES.SIGNUP}>Sign Up</Link>
+          </Button>
+          
+          <Button
+            asChild
+            variant="outline"
+            className="h-12 px-8 text-lg bg-transparent border-[#C40F5A] text-[#C40F5A] hover:bg-[#C40F5A] hover:text-white"
+          >
+            <Link href={ROUTES.LOGIN}>Login</Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

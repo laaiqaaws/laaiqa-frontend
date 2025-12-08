@@ -952,7 +952,6 @@ export default function AdminDashboardPage() {
             // Refresh quotes data when dispute is resolved to sync quote status
             if (payload.status === 'Resolved') {
                 fetchData('quotes', setQuotesLoading, setQuotesData, setQuotesErrorData);
-                console.log('Refreshing quotes data due to dispute resolution');
             }
 
             if (isQuickResolve) {
@@ -1398,15 +1397,15 @@ export default function AdminDashboardPage() {
              <Card className="bg-[#161616] border-[#2a2a2a] text-gray-300 shadow-lg" ref={analyticsRef} data-html2canvas-ignore="false">
                 <CardHeader className="px-4 py-3 sm:p-6 border-b border-[#2a2a2a] flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4">
                     <div className="flex items-center gap-2">
-                       <LayoutDashboard className="h-5 w-5 text-pink-500" />
-                        <CardTitle className="text-lg sm:text-xl text-pink-500">
+                       <LayoutDashboard className="h-5 w-5 text-[#C40F5A]" />
+                        <CardTitle className="text-lg sm:text-xl text-[#C40F5A]">
                            Overview & Analytics
                         </CardTitle>
                     </div>
 
                      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
                          <Select value={analyticsPeriod} onValueChange={setAnalyticsPeriod as any} disabled={isLoading || !!hasError || isCriticalActionInProgress}>
-                               <SelectTrigger className="w-full sm:w-[150px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-xs">
+                               <SelectTrigger className="w-full sm:w-[150px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-xs">
                                    <Filter className="mr-2 h-3.5 w-3.5 text-gray-500" />
                                    <SelectValue placeholder="Select Period" />
                                </SelectTrigger>
@@ -1424,7 +1423,7 @@ export default function AdminDashboardPage() {
                                      <Button
                                           id="date"
                                          variant={"outline"}
-                                         className={`justify-start text-left font-normal w-full sm:w-[200px] bg-[#181818] border-[#3a3a3a] text-gray-200 hover:bg-[#1c1c1c] focus:ring-pink-500 focus:border-pink-500 text-xs ${!analyticsDateRange?.from && "text-gray-500"}`}
+                                         className={`justify-start text-left font-normal w-full sm:w-[200px] bg-[#181818] border-[#3a3a3a] text-gray-200 hover:bg-[#1c1c1c] focus:ring-[#C40F5A] focus:border-[#C40F5A] text-xs ${!analyticsDateRange?.from && "text-gray-500"}`}
                                            disabled={!!isLoading || !!hasError || !!isCriticalActionInProgress}
                                      >
                                          <CalendarIconLucide className="mr-2 h-3.5 w-3.5 text-gray-500" />
@@ -1456,8 +1455,8 @@ export default function AdminDashboardPage() {
                              </Popover>
                           )}
 
-                         <Button variant="ghost" size="icon" onClick={handleRefreshData} disabled={isLoading || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-pink-500 transition-colors ${isLoading || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Refresh Data">
-                            {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-pink-500"></div> : <RefreshCw className="h-4 w-4" />}
+                         <Button variant="ghost" size="icon" onClick={handleRefreshData} disabled={isLoading || isCriticalActionInProgress} className={`h-8 w-8 text-gray-400 hover:bg-gray-800 hover:text-[#C40F5A] transition-colors ${isLoading || isCriticalActionInProgress ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Refresh Data">
+                            {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#C40F5A]"></div> : <RefreshCw className="h-4 w-4" />}
                              <span className="sr-only">Refresh Data</span>
                          </Button>
 
@@ -1485,29 +1484,29 @@ export default function AdminDashboardPage() {
                         <div className="space-y-8">
                              <div className="text-sm text-gray-400 italic text-center">Data shown for: <span className="font-semibold text-gray-300">{periodLabel}</span></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-pink-500/10 hover:border-pink-700/50 transition-all duration-200">
+                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-[#C40F5A]/10 hover:border-[#C40F5A]/50 transition-all duration-200">
                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2">
-                                       <Users className="h-4 w-4 text-pink-400" /> New Users
+                                       <Users className="h-4 w-4 text-[#C40F5A]" /> New Users
                                     </CardTitle>
-                                    <CardContent className="p-0 text-3xl font-bold text-pink-500">{usersInPeriod.length}</CardContent>
+                                    <CardContent className="p-0 text-3xl font-bold text-[#C40F5A]">{usersInPeriod.length}</CardContent>
                                      <p className="text-xs text-gray-400 mt-1">
                                          Total Users: {users.length}
                                      </p>
                                 </Card>
-                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-pink-500/10 hover:border-pink-700/50 transition-all duration-200">
+                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-[#C40F5A]/10 hover:border-[#C40F5A]/50 transition-all duration-200">
                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2">
-                                        <FileText className="h-4 w-4 text-pink-400" /> New Quotes
+                                        <FileText className="h-4 w-4 text-[#C40F5A]" /> New Quotes
                                     </CardTitle>
-                                    <CardContent className="p-0 text-3xl font-bold text-pink-500">{quotesInPeriod.length}</CardContent>
+                                    <CardContent className="p-0 text-3xl font-bold text-[#C40F5A]">{quotesInPeriod.length}</CardContent>
                                     <p className="text-xs text-gray-400 mt-1">
                                         Total Quotes: {quotes.length}
                                     </p>
                                 </Card>
-                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-pink-500/10 hover:border-pink-700/50 transition-all duration-200">
+                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-[#C40F5A]/10 hover:border-[#C40F5A]/50 transition-all duration-200">
                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2">
-                                       <Star className="h-4 w-4 text-pink-400" /> New Reviews
+                                       <Star className="h-4 w-4 text-[#C40F5A]" /> New Reviews
                                     </CardTitle>
-                                    <CardContent className="p-0 text-3xl font-bold text-pink-500">{reviewsInPeriod.length}</CardContent>
+                                    <CardContent className="p-0 text-3xl font-bold text-[#C40F5A]">{reviewsInPeriod.length}</CardContent>
                                     <p className="text-xs text-gray-400 mt-1">Total Reviews: {reviews.length}</p>
                                 </Card>
                                  <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-red-500/10 hover:border-red-700/50 transition-all duration-200">
@@ -1528,7 +1527,7 @@ export default function AdminDashboardPage() {
                                         From {completedQuotesInPeriod.length} completed quotes.
                                     </p>
                                 </Card>
-                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-pink-500/10 hover:border-pink-700/50 transition-all duration-200">
+                                 <Card className="bg-[#222222] border-[#3a3a3a] p-4 rounded-lg hover:shadow-[#C40F5A]/10 hover:border-[#C40F5A]/50 transition-all duration-200">
                                     <CardTitle className="text-md font-semibold text-gray-200 flex items-center gap-2 mb-2">
                                        <CheckSquare className="h-4 w-4 text-blue-400" /> Quote Conversion Rate
                                     </CardTitle>
@@ -1652,8 +1651,8 @@ export default function AdminDashboardPage() {
         return (
              <Card className="bg-[#161616] border-[#2a2a2a] text-gray-300 shadow-lg">
                  <CardHeader className="px-4 py-3 sm:p-6 border-b border-[#2a2a2a]">
-                    <CardTitle className="text-lg sm:text-xl text-pink-500 flex items-center gap-2">
-                        <Users className="h-5 w-5 text-pink-500" /> Manage Users ({users.length})
+                    <CardTitle className="text-lg sm:text-xl text-[#C40F5A] flex items-center gap-2">
+                        <Users className="h-5 w-5 text-[#C40F5A]" /> Manage Users ({users.length})
                     </CardTitle>
                  </CardHeader>
                  <CardContent className="px-4 sm:px-6 py-4 sm:py-6">
@@ -1672,7 +1671,7 @@ export default function AdminDashboardPage() {
                                         }
                                       });
                                   }}
-                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm"
                                   disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
@@ -1681,7 +1680,7 @@ export default function AdminDashboardPage() {
                               onValueChange={setUserFilterRole}
                               disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                           >
-                              <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                              <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm">
                                   <SelectValue placeholder="Filter by role..." />
                               </SelectTrigger>
                               <SelectContent className="bg-[#181818] border-[#3a3a3a] text-gray-200">
@@ -1735,7 +1734,7 @@ export default function AdminDashboardPage() {
                                                   <div className="flex items-center gap-3">
                                                        <Avatar className="h-9 w-9">
                                                             <AvatarImage src={userItem.image || undefined} alt={userItem.name || userItem.email || "User Avatar"} />
-                                                            <AvatarFallback className="bg-pink-700/50 text-pink-200 border border-pink-600">{getInitials(userItem.name)}</AvatarFallback>
+                                                            <AvatarFallback className="bg-[#C40F5A]/50 text-[#EE2377] border border-[#C40F5A]">{getInitials(userItem.name)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
                                                             <p className="font-semibold text-white truncate max-w-[150px] sm:max-w-[200px]">{userItem.name || 'N/A'}</p>
@@ -1754,7 +1753,7 @@ export default function AdminDashboardPage() {
                                              <td className="px-4 py-3 text-right">
                                                  <div className="flex items-center justify-end gap-2">
                                                        <Button variant="outline" size="sm"
-                                                          className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
+                                                          className="border-[#C40F5A]/70 bg-[#2a2a2a]/50 text-[#C40F5A] hover:bg-[#C40F5A]/30 hover:text-[#EE2377] transition-colors h-8 px-3 text-xs"
                                                           onClick={() => setViewingUserId(userItem.id)}
                                                           disabled={isCriticalActionInProgress}
                                                           aria-label={`View details for ${userItem.email}`}
@@ -1781,8 +1780,8 @@ export default function AdminDashboardPage() {
         return (
             <Card className="bg-[#161616] border-[#2a2a2a] text-gray-300 shadow-lg">
                 <CardHeader className="px-4 py-3 sm:p-6 border-b border-[#2a2a2a]">
-                   <CardTitle className="text-lg sm:text-xl text-pink-500 flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-pink-500" /> Manage Quotes ({quotes.length})
+                   <CardTitle className="text-lg sm:text-xl text-[#C40F5A] flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-[#C40F5A]" /> Manage Quotes ({quotes.length})
                    </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6 py-4 sm:py-6">
@@ -1801,7 +1800,7 @@ export default function AdminDashboardPage() {
                                          }
                                        });
                                    }}
-                                   className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                                   className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm"
                                    disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                                />
                            </div>
@@ -1810,7 +1809,7 @@ export default function AdminDashboardPage() {
                                 onValueChange={setQuoteFilterStatus}
                                 disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                            >
-                                <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                                <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm">
                                     <SelectValue placeholder="Filter by Status..." />
                                 </SelectTrigger>
                                 <SelectContent className="bg-[#181818] border-[#3a3a3a] text-gray-200">
@@ -1880,7 +1879,7 @@ export default function AdminDashboardPage() {
                                             <td className="px-3 py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                       <Button variant="outline" size="sm"
-                                                         className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
+                                                         className="border-[#C40F5A]/70 bg-[#2a2a2a]/50 text-[#C40F5A] hover:bg-[#C40F5A]/30 hover:text-[#EE2377] transition-colors h-8 px-3 text-xs"
                                                           onClick={() => setViewingQuoteId(quoteItem.id)}
                                                           disabled={isCriticalActionInProgress}
                                                           aria-label={`View details for quote ${quoteItem.id}`}
@@ -1907,8 +1906,8 @@ export default function AdminDashboardPage() {
         return (
             <Card className="bg-[#161616] border-[#2a2a2a] text-gray-300 shadow-lg">
                 <CardHeader className="px-4 py-3 sm:p-6 border-b border-[#2a2a2a]">
-                   <CardTitle className="text-lg sm:text-xl text-pink-500 flex items-center gap-2">
-                      <Star className="h-5 w-5 text-pink-500" /> Manage Reviews ({reviews.length})
+                   <CardTitle className="text-lg sm:text-xl text-[#C40F5A] flex items-center gap-2">
+                      <Star className="h-5 w-5 text-[#C40F5A]" /> Manage Reviews ({reviews.length})
                    </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6 py-4 sm:py-6">
@@ -1927,7 +1926,7 @@ export default function AdminDashboardPage() {
                                          }
                                        });
                                   }}
-                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm"
                                   disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
@@ -1936,7 +1935,7 @@ export default function AdminDashboardPage() {
                                 onValueChange={setReviewFilterRating}
                                 disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                             >
-                                 <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                                 <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm">
                                       <SelectValue placeholder="Filter by Rating..." />
                                   </SelectTrigger>
                                  <SelectContent className="bg-[#181818] border-[#3a3a3a] text-gray-200">
@@ -1993,7 +1992,7 @@ export default function AdminDashboardPage() {
                                             <td className="px-3 py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                       <Button variant="outline" size="sm"
-                                                         className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
+                                                         className="border-[#C40F5A]/70 bg-[#2a2a2a]/50 text-[#C40F5A] hover:bg-[#C40F5A]/30 hover:text-[#EE2377] transition-colors h-8 px-3 text-xs"
                                                          onClick={() => setViewingReviewId(reviewItem.id)}
                                                          disabled={isCriticalActionInProgress}
                                                          aria-label={`View details for review ${reviewItem.id}`}>
@@ -2039,7 +2038,7 @@ export default function AdminDashboardPage() {
                                          }
                                        });
                                   }}
-                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                                  className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 pl-9 pr-3 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm"
                                   disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                               />
                           </div>
@@ -2048,7 +2047,7 @@ export default function AdminDashboardPage() {
                                 onValueChange={setDisputeFilterStatus}
                                 disabled={isBackgroundLoading || !!hasError || isCriticalActionInProgress}
                            >
-                                <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                                <SelectTrigger className="w-full sm:w-[180px] bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm">
                                     <SelectValue placeholder="Filter by Status..." />
                                 </SelectTrigger>
                                 <SelectContent className="bg-[#181818] border-[#3a3a3a] text-gray-200">
@@ -2121,7 +2120,7 @@ export default function AdminDashboardPage() {
                                            <td className="px-3 py-3 text-right">
                                                <div className="flex items-center justify-end gap-2">
                                                      <Button variant="outline" size="sm"
-                                                        className="border-pink-600/70 bg-[#2a2a2a]/50 text-pink-400 hover:bg-pink-700/30 hover:text-pink-300 transition-colors h-8 px-3 text-xs"
+                                                        className="border-[#C40F5A]/70 bg-[#2a2a2a]/50 text-[#C40F5A] hover:bg-[#C40F5A]/30 hover:text-[#EE2377] transition-colors h-8 px-3 text-xs"
                                                         onClick={() => setViewingDisputeId(disputeItem.id)}
                                                         disabled={isCriticalActionInProgress}
                                                         aria-label={`View details for dispute ${disputeItem.id}`}>
@@ -2351,7 +2350,7 @@ export default function AdminDashboardPage() {
          if (userLoading) {
               return (
                  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-192px)] bg-black text-gray-400 p-4">
-                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-4"></div>
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#C40F5A] mb-4"></div>
                      <p className="text-lg">Loading Dashboard Content...</p>
                  </div>
               );
@@ -2372,7 +2371,7 @@ export default function AdminDashboardPage() {
                 case 'overview':
                     return (
                          <>
-                              <div className="mb-4 flex items-center gap-2 text-pink-500 font-semibold text-lg">
+                              <div className="mb-4 flex items-center gap-2 text-[#C40F5A] font-semibold text-lg">
                                   <LayoutDashboard className="h-5 w-5" /> Overview
                               </div>
                              {renderAnalyticsSection()}
@@ -2381,7 +2380,7 @@ export default function AdminDashboardPage() {
                 case 'users':
                     return (
                         <>
-                             <div className="mb-4 flex items-center gap-2 text-pink-500 font-semibold text-lg">
+                             <div className="mb-4 flex items-center gap-2 text-[#C40F5A] font-semibold text-lg">
                                   <Users className="h-5 w-5" /> Users
                               </div>
                             {renderUsersSection()}
@@ -2390,7 +2389,7 @@ export default function AdminDashboardPage() {
                 case 'quotes':
                      return (
                         <>
-                              <div className="mb-4 flex items-center gap-2 text-pink-500 font-semibold text-lg">
+                              <div className="mb-4 flex items-center gap-2 text-[#C40F5A] font-semibold text-lg">
                                   <FileText className="h-5 w-5" /> Quotes
                               </div>
                             {renderQuotesSection()}
@@ -2399,7 +2398,7 @@ export default function AdminDashboardPage() {
                 case 'reviews':
                      return (
                         <>
-                              <div className="mb-4 flex items-center gap-2 text-pink-500 font-semibold text-lg">
+                              <div className="mb-4 flex items-center gap-2 text-[#C40F5A] font-semibold text-lg">
                                   <Star className="h-5 w-5" /> Reviews
                               </div>
                             {renderReviewsSection()}
@@ -2426,7 +2425,7 @@ export default function AdminDashboardPage() {
                 default:
                     return (
                          <>
-                              <div className="mb-4 flex items-center gap-2 text-pink-500 font-semibold text-lg">
+                              <div className="mb-4 flex items-center gap-2 text-[#C40F5A] font-semibold text-lg">
                                   <LayoutDashboard className="h-5 w-5" /> Overview
                               </div>
                             {renderAnalyticsSection()}
@@ -2440,7 +2439,7 @@ export default function AdminDashboardPage() {
      if (userLoading && !user && !userError) {
          return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-300 p-4">
-                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-pink-600 mb-5"></div>
+                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#C40F5A] mb-5"></div>
                <p className="text-2xl">Loading Admin Portal...</p>
                <p className="text-sm text-gray-500">Please wait while we prepare your dashboard.</p>
            </div>
@@ -2459,9 +2458,9 @@ export default function AdminDashboardPage() {
                   userError.toLowerCase().includes("session expired") ||
                   userError.toLowerCase().includes("failed to fetch user")
                   ? (
-                     <Button onClick={() => router.push('/admin-login')} className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 text-base">Go to Login</Button>
+                     <Button onClick={() => router.push('/admin-login')} className="bg-[#C40F5A] hover:bg-[#C40F5A] text-white px-8 py-3 text-base">Go to Login</Button>
                  ) : (
-                     <Button onClick={() => window.location.reload()} className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 text-base">Retry</Button>
+                     <Button onClick={() => window.location.reload()} className="bg-[#C40F5A] hover:bg-[#C40F5A] text-white px-8 py-3 text-base">Retry</Button>
                  )}
              </div>
          );
@@ -2476,16 +2475,16 @@ export default function AdminDashboardPage() {
             <header className="bg-black shadow-md sticky top-0 z-50 border-b border-[#2a2a2a]">
                 <div className="container mx-auto flex items-center justify-between h-16 px-3 md:px-6">
                     <Link href="/admin?view=overview" className="flex items-center gap-2 group">
-                        <LayoutDashboard className="h-6 w-6 text-pink-500 group-hover:text-pink-400 transition-colors" />
+                        <LayoutDashboard className="h-6 w-6 text-[#C40F5A] group-hover:text-[#C40F5A] transition-colors" />
                         <span className="font-bold text-lg md:text-xl text-gray-100 group-hover:text-white transition-colors">Admin Dashboard</span>
                     </Link>
                     <div className="flex items-center gap-2 sm:gap-3">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="p-1 rounded-full h-10 w-10 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+                                <Button variant="ghost" className="p-1 rounded-full h-10 w-10 focus-visible:ring-2 focus-visible:ring-[#C40F5A] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
                                     <Avatar className="cursor-pointer h-9 w-9">
                                         <AvatarImage src={user.image || undefined} alt={user.name || user.email || "Admin Avatar"} />
-                                        <AvatarFallback className="bg-pink-700/60 text-pink-200 border border-pink-600 font-semibold">{getInitials(user.name)}</AvatarFallback>
+                                        <AvatarFallback className="bg-[#C40F5A]/60 text-[#EE2377] border border-[#C40F5A] font-semibold">{getInitials(user.name)}</AvatarFallback>
                                     </Avatar>
                                 </Button>
                             </DropdownMenuTrigger>
@@ -2511,7 +2510,7 @@ export default function AdminDashboardPage() {
                  <div className="md:hidden">
                      <Suspense fallback={
                           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-192px)] bg-black text-gray-400 p-4">
-                              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#C40F5A] mb-3"></div>
                              <p>Loading view...</p>
                          </div>
                      }>
@@ -2536,7 +2535,7 @@ export default function AdminDashboardPage() {
             <Dialog open={!!viewingUserId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
                  <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col h-[90vh] max-h-[90vh]">
                       <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
-                          <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                          <DialogTitle className="text-[#C40F5A] flex items-center gap-2 text-lg sm:text-xl">
                               <Info className="h-4 w-4 sm:h-5 sm:w-5" /> User Details
                           </DialogTitle>
                           <DialogDescription className="text-gray-400 text-sm">
@@ -2546,7 +2545,7 @@ export default function AdminDashboardPage() {
                         <div className="flex-1 overflow-y-auto min-h-0">
                        {viewingUserLoading ? (
                              <div className="flex flex-col items-center justify-center h-full py-8 px-4">
-                                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#C40F5A] mb-3"></div>
                                 <p className="text-gray-400 text-sm">Loading user details...</p>
                              </div>
                         ) : viewingUserError ? (
@@ -2560,7 +2559,7 @@ export default function AdminDashboardPage() {
                                 <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
                                         <Avatar className="h-20 w-20 text-3xl shrink-0">
                                             <AvatarImage src={viewingUser.image || undefined} alt={viewingUser.name || "User Avatar"} />
-                                            <AvatarFallback className="bg-pink-700/50 text-pink-200 border border-pink-600">{getInitials(viewingUser.name)}</AvatarFallback>
+                                            <AvatarFallback className="bg-[#C40F5A]/50 text-[#EE2377] border border-[#C40F5A]">{getInitials(viewingUser.name)}</AvatarFallback>
                                         </Avatar>
                                         <div className="space-y-0.5">
                                             <p className="text-xl font-semibold text-gray-100 truncate max-w-full sm:max-w-sm">{viewingUser.name || 'N/A'}</p>
@@ -2604,7 +2603,7 @@ export default function AdminDashboardPage() {
                                     {viewingUser.role === 'artist' && (
                                         <>
                                             <div className="sm:col-span-2 my-2 border-t border-[#2a2a2a]"></div>
-                                            <div className="sm:col-span-2 text-sm font-semibold text-pink-400 flex items-center gap-1.5 mb-1"><UserCog className="h-4 w-4" /> Artist Profile Details</div>
+                                            <div className="sm:col-span-2 text-sm font-semibold text-[#C40F5A] flex items-center gap-1.5 mb-1"><UserCog className="h-4 w-4" /> Artist Profile Details</div>
                                                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-xs">
                                                     <div>
                                                         <Label className="block text-xs font-medium text-gray-500 mb-0.5 flex items-center gap-1"><StarHalf className="h-3 w-3" />Artist Rating</Label>
@@ -2617,7 +2616,7 @@ export default function AdminDashboardPage() {
                                                         <div><Label className="text-xs text-gray-500 flex items-center gap-1"><Tag className="h-3 w-3" />Specialties</Label><p className="text-gray-200 whitespace-pre-wrap leading-tight">{viewingUser.specialties}</p></div>
                                                     )}
                                                     {viewingUser.portfolioLink && (
-                                                        <div className="sm:col-span-2"><Label className="text-xs text-gray-500 flex items-center gap-1"><LinkIcon className="h-3 w-3" />Portfolio</Label><p><Link href={viewingUser.portfolioLink} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline break-all text-xs leading-tight">{viewingUser.portfolioLink}</Link></p></div>
+                                                        <div className="sm:col-span-2"><Label className="text-xs text-gray-500 flex items-center gap-1"><LinkIcon className="h-3 w-3" />Portfolio</Label><p><Link href={viewingUser.portfolioLink} target="_blank" rel="noopener noreferrer" className="text-[#C40F5A] hover:underline break-all text-xs leading-tight">{viewingUser.portfolioLink}</Link></p></div>
                                                     )}
                                                     {Array.isArray(viewingUser.services) && viewingUser.services.length > 0 && (
                                                         <div className="sm:col-span-2"><Label className="text-xs text-gray-500 flex items-center gap-1"><Package className="h-3 w-3" />Services</Label><p className="text-gray-200 text-xs leading-tight">{viewingUser.services.join(', ')}</p></div>
@@ -2634,7 +2633,7 @@ export default function AdminDashboardPage() {
                                     {viewingUser.role === 'customer' && (
                                         <>
                                             <div className="sm:col-span-2 my-2 border-t border-[#2a2a2a]"></div>
-                                            <div className="sm:col-span-2 text-sm font-semibold text-pink-400 flex items-center gap-1.5 mb-1"><UserRound className="h-4 w-4" /> Customer Preferences</div>
+                                            <div className="sm:col-span-2 text-sm font-semibold text-[#C40F5A] flex items-center gap-1.5 mb-1"><UserRound className="h-4 w-4" /> Customer Preferences</div>
                                                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-xs">
                                                     {Array.isArray(viewingUser.bookingPreferences) && viewingUser.bookingPreferences.length > 0 && (
                                                           <div className="sm:col-span-2"><Label className="text-xs text-gray-500 flex items-center gap-1"><Info className="h-3 w-3" />Booking Prefs</Label><p className="text-gray-200 text-xs leading-tight">{viewingUser.bookingPreferences.join(', ')}</p></div>
@@ -2664,7 +2663,7 @@ export default function AdminDashboardPage() {
                                         </AlertDialogTrigger>
                                         <AlertDialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl">
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle className="text-pink-500">Confirm User Deletion</AlertDialogTitle>
+                                                <AlertDialogTitle className="text-[#C40F5A]">Confirm User Deletion</AlertDialogTitle>
                                                 <AlertDialogDescription className="text-gray-400">
                                                     Are you sure you want to delete user "<span className="font-semibold text-gray-300">{viewingUser.email}</span>" (ID: {viewingUser.id})?
                                                      This action is permanent and will remove all their associated data (quotes, reviews, disputes, etc.). This cannot be undone.
@@ -2695,7 +2694,7 @@ export default function AdminDashboardPage() {
             <Dialog open={!!viewingQuoteId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg md:max-w-xl flex flex-col h-[90vh] max-h-[90vh]">
                     <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
-                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                        <DialogTitle className="text-[#C40F5A] flex items-center gap-2 text-lg sm:text-xl">
                             <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> Quote Details
                         </DialogTitle>
                         <DialogDescription className="text-gray-400 text-sm">
@@ -2705,7 +2704,7 @@ export default function AdminDashboardPage() {
                     <div className="flex-1 overflow-y-auto min-h-0">
                     {viewingQuoteLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
-                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#C40F5A] mb-3"></div>
                            <p className="text-gray-400">Loading quote details...</p>
                         </div>
                     ) : viewingQuoteError ? (
@@ -2718,7 +2717,7 @@ export default function AdminDashboardPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm pb-6">
                                 <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-3 pb-3 border-b border-[#2a2a2a]">
-                                     <div className="flex items-center gap-2 text-pink-400 shrink-0 text-xl">
+                                     <div className="flex items-center gap-2 text-[#C40F5A] shrink-0 text-xl">
                                         <FileText className="h-6 w-6" />
                                         <span className="font-semibold">{viewingQuote.productType}</span>
                                      </div>
@@ -2844,7 +2843,7 @@ export default function AdminDashboardPage() {
                              </AlertDialogTrigger>
                              <AlertDialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl">
                                  <AlertDialogHeader>
-                                     <AlertDialogTitle className="text-pink-500">Confirm Quote Deletion</AlertDialogTitle>
+                                     <AlertDialogTitle className="text-[#C40F5A]">Confirm Quote Deletion</AlertDialogTitle>
                                      <AlertDialogDescription className="text-gray-400">
                                          Are you sure you want to delete quote for "<span className="font-semibold text-gray-300">{viewingQuote?.productType || 'this quote'}</span>" (ID: {viewingQuoteId})? This action is permanent.
                                          Note: This will also delete any associated reviews or disputes.
@@ -2869,7 +2868,7 @@ export default function AdminDashboardPage() {
              <Dialog open={!!viewingReviewId} onOpenChange={(isOpen) => { if (!isOpen) closeDetailModals(); }}>
                 <DialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl max-w-[calc(100vw-16px)] w-full sm:max-w-lg flex flex-col h-[90vh] max-h-[90vh]">
                     <DialogHeader className="pb-3 mb-0 border-b border-[#2a2a2a] shrink-0 px-4 pt-4 sm:px-6 sm:pt-6">
-                        <DialogTitle className="text-pink-500 flex items-center gap-2 text-lg sm:text-xl">
+                        <DialogTitle className="text-[#C40F5A] flex items-center gap-2 text-lg sm:text-xl">
                             <Star className="h-4 w-4 sm:h-5 sm:w-5" /> Review Details
                         </DialogTitle>
                         <DialogDescription className="text-gray-400 text-sm">
@@ -2879,7 +2878,7 @@ export default function AdminDashboardPage() {
                     <div className="flex-1 overflow-y-auto min-h-0">
                     {viewingReviewLoading ? (
                         <div className="flex flex-col items-center justify-center h-full py-12">
-                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500 mb-3"></div>
+                           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#C40F5A] mb-3"></div>
                            <p className="text-gray-400">Loading review details...</p>
                         </div>
                     ) : viewingReviewError ? (
@@ -2935,7 +2934,7 @@ export default function AdminDashboardPage() {
                              </AlertDialogTrigger>
                              <AlertDialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl">
                                  <AlertDialogHeader>
-                                     <AlertDialogTitle className="text-pink-500">Confirm Review Deletion</AlertDialogTitle>
+                                     <AlertDialogTitle className="text-[#C40F5A]">Confirm Review Deletion</AlertDialogTitle>
                                      <AlertDialogDescription className="text-gray-400">
                                          Are you sure you want to delete review (ID: <span className="font-semibold text-gray-300">{viewingReviewId}</span>)? This action is permanent.
                                      </AlertDialogDescription>
@@ -3037,7 +3036,7 @@ export default function AdminDashboardPage() {
                                            </p>
                                       </div>
                                      <div className="sm:col-span-2 mt-4 pt-4 border-t border-[#2a2a2a]">
-                                        <h4 className="text-md font-semibold text-pink-400 mb-3 flex items-center gap-1.5">
+                                        <h4 className="text-md font-semibold text-[#C40F5A] mb-3 flex items-center gap-1.5">
                                             <Edit3 className="h-4 w-4" />
                                             Manage Resolution
                                         </h4>
@@ -3049,7 +3048,7 @@ export default function AdminDashboardPage() {
                                                      onValueChange={(value: FrontendDispute['status']) => setDisputeStatusInput(value)}
                                                      disabled={isSubmittingDisputeUpdate || isCriticalActionInProgress || isCsrfActionDisabled}
                                                 >
-                                                     <SelectTrigger className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                                                     <SelectTrigger className="w-full bg-[#181818] border-[#3a3a3a] text-gray-200 focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm">
                                                          <SelectValue placeholder="Select status..." />
                                                      </SelectTrigger>
                                                      <SelectContent className="bg-[#181818] border-[#3a3a3a] text-gray-200">
@@ -3073,7 +3072,7 @@ export default function AdminDashboardPage() {
                                                     value={resolutionInput}
                                                     onChange={(e) => setResolutionInput(e.target.value)}
                                                     placeholder="Enter resolution details here..."
-                                                    className="bg-[#181818] border-[#3a3a3a] text-gray-200 mt-1 min-h-[100px] focus:ring-pink-500 focus:border-pink-500 text-sm"
+                                                    className="bg-[#181818] border-[#3a3a3a] text-gray-200 mt-1 min-h-[100px] focus:ring-[#C40F5A] focus:border-[#C40F5A] text-sm"
                                                     disabled={isSubmittingDisputeUpdate || isCriticalActionInProgress || isCsrfActionDisabled}
                                                 />
                                             </div>
@@ -3086,7 +3085,7 @@ export default function AdminDashboardPage() {
                                                         isCriticalActionInProgress ||
                                                         (resolutionInput.trim() === (viewingDispute.resolution || "") && disputeStatusInput === viewingDispute.status)
                                                     }
-                                                    className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 text-sm w-full sm:flex-1"
+                                                    className="bg-[#C40F5A] hover:bg-[#C40F5A] text-white px-4 py-2 text-sm w-full sm:flex-1"
                                                     size="sm"
                                                 >
                                                     {isSubmittingDisputeUpdate ? (
@@ -3149,7 +3148,7 @@ export default function AdminDashboardPage() {
                             </AlertDialogTrigger>
                             <AlertDialogContent className="bg-[#101010] text-white border-[#2a2a2a] shadow-xl">
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-pink-500">Confirm Dispute Deletion</AlertDialogTitle>
+                                    <AlertDialogTitle className="text-[#C40F5A]">Confirm Dispute Deletion</AlertDialogTitle>
                                     <AlertDialogDescription className="text-gray-400">
                                         Are you sure you want to delete dispute (ID: <span className="font-semibold text-gray-300">{viewingDisputeId}</span>)? This action is permanent.
                                     </AlertDialogDescription>
@@ -3388,15 +3387,15 @@ const MobileNavigationComponent = ({ navigationItems, currentPathname }: { navig
                         <Link
                             href={item.href}
                             className={`flex flex-col items-center justify-center text-xs h-full p-1 transition-all duration-200 ease-in-out group w-full
-                                ${isActive ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400'}`}
+                                ${isActive ? 'text-[#C40F5A]' : 'text-gray-400 hover:text-[#C40F5A]'}`}
                              scroll={false}
                         >
                             <item.icon
                                 className={`h-5 w-5 mb-0.5 transition-all duration-200 ease-in-out
-                                    ${isActive ? 'text-pink-500 scale-110' : 'text-gray-500 group-hover:text-pink-400'}`}
+                                    ${isActive ? 'text-[#C40F5A] scale-110' : 'text-gray-500 group-hover:text-[#C40F5A]'}`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
-                            <span className={`font-medium ${isActive ? 'text-pink-500' : 'group-hover:text-pink-400'}`}>{item.name}</span>
+                            <span className={`font-medium ${isActive ? 'text-[#C40F5A]' : 'group-hover:text-[#C40F5A]'}`}>{item.name}</span>
                         </Link>
                     </li>
                 );
