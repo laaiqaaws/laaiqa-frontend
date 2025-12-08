@@ -313,6 +313,7 @@ function ArtistOnboardingContent() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
         <button onClick={handleBack} className="p-2 -ml-2">
@@ -624,9 +625,10 @@ function ArtistOnboardingContent() {
           </div>
         )}
       </div>
+      </div>
 
       {/* Bottom Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3 max-w-3xl mx-auto inset-x-0">
         {isSingleSectionMode ? (
           // Single section mode - just Save button
           <Button onClick={handleSave} disabled={isSaving}

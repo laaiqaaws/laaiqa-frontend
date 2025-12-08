@@ -171,6 +171,7 @@ export default function ArtistDisputesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
+      <div className="w-full max-w-3xl mx-auto">
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-800">
         <button onClick={() => router.back()} className="p-1">
           <ChevronLeft className="h-6 w-6" />
@@ -250,9 +251,10 @@ export default function ArtistDisputesPage() {
           </div>
         )}
       </div>
+      </div>
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
+        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-3xl">
           <DialogHeader>
             <DialogTitle>Create New Dispute</DialogTitle>
             <DialogDescription className="text-gray-400">

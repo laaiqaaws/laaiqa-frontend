@@ -39,6 +39,7 @@ function CustomerSettingsContent() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
         <div className="flex items-center gap-3">
@@ -56,16 +57,11 @@ function CustomerSettingsContent() {
       <div className="px-4 py-6">
         {/* Profile Card */}
         <div className="flex flex-col items-center mb-8">
-          <div className="relative mb-4">
+          <div className="mb-4">
             <Avatar className="h-24 w-24">
               {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
               <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">{user?.name?.[0] || 'C'}</AvatarFallback>
             </Avatar>
-            <button className="absolute bottom-0 right-0 bg-[#C40F5A] p-1.5 rounded-full">
-              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
           </div>
           <h2 className="text-xl font-bold">{user?.name || 'Customer'}</h2>
           <p className="text-gray-500 text-sm">{user?.email} | +91 {user?.phone || '0000000000'}</p>
@@ -87,6 +83,7 @@ function CustomerSettingsContent() {
             </Link>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

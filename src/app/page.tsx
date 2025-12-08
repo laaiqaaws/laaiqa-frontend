@@ -13,26 +13,13 @@ export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobileView(window.matchMedia('(max-width: 767px)').matches);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    if (isMobileView) {
-      intervalId = setInterval(() => {
-        setCurrentImageIndex(prevIndex => (prevIndex + 1) % BACKGROUND_IMAGES.length);
-      }, BACKGROUND_INTERVAL);
-    }
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex(prevIndex => (prevIndex + 1) % BACKGROUND_IMAGES.length);
+    }, BACKGROUND_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [isMobileView]);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -64,53 +51,66 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-screen overflow-hidden bg-black">
-      {/* Background Images with crossfade - mobile only */}
-      {isMobileView && BACKGROUND_IMAGES.map((img, index) => (
+    <div className="relative min-h-screen bg-[#1a1a1a] overflow-hidden">
+      {/* Background Images with crossfade */}
+      {BACKGROUND_IMAGES.map((img, index) => (
         <div 
           key={img}
           className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
           style={{
             backgroundImage: `url(${img})`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'center top',
             opacity: index === currentImageIndex ? 1 : 0,
           }}
         />
       ))}
-      <div className="absolute inset-0 bg-black opacity-50 md:opacity-100 z-0"></div>
-      
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4">
-        <div className="text-center max-w-lg">
-          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-            Welcome to <span className="text-[#C40F5A]">Laaiqa</span>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20 max-w-3xl mx-auto w-full">
+        {/* Tagline - matching login page font */}
+        <div className="mb-10">
+          <h1 className="text-[2.75rem] font-semibold text-white leading-[1.1]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            Seamless<br />
+            Booking for<br />
+            <span className="text-[#C40F5A]">Every</span><br />
+            Occasion!
           </h1>
-          <p className="text-gray-300 text-lg mb-8">
-            Connect with professional makeup artists and bring your beauty vision to life.
-          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="space-y-3">
+          <Button
+            asChild
+            className="w-full h-12 bg-[#C40F5A] hover:bg-[#EE2377] text-white font-medium rounded-lg"
+          >
+            <Link href={ROUTES.SIGNUP}>Sign Up</Link>
+          </Button>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              asChild
-              className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white rounded-lg"
-            >
-              <Link href={ROUTES.SIGNUP}>Sign Up</Link>
-            </Button>
-            
-            <Button
-              asChild
-              className="h-12 px-8 text-lg bg-white hover:bg-gray-100 text-gray-800 rounded-lg"
-            >
-              <Link href={ROUTES.LOGIN}>Login</Link>
-            </Button>
-          </div>
+          <Button
+            asChild
+            className="w-full h-12 bg-white hover:bg-gray-100 text-gray-800 font-medium rounded-lg"
+          >
+            <Link href={ROUTES.LOGIN}>Login</Link>
+          </Button>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-400 text-sm">
+            Already have an account?{' '}
+            <Link href={ROUTES.LOGIN} className="text-[#C40F5A] underline">
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
     </div>

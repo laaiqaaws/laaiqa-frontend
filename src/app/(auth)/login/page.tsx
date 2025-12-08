@@ -104,7 +104,7 @@ function LoginContent() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20">
+      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20 max-w-3xl mx-auto w-full">
         {/* Tagline - matching screenshot font */}
         <div className="mb-10">
           <h1 className="text-[2.75rem] font-semibold text-white leading-[1.1]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>

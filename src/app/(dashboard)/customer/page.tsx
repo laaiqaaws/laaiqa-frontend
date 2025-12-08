@@ -183,6 +183,7 @@ function CustomerDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header - only on home view */}
       {view === 'home' && (
         <div className="px-4 pt-4 pb-2">
@@ -303,6 +304,7 @@ function CustomerDashboardContent() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
       <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30">
         <div className="flex justify-around items-center h-full">
           <Link href="/customer?view=home" className={`flex flex-col items-center gap-1 transition-colors relative ${view === 'home' ? 'text-[#EE2377]' : 'text-gray-500'}`}>

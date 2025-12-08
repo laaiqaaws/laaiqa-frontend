@@ -212,6 +212,7 @@ export default function CreateQuotePage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-24">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-800">
         <button onClick={() => router.back()} className="p-1">
@@ -672,9 +673,10 @@ export default function CreateQuotePage() {
           </div>
         </section>
       </div>
+      </div>
 
       {/* Submit Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 max-w-3xl mx-auto inset-x-0">
         <Button 
           onClick={handleSubmit}
           disabled={isSubmitting}

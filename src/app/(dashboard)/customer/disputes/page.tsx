@@ -172,6 +172,7 @@ export default function CustomerDisputesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-800">
         <button onClick={() => router.back()} className="p-1">
@@ -252,10 +253,11 @@ export default function CustomerDisputesPage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* Create Dispute Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
+        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-3xl">
           <DialogHeader>
             <DialogTitle>Create New Dispute</DialogTitle>
             <DialogDescription className="text-gray-400">

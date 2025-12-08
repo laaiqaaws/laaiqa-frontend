@@ -189,6 +189,7 @@ function ArtistDashboardContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
+      <div className="w-full max-w-3xl mx-auto">
       {/* Header - only on home view */}
       {view === 'home' && (
         <div className="px-4 pt-4 pb-2">
@@ -608,6 +609,7 @@ function ArtistDashboardContent() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       {/* FAB - New Booking - Only on home page */}
       {view === 'home' && (

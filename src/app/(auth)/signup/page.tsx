@@ -116,7 +116,7 @@ function SignupContent() {
   // Role Selection Screen (after Google auth)
   if (authenticatedUser) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] px-6 py-12 flex flex-col">
+      <div className="min-h-screen bg-[#1a1a1a] px-6 py-12 flex flex-col max-w-3xl mx-auto w-full">
         <div className="flex-1 flex flex-col items-center justify-center">
           <h1 className="text-3xl font-bold text-white mb-2">
             Hey {authenticatedUser.name?.split(' ')[0] || 'there'}!
@@ -175,7 +175,7 @@ function SignupContent() {
       ))}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
 
-      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20">
+      <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20 max-w-3xl mx-auto w-full">
         <div className="mb-10">
           <h1 className="text-[2.75rem] font-semibold text-white leading-[1.1]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
             Seamless<br />Booking for<br /><span className="text-[#C40F5A]">Every</span><br />Occasion!
