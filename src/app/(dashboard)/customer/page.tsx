@@ -94,6 +94,7 @@ function CustomerDashboardContent() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notificationViewed, setNotificationViewed] = useState(false);
 
   // Load quotes from cache or fetch
   const loadQuotes = useCallback(async (forceRefresh = false) => {
@@ -175,58 +176,49 @@ function CustomerDashboardContent() {
         <div className="flex items-center justify-between mb-4">
           <div><p className="text-gray-400 text-sm">{getGreeting()},</p><h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1></div>
           {view === 'home' && (
-            <button className="relative p-2" onClick={() => {
+            <button 
+              className="relative p-2 hover:bg-gray-800 rounded-full transition-colors" 
+              onClick={() => {
+                setNotificationViewed(true);
                 const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
                 const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
-                const completedQuotesList = quotes.filter(q => q.status === 'Completed');
                 const total = acceptedQuotesList.length + bookedQuotesList.length;
                 
                 if (total === 0) {
-                  sonnerToast('No new notifications', { description: 'You\'re all caught up! No active bookings.', duration: 3000 });
+                  sonnerToast.info('All caught up! ✨', { description: 'No active bookings at the moment.' });
                 } else {
-                  sonnerToast('📋 Your Booking Summary', {
+                  sonnerToast('Booking Summary', {
                     description: (
-                      <div className="space-y-3 mt-2">
+                      <div className="space-y-2 mt-1">
                         {acceptedQuotesList.length > 0 && (
-                          <div className="bg-blue-500/10 rounded-lg p-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                              <span className="font-semibold text-blue-400">{acceptedQuotesList.length} Awaiting Payment</span>
+                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                              <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
                             </div>
-                            {acceptedQuotesList.slice(0, 2).map(q => (
-                              <p key={q.id} className="text-xs text-gray-300 ml-4">
-                                • {q.productType} with {q.artistName || 'Artist'} - ₹{q.price}
-                              </p>
-                            ))}
+                            <span className="text-gray-500 text-xs">₹{acceptedQuotesList[0]?.price}</span>
                           </div>
                         )}
                         {bookedQuotesList.length > 0 && (
-                          <div className="bg-green-500/10 rounded-lg p-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                              <span className="font-semibold text-green-400">{bookedQuotesList.length} Upcoming Booking{bookedQuotesList.length > 1 ? 's' : ''}</span>
-                            </div>
-                            {bookedQuotesList.slice(0, 2).map(q => (
-                              <p key={q.id} className="text-xs text-gray-300 ml-4">
-                                • {q.productType} - {q.serviceDate ? format(parseISO(q.serviceDate), 'dd MMM') : 'No date'}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        {completedQuotesList.length > 0 && (
-                          <div className="bg-gray-500/10 rounded-lg p-2">
+                          <div className="flex items-center justify-between py-1.5">
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                              <span className="text-gray-400">{completedQuotesList.length} completed booking{completedQuotesList.length > 1 ? 's' : ''}</span>
+                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                              <span className="text-green-400 font-medium">{bookedQuotesList.length} Upcoming</span>
                             </div>
+                            <span className="text-gray-500 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
                           </div>
                         )}
                       </div>
                     ),
-                    duration: 8000,
                   });
                 }
-              }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
+              }}
+            >
+              <BellIcon className="h-6 w-6 text-white" />
+              {!notificationViewed && quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
+              )}
+            </button>
           )}
         </div>
         {view === 'home' && (

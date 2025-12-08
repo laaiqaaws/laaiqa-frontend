@@ -63,6 +63,7 @@ function ArtistDashboardContent() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notificationViewed, setNotificationViewed] = useState(false);
 
   // Load quotes from cache or fetch
   const loadQuotes = useCallback(async (forceRefresh = false) => {
@@ -178,74 +179,60 @@ function ArtistDashboardContent() {
           </div>
           {view === 'home' && (
             <button 
-              className="relative p-2"
+              className="relative p-2 hover:bg-gray-800 rounded-full transition-colors"
               onClick={() => {
+                // Mark as viewed when clicked
+                setNotificationViewed(true);
+                
                 const pendingQuotesList = quotes.filter(q => q.status === 'Pending');
                 const acceptedQuotesList = quotes.filter(q => q.status === 'Accepted');
                 const bookedQuotesList = quotes.filter(q => q.status === 'Booked');
                 const total = pendingQuotesList.length + acceptedQuotesList.length + bookedQuotesList.length;
                 
                 if (total === 0) {
-                  sonnerToast('No new notifications', {
-                    description: 'You\'re all caught up! No pending bookings.',
-                    duration: 3000,
+                  sonnerToast.info('All caught up! ✨', {
+                    description: 'No pending bookings at the moment.',
                   });
                 } else {
-                  sonnerToast('📋 Your Booking Summary', {
+                  sonnerToast('Booking Summary', {
                     description: (
-                      <div className="space-y-3 mt-2">
+                      <div className="space-y-2 mt-1">
                         {pendingQuotesList.length > 0 && (
-                          <div className="bg-yellow-500/10 rounded-lg p-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
-                              <span className="font-semibold text-yellow-400">{pendingQuotesList.length} Pending Quote{pendingQuotesList.length > 1 ? 's' : ''}</span>
+                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                              <span className="text-yellow-400 font-medium">{pendingQuotesList.length} Pending</span>
                             </div>
-                            {pendingQuotesList.slice(0, 2).map(q => (
-                              <p key={q.id} className="text-xs text-gray-300 ml-4">
-                                • {q.productType} - {q.serviceDate ? format(parseISO(q.serviceDate), 'dd MMM') : 'No date'}
-                              </p>
-                            ))}
-                            {pendingQuotesList.length > 2 && (
-                              <p className="text-xs text-gray-500 ml-4">+{pendingQuotesList.length - 2} more</p>
-                            )}
+                            <span className="text-gray-500 text-xs">{pendingQuotesList[0]?.productType}</span>
                           </div>
                         )}
                         {acceptedQuotesList.length > 0 && (
-                          <div className="bg-blue-500/10 rounded-lg p-2">
-                            <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                            <div className="flex items-center gap-2">
                               <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                              <span className="font-semibold text-blue-400">{acceptedQuotesList.length} Awaiting Payment</span>
+                              <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
                             </div>
-                            {acceptedQuotesList.slice(0, 2).map(q => (
-                              <p key={q.id} className="text-xs text-gray-300 ml-4">
-                                • {q.productType} - ₹{q.price}
-                              </p>
-                            ))}
+                            <span className="text-gray-500 text-xs">₹{acceptedQuotesList[0]?.price}</span>
                           </div>
                         )}
                         {bookedQuotesList.length > 0 && (
-                          <div className="bg-green-500/10 rounded-lg p-2">
-                            <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center justify-between py-1.5">
+                            <div className="flex items-center gap-2">
                               <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                              <span className="font-semibold text-green-400">{bookedQuotesList.length} Confirmed Booking{bookedQuotesList.length > 1 ? 's' : ''}</span>
+                              <span className="text-green-400 font-medium">{bookedQuotesList.length} Confirmed</span>
                             </div>
-                            {bookedQuotesList.slice(0, 2).map(q => (
-                              <p key={q.id} className="text-xs text-gray-300 ml-4">
-                                • {q.productType} - {q.serviceDate ? format(parseISO(q.serviceDate), 'dd MMM') : 'No date'}
-                              </p>
-                            ))}
+                            <span className="text-gray-500 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
                           </div>
                         )}
                       </div>
                     ),
-                    duration: 8000,
                   });
                 }
               }}
             >
               <BellIcon className="h-6 w-6 text-white" />
-              {quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>
+              {!notificationViewed && quotes.filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status)).length > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EE2377] rounded-full animate-pulse"></span>
               )}
             </button>
           )}
@@ -343,30 +330,6 @@ function ArtistDashboardContent() {
               )}
             </div>
 
-            {/* Recent Activity */}
-            <div className="px-4">
-              <h2 className="text-xl font-semibold mb-3">Recent Activity</h2>
-              <div className="space-y-3">
-                {quotes.slice(0, 4).map(quote => (
-                  <Link key={quote.id} href={`/quote/${quote.id}`}
-                    className="flex items-center gap-3 bg-[#1a1a1a] rounded-xl p-3 transition-colors hover:bg-[#222]">
-                    <div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-[#C40F5A]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{quote.productType}</p>
-                      <p className="text-gray-400 text-xs">
-                        {format(parseISO(quote.serviceDate), 'dd/MM/yyyy')} • ₹{quote.price}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-500" />
-                  </Link>
-                ))}
-                {quotes.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">No recent activity</p>
-                )}
-              </div>
-            </div>
           </motion.div>
         )}
 
