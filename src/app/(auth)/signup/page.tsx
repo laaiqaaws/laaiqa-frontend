@@ -107,7 +107,7 @@ function SignupContent() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
@@ -116,7 +116,7 @@ function SignupContent() {
   // Role Selection Screen (after Google auth)
   if (authenticatedUser) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] px-6 py-12 flex flex-col max-w-3xl mx-auto w-full">
+      <div className="min-h-screen bg-black px-6 py-12 flex flex-col max-w-3xl mx-auto w-full">
         <div className="flex-1 flex flex-col items-center justify-center">
           <h1 className="text-3xl font-bold text-white mb-2">
             Hey {authenticatedUser.name?.split(' ')[0] || 'there'}!
@@ -125,16 +125,16 @@ function SignupContent() {
 
           <div className="flex gap-4 w-full max-w-sm">
             <button onClick={() => setSelectedRole('artist')}
-              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'artist' ? 'bg-[#2a2a2a] border-2 border-[#C40F5A]' : 'bg-[#2a2a2a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3" />
+              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'artist' ? 'bg-[#1a1a1a] border-2 border-[#C40F5A]' : 'bg-[#1a1a1a] border-2 border-transparent'}`}>
+              <div className="aspect-square bg-[#222] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Vendor</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You are a service provider, and in need of a platform to organise your work.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'artist' && <Check className="h-6 w-6 text-green-500" />}</div>
             </button>
 
             <button onClick={() => setSelectedRole('customer')}
-              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'customer' ? 'bg-[#2a2a2a] border-2 border-[#C40F5A]' : 'bg-[#2a2a2a] border-2 border-transparent'}`}>
-              <div className="aspect-square bg-[#3a3a3a] rounded-xl mb-3" />
+              className={`flex-1 rounded-2xl p-4 transition-all flex flex-col ${selectedRole === 'customer' ? 'bg-[#1a1a1a] border-2 border-[#C40F5A]' : 'bg-[#1a1a1a] border-2 border-transparent'}`}>
+              <div className="aspect-square bg-[#222] rounded-xl mb-3" />
               <h3 className="text-white font-semibold mb-1">Customer</h3>
               <p className="text-gray-400 text-xs leading-relaxed flex-1">You have upcoming functions to prepare and need to find best professionals.</p>
               <div className="mt-3 h-6 flex justify-center">{selectedRole === 'customer' && <Check className="h-6 w-6 text-green-500" />}</div>
@@ -159,7 +159,7 @@ function SignupContent() {
 
   // Initial Signup Screen
   return (
-    <div className="relative min-h-screen bg-[#1a1a1a] overflow-hidden">
+    <div className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Images with crossfade */}
       {BACKGROUND_IMAGES.map((img, index) => (
         <div 
@@ -173,7 +173,7 @@ function SignupContent() {
           }}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1a1a]/60 to-[#1a1a1a]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
 
       <div className="relative z-10 flex flex-col min-h-screen px-6 justify-center pb-20 max-w-3xl mx-auto w-full">
         <div className="mb-10">
@@ -207,7 +207,7 @@ function SignupContent() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>}>
       <SignupContent />
     </Suspense>
   );
