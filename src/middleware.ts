@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
 
 // Routes that require authentication AND a specific role (artist/customer/admin)
 const protectedRoutes = ['/admin', '/artist', '/customer', '/profile'];
