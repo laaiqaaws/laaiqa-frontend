@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '@/types/user';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChevronLeft, Check } from 'lucide-react';
 import { toast as sonnerToast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/auth-context";
 
 interface UserData {
   id: string;
@@ -44,11 +45,13 @@ const EXPERIENCE_OPTIONS = [
 
 export default function ArtistOnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('edit') === 'true';
+  const { user: authUser, csrfToken, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
   // Step 1: Basic Info
   const [firstName, setFirstName] = useState('');
@@ -78,53 +81,49 @@ export default function ArtistOnboardingPage() {
   const [allowPartialPayment, setAllowPartialPayment] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (authLoading) return;
+    
+    if (!authUser) {
+      router.push('/login');
+      return;
+    }
+    
+    if (authUser.role !== 'artist') {
+      router.push(authUser.role === 'customer' ? '/profile/customer' : '/');
+      return;
+    }
+
+    // Fetch full user data for form pre-fill (auth context only has basic info)
+    const fetchFullUserData = async () => {
       try {
-        const [userRes, csrfRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
-        ]);
+        const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
+        if (!userRes.ok) return;
 
-        if (!userRes.ok) {
-          router.push('/login');
-          return;
-        }
-
-        const userData = await userRes.json();
-        if (userData.user.role !== 'artist') {
-          router.push(userData.user.role === 'customer' ? '/profile/customer' : '/');
-          return;
-        }
-
-        setUserData(userData.user);
+        const data = await userRes.json();
+        setUserData(data.user);
         
         // Pre-fill form with existing data
-        if (userData.user.name) {
-          const nameParts = userData.user.name.split(' ');
+        if (data.user.name) {
+          const nameParts = data.user.name.split(' ');
           setFirstName(nameParts[0] || '');
           setLastName(nameParts.slice(1).join(' ') || '');
         }
-        setPhone(userData.user.phone || '');
-        setAddressLine1(userData.user.address || '');
-        setCity(userData.user.city || '');
-        setState(userData.user.state || '');
-        setPincode(userData.user.zipCode || '');
-        setBio(userData.user.bio || '');
-        if (userData.user.services) setSelectedServices(userData.user.services);
-        if (userData.user.availableLocations) setAvailableLocations(userData.user.availableLocations);
-
-        if (csrfRes.ok) {
-          const csrfData = await csrfRes.json();
-          setCsrfToken(csrfData.csrfToken);
-        }
+        setPhone(data.user.phone || '');
+        setAddressLine1(data.user.address || '');
+        setCity(data.user.city || '');
+        setState(data.user.state || '');
+        setPincode(data.user.zipCode || '');
+        setBio(data.user.bio || '');
+        if (data.user.services) setSelectedServices(data.user.services);
+        if (data.user.availableLocations) setAvailableLocations(data.user.availableLocations);
       } catch (error) {
         sonnerToast.error("Error loading data");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, [router]);
+    fetchFullUserData();
+  }, [authLoading, authUser, router]);
 
   const addLocation = () => {
     if (locationInput.trim() && !availableLocations.includes(locationInput.trim())) {
@@ -202,8 +201,8 @@ export default function ArtistOnboardingPage() {
       });
 
       if (response.ok) {
-        sonnerToast.success("Profile completed!");
-        router.push('/artist');
+        sonnerToast.success(isEditMode ? "Profile updated!" : "Profile completed!");
+        router.push('/artist?view=profile');
       } else {
         const errorData = await response.json();
         sonnerToast.error(errorData.message || "Failed to save profile");
@@ -217,16 +216,16 @@ export default function ArtistOnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-[#1a1a1a] z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
+      <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
         {step > 1 && (
           <button onClick={handleBack} className="p-2 -ml-2">
             <ChevronLeft className="h-6 w-6" />
@@ -234,7 +233,7 @@ export default function ArtistOnboardingPage() {
         )}
         <h1 className="text-lg font-semibold flex-1 text-center">Vendor Details</h1>
         <Avatar className="h-8 w-8">
-          <AvatarImage src={userData?.image || undefined} />
+          {userData?.image && <AvatarImage src={userData.image} />}
           <AvatarFallback className="bg-orange-500 text-white text-sm">
             {firstName?.[0] || 'A'}
           </AvatarFallback>
@@ -486,7 +485,7 @@ export default function ArtistOnboardingPage() {
       </div>
 
       {/* Bottom Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-800 p-4 flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
         {step > 1 && (
           <Button onClick={handleBack} variant="outline" 
             className="flex-1 h-12 border-gray-600 text-white hover:bg-gray-800">

@@ -3,6 +3,7 @@ import { Poppins, JetBrains_Mono, Cormorant } from "next/font/google";
 import "./globals.css";
 import { StructuredData } from "@/components/seo/structured-data";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/lib/auth-context";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -124,21 +125,23 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable} ${cormorant.variable}`}>
       <body className={`font-sans antialiased`}>
-        <StructuredData type="organization" />
-        <StructuredData type="website" />
-        {children}
-        <Toaster 
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: '#1a1a1a',
-              color: '#fff',
-              border: '1px solid #2a2a2a',
-            },
-          }}
-          richColors
-          closeButton
-        />
+        <AuthProvider>
+          <StructuredData type="organization" />
+          <StructuredData type="website" />
+          {children}
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: '#1a1a1a',
+                color: '#fff',
+                border: '1px solid #2a2a2a',
+              },
+            }}
+            richColors
+            closeButton
+          />
+        </AuthProvider>
       </body>
     </html>
   );

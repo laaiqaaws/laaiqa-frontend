@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { User as AuthUser, API_BASE_URL } from '@/types/user';
+import { useAuth } from '@/lib/auth-context';
 
 import {
   FileText,
@@ -105,8 +106,9 @@ export default function IndividualQuotePage() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isDeletingReview, setIsDeletingReview] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
+  // Use auth context instead of fetching user
+  const { user: authUser, csrfToken, isLoading: isUserLoading } = useAuth();
+  const currentUser = authUser as AuthUser | null;
 
   // Load Razorpay script
   useEffect(() => {
@@ -150,26 +152,7 @@ export default function IndividualQuotePage() {
     return displayStatus;
   };
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-        setIsUserLoading(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
-            if (response.ok) {
-                const data: { user: AuthUser } = await response.json();
-                setCurrentUser(data.user);
-            } else {
-                setCurrentUser(null);
-            }
-        } catch (err) {
-            console.warn("Could not fetch user for authorization checks:", err);
-            setCurrentUser(null);
-        } finally {
-             setIsUserLoading(false);
-        }
-    };
-    fetchCurrentUser();
-  }, []);
+
 
   useEffect(() => {
     if (params && typeof params.id === 'string' && params.id) {
@@ -248,19 +231,13 @@ export default function IndividualQuotePage() {
     }
   }, [quoteId, isUserLoading, fetchQuoteDetails]);
 
-  const fetchCsrfToken = async (): Promise<string | null> => {
-      try {
-          const response = await fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' });
-          if (!response.ok) {
-              sonnerToast.error("Security Error", { description: "Failed to get security token." });
-              return null;
-          }
-          const data = await response.json();
-          return data.csrfToken || null;
-      } catch (error) {
-          sonnerToast.error("Network Error", { description: "Could not connect to get security token." });
+  // Use csrfToken from auth context
+  const getCsrfToken = (): string | null => {
+      if (!csrfToken) {
+          sonnerToast.error("Security Error", { description: "Security token not available. Please refresh." });
           return null;
       }
+      return csrfToken;
   };
 
   const updateQuoteStateAfterAction = (updatedQuoteData: QuotePageData) => {
@@ -287,8 +264,8 @@ export default function IndividualQuotePage() {
     setIsAccepting(true);
     setActionError(null);
 
-    const csrfToken = await fetchCsrfToken();
-    if (!csrfToken) {
+    const token = getCsrfToken();
+    if (!token) {
         setIsAccepting(false);
         return;
     }
@@ -298,7 +275,7 @@ export default function IndividualQuotePage() {
       const response = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/accept`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
       });
       const responseData = await response.json();
       if (!response.ok) {
@@ -323,7 +300,7 @@ export default function IndividualQuotePage() {
             const captureResponse = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/capture-payment`, {
               method: 'POST',
               credentials: 'include',
-              headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+              headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
               body: JSON.stringify({
                 razorpay_payment_id: razorpayResponse.razorpay_payment_id,
                 razorpay_order_id: razorpayResponse.razorpay_order_id,
@@ -353,7 +330,7 @@ export default function IndividualQuotePage() {
               const cancelResponse = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/cancel-payment`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+                headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
               });
               
               if (cancelResponse.ok) {
@@ -406,8 +383,8 @@ export default function IndividualQuotePage() {
     setIsCompleting(true);
     setActionError(null);
 
-    const csrfToken = await fetchCsrfToken();
-     if (!csrfToken) {
+    const token = getCsrfToken();
+     if (!token) {
          setIsCompleting(false);
          return;
      }
@@ -416,7 +393,7 @@ export default function IndividualQuotePage() {
       const response = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/complete`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
       });
       const responseData = await response.json();
       if (!response.ok) {
@@ -451,8 +428,8 @@ export default function IndividualQuotePage() {
        setIsCancelling(true);
        setActionError(null);
 
-       const csrfToken = await fetchCsrfToken();
-        if (!csrfToken) {
+       const token = getCsrfToken();
+        if (!token) {
             setIsCancelling(false);
             return;
         }
@@ -461,7 +438,7 @@ export default function IndividualQuotePage() {
            const response = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/cancel`, {
                method: 'POST',
                credentials: 'include',
-               headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+               headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
            });
            const responseData = await response.json();
            if (!response.ok) {
@@ -497,8 +474,8 @@ export default function IndividualQuotePage() {
        setIsSubmittingReview(true);
        setReviewActionError(null);
 
-       const csrfToken = await fetchCsrfToken();
-       if (!csrfToken) {
+       const token = getCsrfToken();
+       if (!token) {
            setIsSubmittingReview(false);
            return;
        }
@@ -515,7 +492,7 @@ export default function IndividualQuotePage() {
             const response = await fetch(url, {
                method: method,
                credentials: 'include',
-               headers: { 'Content-Type': 'application/json', 'CSRF-Token': csrfToken },
+               headers: { 'Content-Type': 'application/json', 'CSRF-Token': token },
                body: JSON.stringify(reviewData),
             });
             const responseData = await response.json();
@@ -547,8 +524,8 @@ export default function IndividualQuotePage() {
         setIsDeletingReview(true);
         setReviewActionError(null);
 
-        const csrfToken = await fetchCsrfToken();
-        if (!csrfToken) {
+        const token = getCsrfToken();
+        if (!token) {
             setIsDeletingReview(false);
             return;
         }
@@ -557,7 +534,7 @@ export default function IndividualQuotePage() {
             const response = await fetch(`${API_BASE_URL}/api/quotes/${quote.id}/review`, {
                 method: 'DELETE',
                 credentials: 'include',
-                headers: { 'CSRF-Token': csrfToken },
+                headers: { 'CSRF-Token': token },
             });
             const responseData = await response.json();
             if (!response.ok) {
@@ -622,7 +599,7 @@ export default function IndividualQuotePage() {
 
   if (loading || isUserLoading) {
      return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-4 text-white">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black p-4 text-white">
         <div className="w-full max-w-md">
             <Skeleton className="h-10 w-3/4 mb-6 bg-[#2A2428]" />
             <Skeleton className="h-6 w-1/2 mb-3 bg-[#2A2428]" />
@@ -642,36 +619,36 @@ export default function IndividualQuotePage() {
 
   if (quoteErrorType) {
      return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-6 text-center">
-        <Card className="w-full max-w-md bg-[#1A1518] border-[#2A2428] p-6">
-            {quoteErrorType === 'not-found' && <FileText className="h-12 w-12 text-[#A0A0A0] mx-auto mb-4" />}
-            {(quoteErrorType === 'permission-denied' || quoteErrorType === 'auth-required' || quoteErrorType === 'generic-error') && <AlertCircle className="h-12 w-12 text-[#D00416] mx-auto mb-4" />}
-            <CardTitle className={`text-2xl mb-2 ${quoteErrorType === 'not-found' ? 'text-[#E5E5E5]' : 'text-[#D00416]'}`}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black p-6 text-center">
+        <Card className="w-full max-w-md bg-[#1a1a1a] border-gray-800 p-6">
+            {quoteErrorType === 'not-found' && <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />}
+            {(quoteErrorType === 'permission-denied' || quoteErrorType === 'auth-required' || quoteErrorType === 'generic-error') && <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />}
+            <CardTitle className={`text-2xl mb-2 ${quoteErrorType === 'not-found' ? 'text-white' : 'text-red-500'}`}>
                 {quoteErrorType === 'not-found' && 'Quote Not Found'}
                 {quoteErrorType === 'permission-denied' && 'Access Denied'}
                 {quoteErrorType === 'auth-required' && 'Authentication Required'}
                 {quoteErrorType === 'generic-error' && 'Error Loading Quote'}
             </CardTitle>
-             <CardDescription className={`mb-6 ${quoteErrorType === 'not-found' ? 'text-[#A0A0A0]' : 'text-[#D00416]'}`}>
+             <CardDescription className={`mb-6 ${quoteErrorType === 'not-found' ? 'text-gray-400' : 'text-red-400'}`}>
                  {errorMessage}
              </CardDescription>
             {quoteErrorType === 'auth-required' && (
-                 <Button onClick={() => router.push('/login')} className="w-full mt-3 bg-[#C40F5A] hover:bg-[#A00D4A] text-white transition-colors">
+                 <Button onClick={() => router.push('/login')} className="w-full mt-3 bg-[#C40F5A] hover:bg-[#EE2377] text-white transition-colors">
                     Login
                  </Button>
              )}
              {quoteErrorType !== 'auth-required' && (
-                 <Button onClick={() => router.back()} className="w-full bg-[#C40F5A] hover:bg-[#A00D4A] text-white transition-colors">
+                 <Button onClick={() => router.back()} className="w-full bg-[#C40F5A] hover:bg-[#EE2377] text-white transition-colors">
                      <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
                  </Button>
              )}
              {currentUser && (
-                 <Button onClick={() => router.push(getDashboardLink())} className="w-full mt-3 bg-[#F46CA4] hover:bg-[#E55B93] text-white transition-colors">
+                 <Button onClick={() => router.push(getDashboardLink())} className="w-full mt-3 bg-[#C40F5A]/80 hover:bg-[#C40F5A] text-white transition-colors">
                     Go to My Dashboard
                  </Button>
              )}
              {quoteErrorType === 'auth-required' && !currentUser && (
-                  <Button onClick={() => router.push('/signup')} className="w-full mt-3 bg-[#0063E4] hover:bg-[#0052C1] text-white transition-colors">
+                  <Button onClick={() => router.push('/signup')} className="w-full mt-3 bg-gray-700 hover:bg-gray-600 text-white transition-colors">
                       Sign Up
                   </Button>
              )}
@@ -683,8 +660,8 @@ export default function IndividualQuotePage() {
   if (!quote) {
        console.error("Quote state is null but no errorType is set.");
        return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#100D0F] p-6 text-center">
-            <Card className="w-full max-w-md bg-[#1A1518] text-[#A0A0A0] border-[#2A2428] p-6">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-black p-6 text-center">
+            <Card className="w-full max-w-md bg-[#1a1a1a] text-gray-400 border-gray-800 p-6">
                 <FileText className="h-12 w-12 text-[#A0A0A0] mx-auto mb-4" />
                 <CardTitle className="text-2xl mb-2 text-[#E5E5E5]">Quote Unavailable</CardTitle>
                 <CardDescription className="text-[#A0A0A0] mb-6">The quote details could not be loaded.</CardDescription>
@@ -704,8 +681,8 @@ export default function IndividualQuotePage() {
   const showCancelButton = (quote.status === 'Pending' || quote.status === 'Accepted' || quote.status === 'Booked') && canCancel;
 
   return (
-    <div className="min-h-screen bg-[#100D0F] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-lg mx-auto bg-[#1A1518] text-white border-[#2A2428] shadow-xl">
+    <div className="min-h-screen bg-black flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-lg mx-auto bg-[#1a1a1a] text-white border-gray-800 shadow-xl">
         <CardHeader className="px-4 py-4 sm:px-6 sm:py-5 border-b border-[#2A2428]">
           <div className="flex justify-between items-center">
             <CardTitle className="text-xl sm:text-2xl flex items-center gap-2.5 text-[#C40F5A]">

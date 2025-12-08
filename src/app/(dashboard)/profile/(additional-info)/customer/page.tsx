@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '@/types/user';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft } from 'lucide-react';
 import { toast as sonnerToast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/auth-context";
 
 interface UserData {
   id: string;
@@ -34,11 +35,13 @@ interface UserData {
 
 export default function CustomerOnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('edit') === 'true';
+  const { user: authUser, csrfToken, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
   // Step 1: Basic Info
   const [name, setName] = useState('');
@@ -62,24 +65,25 @@ export default function CustomerOnboardingPage() {
   const [other, setOther] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [userRes, csrfRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
-        ]);
+    if (authLoading) return;
+    
+    if (!authUser) {
+      router.push('/login');
+      return;
+    }
+    
+    if (authUser.role !== 'customer') {
+      router.push(authUser.role === 'artist' ? '/profile/artist' : '/');
+      return;
+    }
 
-        if (!userRes.ok) {
-          router.push('/login');
-          return;
-        }
+    // Fetch full user data for form pre-fill
+    const fetchFullUserData = async () => {
+      try {
+        const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
+        if (!userRes.ok) return;
 
         const data = await userRes.json();
-        if (data.user.role !== 'customer') {
-          router.push(data.user.role === 'artist' ? '/profile/artist' : '/');
-          return;
-        }
-
         setUserData(data.user);
         
         // Pre-fill form
@@ -96,19 +100,14 @@ export default function CustomerOnboardingPage() {
         setState(data.user.state || '');
         setPincode(data.user.zipCode || '');
         setOther(data.user.other || '');
-
-        if (csrfRes.ok) {
-          const csrfData = await csrfRes.json();
-          setCsrfToken(csrfData.csrfToken);
-        }
       } catch (error) {
         sonnerToast.error("Error loading data");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, [router]);
+    fetchFullUserData();
+  }, [authLoading, authUser, router]);
 
   const handleNext = () => {
     if (step === 1) {
@@ -169,8 +168,8 @@ export default function CustomerOnboardingPage() {
       });
 
       if (response.ok) {
-        sonnerToast.success("Profile completed!");
-        router.push('/customer');
+        sonnerToast.success(isEditMode ? "Profile updated!" : "Profile completed!");
+        router.push('/customer?view=profile');
       } else {
         const errorData = await response.json();
         sonnerToast.error(errorData.message || "Failed to save profile");
@@ -184,16 +183,16 @@ export default function CustomerOnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-[#1a1a1a] z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
+      <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center justify-between border-b border-gray-800">
         {step > 1 && (
           <button onClick={handleBack} className="p-2 -ml-2">
             <ChevronLeft className="h-6 w-6" />
@@ -201,7 +200,7 @@ export default function CustomerOnboardingPage() {
         )}
         <h1 className="text-lg font-semibold flex-1 text-center">Complete Your Profile</h1>
         <Avatar className="h-8 w-8">
-          <AvatarImage src={userData?.image || undefined} />
+          {userData?.image && <AvatarImage src={userData.image} />}
           <AvatarFallback className="bg-orange-500 text-white text-sm">
             {name?.[0] || 'C'}
           </AvatarFallback>
@@ -355,7 +354,7 @@ export default function CustomerOnboardingPage() {
       </div>
 
       {/* Bottom Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-800 p-4 flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
         {step > 1 && (
           <Button onClick={handleBack} variant="outline" 
             className="flex-1 h-12 border-gray-600 text-white hover:bg-gray-800">

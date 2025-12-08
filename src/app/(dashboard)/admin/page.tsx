@@ -729,7 +729,8 @@ export default function AdminDashboardPage() {
              setUsersData([]); setQuotesData([]); setReviewsData([]); setDisputesData([]);
              setUsersErrorData(null); setQuotesErrorData(null); setReviewsErrorData(null); setDisputesErrorData(null);
              setViewingUserId(null); setViewingQuoteId(null); setViewingReviewId(null); setViewingDisputeId(null);
-             router.push('/admin-login');
+             // Force hard navigation to clear all cached state
+             window.location.href = '/admin-login';
         }
     };
 
@@ -1733,7 +1734,7 @@ export default function AdminDashboardPage() {
                                              <td className="px-4 py-3 font-medium text-white">
                                                   <div className="flex items-center gap-3">
                                                        <Avatar className="h-9 w-9">
-                                                            <AvatarImage src={userItem.image || undefined} alt={userItem.name || userItem.email || "User Avatar"} />
+                                                            {userItem.image && <AvatarImage src={userItem.image} alt={userItem.name || userItem.email || "User Avatar"} />}
                                                             <AvatarFallback className="bg-[#C40F5A]/50 text-[#EE2377] border border-[#C40F5A]">{getInitials(userItem.name)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
@@ -2471,7 +2472,7 @@ export default function AdminDashboardPage() {
      }
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col">
+        <div className="min-h-screen bg-black text-white flex flex-col">
             <header className="bg-black shadow-md sticky top-0 z-50 border-b border-[#2a2a2a]">
                 <div className="container mx-auto flex items-center justify-between h-16 px-3 md:px-6">
                     <Link href="/admin?view=overview" className="flex items-center gap-2 group">
@@ -2483,7 +2484,7 @@ export default function AdminDashboardPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="p-1 rounded-full h-10 w-10 focus-visible:ring-2 focus-visible:ring-[#C40F5A] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
                                     <Avatar className="cursor-pointer h-9 w-9">
-                                        <AvatarImage src={user.image || undefined} alt={user.name || user.email || "Admin Avatar"} />
+                                        {user.image && <AvatarImage src={user.image} alt={user.name || user.email || "Admin Avatar"} />}
                                         <AvatarFallback className="bg-[#C40F5A]/60 text-[#EE2377] border border-[#C40F5A] font-semibold">{getInitials(user.name)}</AvatarFallback>
                                     </Avatar>
                                 </Button>

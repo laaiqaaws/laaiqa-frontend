@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams as nextUseSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/types/user';
 import {
-  Bell, Search, Home, Calendar, User, Clock, ChevronRight, LogOut, FileText, MapPin, Heart, Share2, BarChart3
+  Search, Home, Calendar, User, ChevronRight, LogOut, FileText, Heart, Share2, BarChart3, Camera
 } from "lucide-react";
+import { BellIcon } from "@/components/icons/bell-filled";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast as sonnerToast } from "sonner";
 import { format, parseISO, isValid, differenceInDays, startOfDay } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/lib/auth-context";
 
 interface Quote {
   id: string;
@@ -25,343 +28,204 @@ interface Quote {
   createdAt: string;
 }
 
-interface UserData {
-  id: string;
-  email: string;
-  name?: string | null;
-  image?: string | null;
-  role: string;
+// Session storage keys for quotes cache
+const QUOTES_CACHE_KEY = 'laaiqa_customer_quotes';
+const QUOTES_CACHE_EXPIRY_KEY = 'laaiqa_customer_quotes_expiry';
+const QUOTES_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const CARD_COLORS = ['bg-pink-200', 'bg-orange-200', 'bg-purple-300', 'bg-yellow-200', 'bg-green-200'];
+
+function CalendarEmptyIcon() {
+  return (
+    <div className="w-20 h-20 bg-orange-400 rounded-xl flex flex-col items-center justify-center shadow-lg">
+      <div className="flex gap-1 mb-1">
+        <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
+        <div className="w-1.5 h-1.5 bg-gray-700 rounded-full"></div>
+      </div>
+      <span className="text-3xl font-bold text-white">31</span>
+    </div>
+  );
 }
 
-const CARD_COLORS = [
-  'bg-purple-300', 'bg-pink-200', 'bg-yellow-200', 'bg-orange-200', 'bg-green-200'
-];
+function CalendarView({ quotes }: { quotes: Quote[] }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+  const bookingsByDate = quotes.reduce((acc, quote) => {
+    const dateKey = format(parseISO(quote.serviceDate), 'yyyy-MM-dd');
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(quote);
+    return acc;
+  }, {} as Record<string, Quote[]>);
+  const days = [];
+  for (let i = 0; i < firstDayOfMonth; i++) days.push(<div key={`empty-${i}`} className="h-10"></div>);
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = format(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day), 'yyyy-MM-dd');
+    const hasBooking = bookingsByDate[dateKey]?.length > 0;
+    const isToday = format(new Date(), 'yyyy-MM-dd') === dateKey;
+    days.push(
+      <div key={day} className={`h-10 flex items-center justify-center rounded-lg text-sm relative ${isToday ? 'bg-[#C40F5A] text-white font-bold' : 'text-gray-300'} ${hasBooking && !isToday ? 'bg-[#C40F5A]/20' : ''}`}>
+        {day}
+        {hasBooking && <span className="absolute bottom-1 w-1 h-1 bg-[#C40F5A] rounded-full"></span>}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className="text-gray-400 hover:text-white p-2">←</button>
+        <h3 className="text-white font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
+        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className="text-gray-400 hover:text-white p-2">→</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="h-8 flex items-center justify-center text-xs text-gray-500">{d}</div>)}</div>
+      <div className="grid grid-cols-7 gap-1">{days}</div>
+    </div>
+  );
+}
 
 function CustomerDashboardContent() {
   const router = useRouter();
   const searchParams = nextUseSearchParams();
   const view = searchParams.get('view') || 'home';
+  const { user, isLoading: authLoading, logout } = useAuth();
   
-  const [user, setUser] = useState<UserData | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
+  const [bookingTab, setBookingTab] = useState<'list' | 'calendar'>('list');
+
+  // Load quotes from cache or fetch
+  const loadQuotes = useCallback(async (forceRefresh = false) => {
+    if (!forceRefresh) {
+      try {
+        const cachedExpiry = sessionStorage.getItem(QUOTES_CACHE_EXPIRY_KEY);
+        if (cachedExpiry && Date.now() < parseInt(cachedExpiry, 10)) {
+          const cached = sessionStorage.getItem(QUOTES_CACHE_KEY);
+          if (cached) {
+            setQuotes(JSON.parse(cached));
+            setQuotesLoading(false);
+            return;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/quotes/customer`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setQuotes(data);
+        try {
+          sessionStorage.setItem(QUOTES_CACHE_KEY, JSON.stringify(data));
+          sessionStorage.setItem(QUOTES_CACHE_EXPIRY_KEY, (Date.now() + QUOTES_CACHE_DURATION).toString());
+        } catch { /* ignore */ }
+      }
+    } catch (e) { console.error(e); } finally { setQuotesLoading(false); }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [userRes, quotesRes, csrfRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/quotes/customer`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
-        ]);
-
-        if (!userRes.ok) {
-          router.push('/login');
-          return;
-        }
-
-        const userData = await userRes.json();
-        if (userData.user.role !== 'customer') {
-          router.push(userData.user.role === 'artist' ? '/artist' : '/');
-          return;
-        }
-        setUser(userData.user);
-
-        if (quotesRes.ok) {
-          const quotesData = await quotesRes.json();
-          setQuotes(quotesData);
-        }
-
-        if (csrfRes.ok) {
-          const csrfData = await csrfRes.json();
-          setCsrfToken(csrfData.csrfToken);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, [router]);
+    if (!authLoading && user) {
+      if (user.role !== 'customer') { router.push(user.role === 'artist' ? '/artist' : '/'); return; }
+      loadQuotes();
+    } else if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, user, router, loadQuotes]);
 
   const handleLogout = async () => {
-    if (!csrfToken) return;
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'CSRF-Token': csrfToken }
-      });
-      if (res.ok) {
-        router.push('/login');
-      }
-    } catch (error) {
-      sonnerToast.error("Logout failed");
-    }
+    const success = await logout();
+    if (success) {
+      sessionStorage.removeItem(QUOTES_CACHE_KEY);
+      sessionStorage.removeItem(QUOTES_CACHE_EXPIRY_KEY);
+      window.location.href = '/login';
+    } else { sonnerToast.error("Logout failed"); }
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
+  const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; };
+  const getDaysUntil = (d: string) => { const date = parseISO(d); if (!isValid(date)) return null; const days = differenceInDays(startOfDay(date), startOfDay(new Date())); return days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : days < 0 ? 'Overdue' : `In ${days} Days`; };
+  const upcomingQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime()).slice(0, 5);
+  const filteredQuotes = quotes.filter(q => q.productType.toLowerCase().includes(searchQuery.toLowerCase()) || q.artistName?.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const getDaysUntil = (dateStr: string) => {
-    const date = parseISO(dateStr);
-    if (!isValid(date)) return null;
-    const days = differenceInDays(startOfDay(date), startOfDay(new Date()));
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Tomorrow';
-    if (days < 0) return 'Overdue';
-    return `In ${days} days`;
-  };
+  if (authLoading || quotesLoading) return <div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>;
 
-  const upcomingQuotes = quotes
-    .filter(q => ['Accepted', 'Booked'].includes(q.status))
-    .sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime())
-    .slice(0, 5);
-
-  const filteredQuotes = quotes.filter(q => 
-    q.productType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    q.artistName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
-      </div>
-    );
-  }
+  const pv = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white pb-20">
+    <div className="min-h-screen bg-black text-white pb-20">
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-gray-400 text-sm">{getGreeting()},</p>
-            <h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1>
+          <div><p className="text-gray-400 text-sm">{getGreeting()},</p><h1 className="text-2xl font-bold">{user?.name?.split(' ')[0] || 'Customer'}</h1></div>
+          <button className="relative p-2" onClick={() => {
+              const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
+              const bookedCount = quotes.filter(q => q.status === 'Booked').length;
+              const completedCount = quotes.filter(q => q.status === 'Completed').length;
+              
+              if (acceptedCount === 0 && bookedCount === 0) {
+                sonnerToast.info('No new notifications');
+              } else {
+                const messages = [];
+                if (acceptedCount > 0) messages.push(`${acceptedCount} awaiting payment`);
+                if (bookedCount > 0) messages.push(`${bookedCount} upcoming booking${bookedCount > 1 ? 's' : ''}`);
+                if (completedCount > 0) messages.push(`${completedCount} completed`);
+                sonnerToast.success(`Activity: ${messages.join(', ')}`);
+              }
+            }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
+        </div>
+        {(view === 'home' || view === 'bookings') && (
+          <div className="relative mb-6">
+            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="bg-[#1a1a1a] border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] transition-colors" />
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg"><Search className="h-4 w-4 text-white" /></button>
           </div>
-          <button className="relative p-2">
-            <Bell className="h-6 w-6 text-[#C40F5A]" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>
-          </button>
-        </div>
-        <div className="relative mb-6">
-          <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search bookings or artists"
-            className="bg-[#2a2a2a] border-none text-white pl-4 pr-12 h-12 rounded-xl" />
-          <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
-            <Search className="h-4 w-4 text-white" />
-          </button>
-        </div>
+        )}
       </div>
-
-      {view === 'home' && (
-        <>
-          <div className="px-4 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">My Bookings</h2>
-              <Link href="/customer?view=bookings" className="text-gray-400 text-sm border border-gray-600 px-3 py-1 rounded-full">Show All</Link>
-            </div>
-            {upcomingQuotes.length === 0 ? (
-              <div className="bg-[#2a2a2a] rounded-2xl p-6 text-center">
-                <p className="text-gray-400">No upcoming bookings</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {upcomingQuotes[0] && (
-                  <Link href={`/quote/${upcomingQuotes[0].id}`} className={`${CARD_COLORS[0]} rounded-2xl p-4 block text-black`}>
-                    <div className="flex gap-2 mb-2 flex-wrap">
-                      <span className="bg-black/20 text-xs px-2 py-1 rounded-full">{getDaysUntil(upcomingQuotes[0].serviceDate)}</span>
-                      <span className="bg-black/20 text-xs px-2 py-1 rounded-full">{upcomingQuotes[0].status === 'Booked' ? '$ Fully Paid' : '$ Pending'}</span>
-                      <span className="bg-black/20 text-xs px-2 py-1 rounded-full flex items-center gap-1"><Clock className="h-3 w-3" /> 2 hrs</span>
-                    </div>
-                    <h3 className="font-bold text-lg mb-1">{upcomingQuotes[0].productType}</h3>
-                    <p className="text-sm opacity-80 flex items-center gap-1"><MapPin className="h-3 w-3" />{upcomingQuotes[0].artistName || 'Artist'} | {upcomingQuotes[0].serviceTime}</p>
-                  </Link>
-                )}
-                <div className="grid grid-cols-2 gap-3">
-                  {upcomingQuotes.slice(1, 3).map((quote, idx) => (
-                    <Link key={quote.id} href={`/quote/${quote.id}`} className={`${CARD_COLORS[idx + 1]} rounded-2xl p-3 block text-black`}>
-                      <div className="flex gap-1 mb-2 flex-wrap">
-                        <span className="bg-black/20 text-xs px-2 py-0.5 rounded-full">{getDaysUntil(quote.serviceDate)}</span>
-                        <span className="bg-black/20 text-xs px-2 py-0.5 rounded-full">$ {quote.status}</span>
-                      </div>
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">{quote.productType}</h3>
-                      <p className="text-xs opacity-80 truncate">{quote.artistName || 'Artist'}</p>
-                    </Link>
-                  ))}
+      <AnimatePresence mode="wait">
+        {view === 'home' && (
+          <motion.div key="home" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
+            <div className="px-4 mb-6">
+              <div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">My Bookings</h2>{upcomingQuotes.length > 0 && <Link href="/customer?view=bookings" className="text-white text-sm border border-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors">Show All</Link>}</div>
+              {upcomingQuotes.length === 0 ? (
+                <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center"><div className="flex justify-center mb-4"><CalendarEmptyIcon /></div><p className="text-gray-300">Looks Like you dont have any bookings yet.</p></div>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingQuotes[0] && <Link href={`/quote/${upcomingQuotes[0].id}`} className={`${CARD_COLORS[0]} rounded-2xl p-4 block text-black transition-transform active:scale-[0.98]`}><div className="flex gap-2 mb-3 flex-wrap"><span className="bg-black/80 text-white text-xs px-3 py-1 rounded-full font-medium">{getDaysUntil(upcomingQuotes[0].serviceDate)}</span><span className="border border-black/30 text-xs px-3 py-1 rounded-full">{upcomingQuotes[0].status === 'Booked' ? '$ Fully Paid' : '$ Pending'}</span></div><h3 className="font-bold text-xl mb-2">{upcomingQuotes[0].productType}</h3><p className="text-sm opacity-80">{upcomingQuotes[0].artistName || 'Artist'} | {upcomingQuotes[0].serviceTime}</p></Link>}
+                  {upcomingQuotes.length > 1 && <div className="grid grid-cols-2 gap-3">{upcomingQuotes.slice(1, 3).map((q, i) => <Link key={q.id} href={`/quote/${q.id}`} className={`${CARD_COLORS[i + 1]} rounded-2xl p-3 block text-black transition-transform active:scale-[0.98]`}><div className="flex gap-1 mb-2 flex-wrap"><span className="bg-black/80 text-white text-xs px-2 py-0.5 rounded-full font-medium">{getDaysUntil(q.serviceDate)}</span><span className="border border-black/30 text-xs px-2 py-0.5 rounded-full">$ {q.status}</span></div><h3 className="font-bold text-sm mb-1 line-clamp-2">{q.productType}</h3><p className="text-xs opacity-80 truncate">{q.artistName || 'Artist'}</p></Link>)}</div>}
                 </div>
-              </div>
-            )}
-          </div>
-          <div className="px-4">
-            <h2 className="text-lg font-semibold mb-3">Recent Activity</h2>
-            <div className="space-y-3">
-              {quotes.slice(0, 5).map(quote => (
-                <Link key={quote.id} href={`/quote/${quote.id}`} className="flex items-center gap-3 bg-[#2a2a2a] rounded-xl p-3">
-                  <div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center"><FileText className="h-5 w-5 text-[#C40F5A]" /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{quote.productType}</p>
-                    <p className="text-gray-400 text-sm">{quote.artistName} • ₹{quote.price}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-gray-500" />
-                </Link>
-              ))}
-              {quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}
-            </div>
-          </div>
-        </>
-      )}
-
-      {view === 'bookings' && (
-        <div className="px-4">
-          <div className="flex gap-2 mb-4">
-            <button className="flex-1 bg-[#C40F5A] text-white py-2 rounded-full font-medium text-sm">Bookings</button>
-            <button className="flex-1 bg-[#2a2a2a] text-gray-400 py-2 rounded-full text-sm">Calendar</button>
-          </div>
-          <div className="space-y-3">
-            {filteredQuotes.map((quote, idx) => (
-              <Link key={quote.id} href={`/quote/${quote.id}`} className={`${CARD_COLORS[idx % CARD_COLORS.length]} rounded-2xl p-4 block text-black`}>
-                <div className="flex gap-2 mb-2 flex-wrap">
-                  <span className="bg-black/20 text-xs px-2 py-0.5 rounded-full">{getDaysUntil(quote.serviceDate)}</span>
-                  <span className="bg-black/20 text-xs px-2 py-0.5 rounded-full">$ {quote.status}</span>
-                  <span className="bg-black/20 text-xs px-2 py-0.5 rounded-full flex items-center gap-1"><Clock className="h-3 w-3" /> 2 hrs</span>
-                </div>
-                <p className="text-xs opacity-70 mb-1">Booking # {quote.id.slice(0, 8)}</p>
-                <h3 className="font-bold">{quote.productType}</h3>
-                <p className="text-sm opacity-80">{quote.artistName || 'Artist'} | {quote.serviceTime}</p>
-              </Link>
-            ))}
-            {filteredQuotes.length === 0 && <p className="text-gray-500 text-center py-8">No bookings found</p>}
-          </div>
-        </div>
-      )}
-
-      {view === 'analytics' && (
-        <div className="px-4">
-          <h2 className="text-xl font-bold mb-6">My Analytics</h2>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#2a2a2a] rounded-2xl p-4">
-              <p className="text-gray-400 text-sm">Total Bookings</p>
-              <p className="text-2xl font-bold text-white">{quotes.length}</p>
-            </div>
-            <div className="bg-[#2a2a2a] rounded-2xl p-4">
-              <p className="text-gray-400 text-sm">This Month</p>
-              <p className="text-2xl font-bold text-white">
-                {quotes.filter(q => {
-                  const date = parseISO(q.serviceDate);
-                  const now = new Date();
-                  return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                }).length}
-              </p>
-            </div>
-            <div className="bg-[#2a2a2a] rounded-2xl p-4">
-              <p className="text-gray-400 text-sm">Completed</p>
-              <p className="text-2xl font-bold text-green-500">
-                {quotes.filter(q => q.status === 'Booked').length}
-              </p>
-            </div>
-            <div className="bg-[#2a2a2a] rounded-2xl p-4">
-              <p className="text-gray-400 text-sm">Upcoming</p>
-              <p className="text-2xl font-bold text-yellow-500">
-                {quotes.filter(q => q.status === 'Accepted').length}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-[#2a2a2a] rounded-2xl p-4">
-            <h3 className="text-white font-semibold mb-4">Favorite Services</h3>
-            <div className="space-y-3">
-              {Object.entries(
-                quotes.reduce((acc, quote) => {
-                  acc[quote.productType] = (acc[quote.productType] || 0) + 1;
-                  return acc;
-                }, {} as Record<string, number>)
-              ).slice(0, 5).map(([service, count]) => (
-                <div key={service} className="flex justify-between items-center">
-                  <span className="text-white">{service}</span>
-                  <span className="text-[#C40F5A] font-semibold">{count}</span>
-                </div>
-              ))}
-              {quotes.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No bookings yet</p>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {view === 'profile' && (
-        <div className="px-4">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">{user?.name || 'Customer'}</h2>
-              <p className="text-gray-400 text-sm">{user?.email}</p>
+            <div className="px-4"><h2 className="text-xl font-semibold mb-3">Recent Activity</h2><div className="space-y-3">{quotes.slice(0, 5).map(q => <Link key={q.id} href={`/quote/${q.id}`} className="flex items-center gap-3 bg-[#1a1a1a] rounded-xl p-3 transition-colors hover:bg-[#222]"><div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center"><FileText className="h-5 w-5 text-[#C40F5A]" /></div><div className="flex-1 min-w-0"><p className="font-medium truncate">{q.productType}</p><p className="text-gray-400 text-sm">{q.artistName} • ₹{q.price}</p></div><ChevronRight className="h-5 w-5 text-gray-500" /></Link>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
+          </motion.div>
+        )}
+        {view === 'bookings' && (
+          <motion.div key="bookings" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
+            <div className="flex gap-2 mb-4"><button onClick={() => setBookingTab('list')} className={`flex-1 py-2.5 rounded-full font-medium text-sm transition-colors ${bookingTab === 'list' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}>Bookings</button><button onClick={() => setBookingTab('calendar')} className={`flex-1 py-2.5 rounded-full text-sm transition-colors ${bookingTab === 'calendar' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}>Calendar</button></div>
+            {bookingTab === 'list' ? (filteredQuotes.length === 0 ? <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center mt-4"><div className="flex justify-center mb-4"><CalendarEmptyIcon /></div><p className="text-gray-300">No bookings found</p></div> : <div className="space-y-3">{filteredQuotes.map((q, i) => <Link key={q.id} href={`/quote/${q.id}`} className={`${CARD_COLORS[i % CARD_COLORS.length]} rounded-2xl p-4 block text-black transition-transform active:scale-[0.98]`}><div className="flex gap-2 mb-2 flex-wrap"><span className="bg-black/80 text-white text-xs px-3 py-1 rounded-full font-medium">{getDaysUntil(q.serviceDate)}</span><span className="border border-black/30 text-xs px-3 py-1 rounded-full">$ {q.status}</span></div><p className="text-xs opacity-70 mb-1">Booking # {q.id.slice(0, 8)}</p><h3 className="font-bold text-lg">{q.productType}</h3><p className="text-sm opacity-80">{q.artistName || 'Artist'} | {q.serviceTime}</p></Link>)}</div>) : <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><CalendarView quotes={filteredQuotes} /></div>}
+          </motion.div>
+        )}
+        {view === 'analytics' && (
+          <motion.div key="analytics" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
+            <h2 className="text-xl font-bold mb-6">My Analytics</h2>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-green-500">{quotes.filter(q => q.status === 'Booked').length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Upcoming</p><p className="text-2xl font-bold text-yellow-500">{quotes.filter(q => q.status === 'Accepted').length}</p></div>
             </div>
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user?.image || undefined} />
-              <AvatarFallback className="bg-[#C40F5A] text-white text-xl">{user?.name?.[0] || 'C'}</AvatarFallback>
-            </Avatar>
-          </div>
-          <div className="flex justify-around mb-6 py-4 border-y border-gray-800 mt-4">
-            <button className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center"><Heart className="h-5 w-5 text-gray-400" /></div>
-              <span className="text-xs text-gray-400">Favorites</span>
-            </button>
-            <button className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center"><Calendar className="h-5 w-5 text-gray-400" /></div>
-              <span className="text-xs text-gray-400">My Events</span>
-            </button>
-            <button className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center"><Share2 className="h-5 w-5 text-gray-400" /></div>
-              <span className="text-xs text-gray-400">Share Profile</span>
-            </button>
-          </div>
-          <div className="space-y-1">
-            {[
-              { label: 'Account Settings', href: '/profile/customer/settings', dot: true },
-              { label: 'Payment Methods', href: '/profile/customer/payment' },
-              { label: 'Booking History', href: '/customer?view=bookings' },
-              { label: 'Privacy Policy', href: '/privacy' },
-              { label: 'Terms and Conditions', href: '/terms' },
-            ].map(item => (
-              <Link key={item.label} href={item.href} className="flex items-center justify-between py-4 border-b border-gray-800">
-                <span className="text-white">{item.label}</span>
-                <div className="flex items-center gap-2">
-                  {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                  <ChevronRight className="h-5 w-5 text-gray-500" />
-                </div>
-              </Link>
-            ))}
-          </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 mt-6 py-4"><LogOut className="h-5 w-5" /> Logout</button>
-          <p className="text-center text-gray-600 text-sm mt-8">Release v1.0.0</p>
-        </div>
-      )}
-
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-800 h-16">
-        <div className="flex justify-around items-center h-full">
-          <Link href="/customer?view=home" className={`flex flex-col items-center gap-1 ${view === 'home' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Home className="h-5 w-5" /><span className="text-xs">Home</span></Link>
-          <Link href="/customer?view=bookings" className={`flex flex-col items-center gap-1 ${view === 'bookings' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Calendar className="h-5 w-5" /><span className="text-xs">Bookings</span></Link>
-          <Link href="/customer?view=analytics" className={`flex flex-col items-center gap-1 ${view === 'analytics' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><BarChart3 className="h-5 w-5" /><span className="text-xs">Analytics</span></Link>
-          <Link href="/customer?view=profile" className={`flex flex-col items-center gap-1 ${view === 'profile' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><User className="h-5 w-5" /><span className="text-xs">Profile</span></Link>
-        </div>
-      </nav>
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><h3 className="text-white font-semibold mb-4">Favorite Services</h3><div className="space-y-3">{Object.entries(quotes.reduce((a, q) => { a[q.productType] = (a[q.productType] || 0) + 1; return a; }, {} as Record<string, number>)).slice(0, 5).map(([s, c]) => <div key={s} className="flex justify-between items-center"><span className="text-white">{s}</span><span className="text-[#C40F5A] font-semibold">{c}</span></div>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
+          </motion.div>
+        )}
+        {view === 'profile' && (
+          <motion.div key="profile" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
+            <div className="flex flex-col items-center py-6"><div className="relative"><Avatar className="h-24 w-24">{user?.image && <AvatarImage src={user.image} />}<AvatarFallback className="bg-[#C40F5A] text-white text-2xl">{user?.name?.[0] || 'C'}</AvatarFallback></Avatar><button className="absolute bottom-0 right-0 bg-[#C40F5A] p-2 rounded-full"><Camera className="h-4 w-4 text-white" /></button></div><h2 className="text-xl font-bold mt-4">{user?.name || 'Customer'}</h2><p className="text-gray-400 text-sm">{user?.email}</p>{user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}</div>
+            <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
+            <div className="space-y-1"><Link href="/profile/customer?edit=true" className="flex items-center justify-between py-4 border-b border-gray-800 w-full"><span className="text-white">Account Settings</span><div className="flex items-center gap-2"><span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span><ChevronRight className="h-5 w-5 text-gray-500" /></div></Link>{[{ label: 'Payment Methods' }, { label: 'Booking History', href: '/customer?view=bookings' }, { label: 'Disputes' }, { label: 'Privacy Policy' }, { label: 'Terms and Conditions' }].map(i => i.href ? <Link key={i.label} href={i.href} className="flex items-center justify-between py-4 border-b border-gray-800"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></Link> : <button key={i.label} onClick={() => sonnerToast.info('Coming soon!')} className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></button>)}</div>
+            <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 mt-6 py-4"><LogOut className="h-5 w-5" /> Logout</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-16 z-30"><div className="flex justify-around items-center h-full"><Link href="/customer?view=home" className={`flex flex-col items-center gap-1 transition-colors ${view === 'home' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Home className="h-5 w-5" /><span className="text-xs">Home</span></Link><Link href="/customer?view=bookings" className={`flex flex-col items-center gap-1 transition-colors ${view === 'bookings' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><Calendar className="h-5 w-5" /><span className="text-xs">Bookings</span></Link><Link href="/customer?view=analytics" className={`flex flex-col items-center gap-1 transition-colors ${view === 'analytics' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><BarChart3 className="h-5 w-5" /><span className="text-xs">Analytics</span></Link><Link href="/customer?view=profile" className={`flex flex-col items-center gap-1 transition-colors ${view === 'profile' ? 'text-[#C40F5A]' : 'text-gray-500'}`}><User className="h-5 w-5" /><span className="text-xs">Profile</span></Link></div></nav>
     </div>
   );
 }
 
 export default function CustomerDashboardPage() {
-  return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>}>
-      <CustomerDashboardContent />
-    </Suspense>
-  );
+  return <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>}><CustomerDashboardContent /></Suspense>;
 }

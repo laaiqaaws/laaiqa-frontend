@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon } from 'lucide-react';
 import { toast as sonnerToast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { useAuth } from "@/lib/auth-context";
 
 const EVENT_TYPES = [
   'Bridal Makeup',
@@ -55,9 +56,8 @@ const PAYMENT_TYPES = [
 
 export default function CreateQuotePage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, csrfToken, isLoading: authLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
   // Basic Booking Info
   const [clientFirstName, setClientFirstName] = useState('');
@@ -95,36 +95,14 @@ export default function CreateQuotePage() {
   const [advanceAmount, setAdvanceAmount] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [userRes, csrfRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
-        ]);
-
-        if (!userRes.ok) {
-          router.push('/login');
-          return;
-        }
-
-        const userData = await userRes.json();
-        if (userData.user.role !== 'artist') {
-          router.push('/');
-          return;
-        }
-
-        if (csrfRes.ok) {
-          const csrfData = await csrfRes.json();
-          setCsrfToken(csrfData.csrfToken);
-        }
-      } catch (error) {
-        sonnerToast.error("Error loading data");
-      } finally {
-        setIsLoading(false);
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (user.role !== 'artist') {
+        router.push('/');
       }
-    };
-    fetchData();
-  }, [router]);
+    }
+  }, [authLoading, user, router]);
 
   const handleSubmit = async () => {
     // Validation
@@ -190,6 +168,9 @@ export default function CreateQuotePage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Invalidate quotes cache so dashboard fetches fresh data
+        sessionStorage.removeItem('laaiqa_artist_quotes');
+        sessionStorage.removeItem('laaiqa_artist_quotes_expiry');
         sonnerToast.success("Booking created successfully!");
         router.push('/artist?view=bookings');
       } else {
@@ -202,18 +183,18 @@ export default function CreateQuotePage() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a]">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white pb-24">
+    <div className="min-h-screen bg-black text-white pb-24">
       {/* Header */}
-      <div className="sticky top-0 bg-[#1a1a1a] z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-800">
+      <div className="sticky top-0 bg-black z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-800">
         <button onClick={() => router.back()} className="p-1">
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -355,26 +336,92 @@ export default function CreateQuotePage() {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-sm">Time*</Label>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <div className="relative">
-                  <Input 
-                    type="time"
-                    value={startTime} 
-                    onChange={e => setStartTime(e.target.value)}
-                    className="bg-[#2a2a2a] border-gray-700 text-white pr-10 [color-scheme:dark]"
-                  />
-                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-                </div>
-                <div className="relative">
-                  <Input 
-                    type="time"
-                    value={endTime} 
-                    onChange={e => setEndTime(e.target.value)}
-                    className="bg-[#2a2a2a] border-gray-700 text-white pr-10 [color-scheme:dark]"
-                  />
-                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-                </div>
+              <Label className="text-gray-400 text-sm">Start Time*</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Select value={startTime.split(':')[0] || ''} onValueChange={(h) => setStartTime(`${h}:${startTime.split(':')[1] || '00'}`)}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="Hour" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const hour = (i + 1).toString().padStart(2, '0');
+                      return <SelectItem key={hour} value={hour}>{hour}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select value={startTime.split(':')[1] || ''} onValueChange={(m) => setStartTime(`${startTime.split(':')[0] || '09'}:${m}`)}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="Min" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
+                    {['00', '15', '30', '45'].map(min => (
+                      <SelectItem key={min} value={min}>{min}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select 
+                  value={parseInt(startTime.split(':')[0] || '9') >= 12 ? 'PM' : 'AM'} 
+                  onValueChange={(period) => {
+                    const currentHour = parseInt(startTime.split(':')[0] || '9');
+                    let newHour = currentHour;
+                    if (period === 'PM' && currentHour < 12) newHour = currentHour + 12;
+                    if (period === 'AM' && currentHour >= 12) newHour = currentHour - 12;
+                    setStartTime(`${newHour.toString().padStart(2, '0')}:${startTime.split(':')[1] || '00'}`);
+                  }}
+                >
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="AM/PM" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700">
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-gray-400 text-sm">End Time (Optional)</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Select value={endTime.split(':')[0] || ''} onValueChange={(h) => setEndTime(`${h}:${endTime.split(':')[1] || '00'}`)}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="Hour" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const hour = (i + 1).toString().padStart(2, '0');
+                      return <SelectItem key={hour} value={hour}>{hour}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select value={endTime.split(':')[1] || ''} onValueChange={(m) => setEndTime(`${endTime.split(':')[0] || '17'}:${m}`)}>
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="Min" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
+                    {['00', '15', '30', '45'].map(min => (
+                      <SelectItem key={min} value={min}>{min}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select 
+                  value={parseInt(endTime.split(':')[0] || '17') >= 12 ? 'PM' : 'AM'} 
+                  onValueChange={(period) => {
+                    const currentHour = parseInt(endTime.split(':')[0] || '17');
+                    let newHour = currentHour;
+                    if (period === 'PM' && currentHour < 12) newHour = currentHour + 12;
+                    if (period === 'AM' && currentHour >= 12) newHour = currentHour - 12;
+                    setEndTime(`${newHour.toString().padStart(2, '0')}:${endTime.split(':')[1] || '00'}`);
+                  }}
+                >
+                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
+                    <SelectValue placeholder="AM/PM" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700">
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -562,7 +609,7 @@ export default function CreateQuotePage() {
       </div>
 
       {/* Submit Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-800 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4">
         <Button 
           onClick={handleSubmit}
           disabled={isSubmitting}
