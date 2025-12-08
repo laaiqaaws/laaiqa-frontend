@@ -374,13 +374,16 @@ ced ScrollArea for modals */
   background: #1a1a1a !important;
   border: 1px solid #4b5563 !important;
   border-radius: 8px !important;
-  padding: 16px 20px !important;
+  padding: 14px 16px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
-  gap: 12px !important;
+  gap: 8px !important;
+  width: 100% !important;
 }
 
 [data-sonner-toast] [data-content] {
-  padding-right: 24px !important;
+  padding-right: 20px !important;
+  flex: 1 !important;
+  width: 100% !important;
 }
 
 [data-sonner-toast] [data-title] {
@@ -398,31 +401,31 @@ ced ScrollArea for modals */
 
 [data-sonner-toast] [data-close-button] {
   position: absolute !important;
-  top: 12px !important;
-  right: 12px !important;
+  top: 8px !important;
+  right: 8px !important;
   left: auto !important;
-  background: #374151 !important;
+  background: transparent !important;
   border: none !important;
-  color: #9ca3af !important;
-  padding: 6px !important;
-  border-radius: 4px !important;
-  transition: all 0.15s ease !important;
-  width: 28px !important;
-  height: 28px !important;
+  color: #6b7280 !important;
+  padding: 4px !important;
+  border-radius: 0 !important;
+  transition: color 0.15s ease !important;
+  width: auto !important;
+  height: auto !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
 [data-sonner-toast] [data-close-button]:hover {
-  background: #4b5563 !important;
+  background: transparent !important;
   color: #ffffff !important;
 }
 
 [data-sonner-toast] [data-close-button] svg {
-  width: 18px !important;
-  height: 18px !important;
-  stroke-width: 2.5 !important;
+  width: 16px !important;
+  height: 16px !important;
+  stroke-width: 2 !important;
 }
 
 /* Toast enter/exit animations */
@@ -493,12 +496,11 @@ ced ScrollArea for modals */
 }
 
 
-/* Force white borders on ALL input fields - high specificity */
-input[type],
-input:not([type]),
+/* Force white borders on form input fields - exclude search bars */
+input[type]:not(.search-input):not([placeholder*="Search"]),
+input:not([type]):not(.search-input):not([placeholder*="Search"]),
 textarea,
-select,
-[data-slot="input"],
+[data-slot="input"]:not(.search-input),
 [data-slot="textarea"],
 [data-slot="select-trigger"],
 button[role="combobox"] {
@@ -509,14 +511,27 @@ button[role="combobox"] {
   color: white !important;
 }
 
-/* Focus states */
-input:focus,
-input:focus-visible,
+/* Search bar specific styling - gray border */
+input.search-input,
+input[placeholder*="Search"] {
+  border-color: #333 !important;
+  background-color: #1a1a1a !important;
+  color: white !important;
+}
+
+input.search-input:focus,
+input[placeholder*="Search"]:focus {
+  border-color: #C40F5A !important;
+  box-shadow: none !important;
+}
+
+/* Focus states for form inputs */
+input:focus:not(.search-input):not([placeholder*="Search"]),
+input:focus-visible:not(.search-input):not([placeholder*="Search"]),
 textarea:focus,
 textarea:focus-visible,
-select:focus,
-[data-slot="input"]:focus,
-[data-slot="input"]:focus-visible,
+[data-slot="input"]:focus:not(.search-input),
+[data-slot="input"]:focus-visible:not(.search-input),
 [data-slot="textarea"]:focus,
 [data-slot="textarea"]:focus-visible,
 [data-slot="select-trigger"]:focus,

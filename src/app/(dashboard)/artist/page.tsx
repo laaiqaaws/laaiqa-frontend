@@ -148,9 +148,28 @@ function ArtistDashboardContent() {
     return `In ${days} Days`;
   };
 
+  // Filter quotes by search query
+  const filterBySearch = (quotesToFilter: Quote[]) => {
+    if (!searchQuery.trim()) return quotesToFilter;
+    const query = searchQuery.toLowerCase();
+    return quotesToFilter.filter(q => {
+      if (q.productType?.toLowerCase().includes(query)) return true;
+      if (q.customerName?.toLowerCase().includes(query)) return true;
+      if (q.status?.toLowerCase().includes(query)) return true;
+      if (q.details?.toLowerCase().includes(query)) return true;
+      try {
+        const dateStr = format(parseISO(q.serviceDate), 'dd/MM/yyyy');
+        if (dateStr.includes(query) || q.serviceDate.includes(query)) return true;
+        const dateStr2 = format(parseISO(q.serviceDate), 'dd MMM yyyy');
+        if (dateStr2.toLowerCase().includes(query)) return true;
+      } catch { /* ignore */ }
+      return false;
+    });
+  };
+
   // Group quotes by status
-  const pendingQuotes = quotes.filter(q => q.status === 'Pending').sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
-  const activeQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  const pendingQuotes = filterBySearch(quotes.filter(q => q.status === 'Pending')).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  const activeQuotes = filterBySearch(quotes.filter(q => ['Accepted', 'Booked'].includes(q.status))).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
   
   const upcomingQuotes = [...pendingQuotes, ...activeQuotes].slice(0, 5);
 
@@ -197,32 +216,32 @@ function ArtistDashboardContent() {
                   } else {
                     sonnerToast('Booking Summary', {
                       description: (
-                        <div className="space-y-2 mt-2">
+                        <div className="space-y-1 mt-1 w-full">
                           {pendingQuotesList.length > 0 && (
-                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                            <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse flex-shrink-0"></span>
                                 <span className="text-yellow-400 font-medium">{pendingQuotesList.length} Pending</span>
                               </div>
-                              <span className="text-gray-400 text-xs ml-4">{pendingQuotesList[0]?.productType}</span>
+                              <span className="text-gray-400 text-xs truncate max-w-[120px]">{pendingQuotesList[0]?.productType}</span>
                             </div>
                           )}
                           {acceptedQuotesList.length > 0 && (
-                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                            <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></span>
                                 <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
                               </div>
-                              <span className="text-gray-400 text-xs ml-4">₹{acceptedQuotesList[0]?.price}</span>
+                              <span className="text-gray-400 text-xs">₹{acceptedQuotesList[0]?.price}</span>
                             </div>
                           )}
                           {bookedQuotesList.length > 0 && (
-                            <div className="flex items-center justify-between py-2">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                            <div className="flex items-center justify-between py-1.5">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></span>
                                 <span className="text-green-400 font-medium">{bookedQuotesList.length} Confirmed</span>
                               </div>
-                              <span className="text-gray-400 text-xs ml-4">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
+                              <span className="text-gray-400 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
                             </div>
                           )}
                         </div>
@@ -514,16 +533,19 @@ function ArtistDashboardContent() {
             transition={{ duration: 0.2 }}
             className="px-4"
           >
-            {/* Profile Header - Avatar centered with name below */}
-            <div className="flex flex-col items-center py-6">
-              <Avatar className="h-20 w-20 mb-3">
+            {/* Profile Header - Name left, Avatar right */}
+            <div className="flex items-center justify-between py-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
+                {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
+                {user?.email && <p className="text-gray-500 text-sm">{user.email}</p>}
+              </div>
+              <Avatar className="h-16 w-16">
                 {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
-                <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">
+                <AvatarFallback className="bg-[#C40F5A] text-white text-xl">
                   {user?.name?.[0] || 'A'}
                 </AvatarFallback>
               </Avatar>
-              <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
-              {user?.companyName && <p className="text-gray-400 text-sm">{user.companyName}</p>}
             </div>
 
             {/* Send Booking Form Button */}

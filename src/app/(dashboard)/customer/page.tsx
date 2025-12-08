@@ -153,18 +153,29 @@ function CustomerDashboardContent() {
 
   const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; };
   const getDaysUntil = (d: string) => { const date = parseISO(d); if (!isValid(date)) return null; const days = differenceInDays(startOfDay(date), startOfDay(new Date())); return days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : days < 0 ? 'Overdue' : `In ${days} Days`; };
-  // Group quotes by status for proper display
-  const activeQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
-  const upcomingQuotes = activeQuotes.slice(0, 5);
-  const filteredQuotes = quotes.filter(q => {
+  
+  // Filter quotes by search query
+  const filterBySearch = (quotesToFilter: Quote[]) => {
+    if (!searchQuery.trim()) return quotesToFilter;
     const query = searchQuery.toLowerCase();
-    if (!query) return true;
-    if (q.productType.toLowerCase().includes(query)) return true;
-    if (q.artistName?.toLowerCase().includes(query)) return true;
-    try { const dateStr = format(parseISO(q.serviceDate), 'dd/MM/yyyy'); if (dateStr.includes(query) || q.serviceDate.includes(query)) return true; } catch { /* ignore */ }
-    if (q.status.toLowerCase().includes(query)) return true;
-    return false;
-  });
+    return quotesToFilter.filter(q => {
+      if (q.productType?.toLowerCase().includes(query)) return true;
+      if (q.artistName?.toLowerCase().includes(query)) return true;
+      if (q.status?.toLowerCase().includes(query)) return true;
+      try { 
+        const dateStr = format(parseISO(q.serviceDate), 'dd/MM/yyyy'); 
+        if (dateStr.includes(query) || q.serviceDate.includes(query)) return true;
+        const dateStr2 = format(parseISO(q.serviceDate), 'dd MMM yyyy');
+        if (dateStr2.toLowerCase().includes(query)) return true;
+      } catch { /* ignore */ }
+      return false;
+    });
+  };
+  
+  // Group quotes by status for proper display - apply search filter
+  const activeQuotes = filterBySearch(quotes.filter(q => ['Accepted', 'Booked'].includes(q.status))).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  const upcomingQuotes = activeQuotes.slice(0, 5);
+  const recentQuotes = filterBySearch(quotes).slice(0, 5);
 
   if (authLoading || quotesLoading) return <div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>;
 
@@ -194,23 +205,23 @@ function CustomerDashboardContent() {
                   } else {
                     sonnerToast('Booking Summary', {
                       description: (
-                        <div className="space-y-2 mt-2">
+                        <div className="space-y-1 mt-1 w-full">
                           {acceptedQuotesList.length > 0 && (
-                            <div className="flex items-center justify-between py-2 border-b border-gray-700/50">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                            <div className="flex items-center justify-between py-1.5 border-b border-gray-700/50">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse flex-shrink-0"></span>
                                 <span className="text-blue-400 font-medium">{acceptedQuotesList.length} Awaiting Pay</span>
                               </div>
-                              <span className="text-gray-400 text-xs ml-4">₹{acceptedQuotesList[0]?.price}</span>
+                              <span className="text-gray-400 text-xs">₹{acceptedQuotesList[0]?.price}</span>
                             </div>
                           )}
                           {bookedQuotesList.length > 0 && (
-                            <div className="flex items-center justify-between py-2">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                            <div className="flex items-center justify-between py-1.5">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></span>
                                 <span className="text-green-400 font-medium">{bookedQuotesList.length} Upcoming</span>
                               </div>
-                              <span className="text-gray-400 text-xs ml-4">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
+                              <span className="text-gray-400 text-xs">{bookedQuotesList[0]?.serviceDate ? format(parseISO(bookedQuotesList[0].serviceDate), 'dd MMM') : ''}</span>
                             </div>
                           )}
                         </div>
@@ -248,7 +259,7 @@ function CustomerDashboardContent() {
                 </div>
               )}
             </div>
-            <div className="px-4"><h2 className="text-xl font-semibold mb-3">Recent Activity</h2><div className="space-y-3">{quotes.slice(0, 5).map(q => <Link key={q.id} href={`/quote/${q.id}`} className="flex items-center gap-3 bg-[#1a1a1a] rounded-xl p-3 transition-colors hover:bg-[#222]"><div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center"><FileText className="h-5 w-5 text-[#C40F5A]" /></div><div className="flex-1 min-w-0"><p className="font-medium truncate">{q.productType}</p><p className="text-gray-400 text-sm">{q.artistName} • ₹{q.price}</p></div><ChevronRight className="h-5 w-5 text-gray-500" /></Link>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
+            <div className="px-4"><h2 className="text-xl font-semibold mb-3">Recent Activity</h2><div className="space-y-3">{recentQuotes.map(q => <Link key={q.id} href={`/quote/${q.id}`} className="flex items-center gap-3 bg-[#1a1a1a] rounded-xl p-3 transition-colors hover:bg-[#222]"><div className="w-10 h-10 bg-[#C40F5A]/20 rounded-full flex items-center justify-center"><FileText className="h-5 w-5 text-[#C40F5A]" /></div><div className="flex-1 min-w-0"><p className="font-medium truncate">{q.productType}</p><p className="text-gray-400 text-sm">{q.artistName} • ₹{q.price}</p></div><ChevronRight className="h-5 w-5 text-gray-500" /></Link>)}{recentQuotes.length === 0 && <p className="text-gray-500 text-center py-4">{searchQuery ? 'No matching bookings' : 'No bookings yet'}</p>}</div></div>
           </motion.div>
         )}
         {view === 'bookings' && (
@@ -270,15 +281,17 @@ function CustomerDashboardContent() {
         )}
         {view === 'profile' && (
           <motion.div key="profile" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
-            {/* Profile Header - Avatar centered with name below */}
-            <div className="flex flex-col items-center py-6">
-              <Avatar className="h-20 w-20 mb-3">
+            {/* Profile Header - Name left, Avatar right */}
+            <div className="flex items-center justify-between py-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white">{user?.name || 'Customer'}</h2>
+                <p className="text-gray-400 text-sm">{user?.email}</p>
+                {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
+              </div>
+              <Avatar className="h-16 w-16">
                 {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
-                <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">{user?.name?.[0] || 'C'}</AvatarFallback>
+                <AvatarFallback className="bg-[#C40F5A] text-white text-xl">{user?.name?.[0] || 'C'}</AvatarFallback>
               </Avatar>
-              <h2 className="text-xl font-bold text-white">{user?.name || 'Customer'}</h2>
-              <p className="text-gray-400 text-sm">{user?.email}</p>
-              {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
             </div>
             <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
             <div className="space-y-1">
