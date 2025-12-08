@@ -87,35 +87,47 @@ function ArtistOnboardingContent() {
       router.push('/login');
       return;
     }
-    
-    if (authUser.role !== 'artist') {
-      router.push(authUser.role === 'customer' ? '/profile/customer' : '/');
-      return;
-    }
 
-    // Fetch full user data for form pre-fill (auth context only has basic info)
+    // Fetch full user data from server (not cached) to get accurate role
     const fetchFullUserData = async () => {
       try {
         const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
-        if (!userRes.ok) return;
+        if (!userRes.ok) {
+          router.push('/login');
+          return;
+        }
 
         const data = await userRes.json();
-        setUserData(data.user);
+        const serverUser = data.user;
+        
+        // Check role from server response (most accurate)
+        if (serverUser.role !== 'artist') {
+          if (serverUser.role === 'customer') {
+            router.push('/profile/customer');
+          } else if (serverUser.role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push('/signup');
+          }
+          return;
+        }
+        
+        setUserData(serverUser);
         
         // Pre-fill form with existing data
-        if (data.user.name) {
-          const nameParts = data.user.name.split(' ');
+        if (serverUser.name) {
+          const nameParts = serverUser.name.split(' ');
           setFirstName(nameParts[0] || '');
           setLastName(nameParts.slice(1).join(' ') || '');
         }
-        setPhone(data.user.phone || '');
-        setAddressLine1(data.user.address || '');
-        setCity(data.user.city || '');
-        setState(data.user.state || '');
-        setPincode(data.user.zipCode || '');
-        setBio(data.user.bio || '');
-        if (data.user.services) setSelectedServices(data.user.services);
-        if (data.user.availableLocations) setAvailableLocations(data.user.availableLocations);
+        setPhone(serverUser.phone || '');
+        setAddressLine1(serverUser.address || '');
+        setCity(serverUser.city || '');
+        setState(serverUser.state || '');
+        setPincode(serverUser.zipCode || '');
+        setBio(serverUser.bio || '');
+        if (serverUser.services) setSelectedServices(serverUser.services);
+        if (serverUser.availableLocations) setAvailableLocations(serverUser.availableLocations);
       } catch (error) {
         sonnerToast.error("Error loading data");
       } finally {
@@ -488,7 +500,7 @@ function ArtistOnboardingContent() {
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
         {step > 1 && (
           <Button onClick={handleBack} variant="outline" 
-            className="flex-1 h-12 border-gray-600 text-white hover:bg-gray-800">
+            className="flex-1 h-12 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
             Back
           </Button>
         )}

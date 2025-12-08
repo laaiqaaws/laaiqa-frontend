@@ -71,32 +71,44 @@ function CustomerOnboardingContent() {
       router.push('/login');
       return;
     }
-    
-    if (authUser.role !== 'customer') {
-      router.push(authUser.role === 'artist' ? '/profile/artist' : '/');
-      return;
-    }
 
-    // Fetch full user data for form pre-fill
+    // Fetch full user data from server (not cached) to get accurate role
     const fetchFullUserData = async () => {
       try {
         const userRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
-        if (!userRes.ok) return;
+        if (!userRes.ok) {
+          router.push('/login');
+          return;
+        }
 
         const data = await userRes.json();
-        setUserData(data.user);
+        const serverUser = data.user;
+        
+        // Check role from server response (most accurate)
+        if (serverUser.role !== 'customer') {
+          if (serverUser.role === 'artist') {
+            router.push('/profile/artist');
+          } else if (serverUser.role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push('/signup');
+          }
+          return;
+        }
+        
+        setUserData(serverUser);
         
         // Pre-fill form
-        setName(data.user.name || '');
-        setPhone(data.user.phone || '');
-        setAge(data.user.age?.toString() || '');
-        setGender(data.user.gender || '');
-        setHeight(data.user.height?.toString() || '');
-        setWeight(data.user.weight?.toString() || '');
-        setSkinColor(data.user.color || '');
-        setEthnicity(data.user.ethnicity || '');
-        setAddress(data.user.address || '');
-        setCity(data.user.city || '');
+        setName(serverUser.name || '');
+        setPhone(serverUser.phone || '');
+        setAge(serverUser.age?.toString() || '');
+        setGender(serverUser.gender || '');
+        setHeight(serverUser.height?.toString() || '');
+        setWeight(serverUser.weight?.toString() || '');
+        setSkinColor(serverUser.color || '');
+        setEthnicity(serverUser.ethnicity || '');
+        setAddress(serverUser.address || '');
+        setCity(serverUser.city || '');
         setState(data.user.state || '');
         setPincode(data.user.zipCode || '');
         setOther(data.user.other || '');
@@ -357,7 +369,7 @@ function CustomerOnboardingContent() {
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3">
         {step > 1 && (
           <Button onClick={handleBack} variant="outline" 
-            className="flex-1 h-12 border-gray-600 text-white hover:bg-gray-800">
+            className="flex-1 h-12 border-gray-600 bg-transparent text-white hover:bg-gray-800 hover:text-white">
             Back
           </Button>
         )}

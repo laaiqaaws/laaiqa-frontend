@@ -72,7 +72,6 @@ export default function CreateQuotePage() {
   const [otherEventType, setOtherEventType] = useState('');
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
 
   // Location & Venue
   const [venueType, setVenueType] = useState('');
@@ -336,93 +335,24 @@ export default function CreateQuotePage() {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-sm">Start Time*</Label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <Select value={startTime.split(':')[0] || ''} onValueChange={(h) => setStartTime(`${h}:${startTime.split(':')[1] || '00'}`)}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="Hour" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const hour = (i + 1).toString().padStart(2, '0');
-                      return <SelectItem key={hour} value={hour}>{hour}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-                <Select value={startTime.split(':')[1] || ''} onValueChange={(m) => setStartTime(`${startTime.split(':')[0] || '09'}:${m}`)}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="Min" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
-                    {['00', '15', '30', '45'].map(min => (
-                      <SelectItem key={min} value={min}>{min}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select 
-                  value={parseInt(startTime.split(':')[0] || '9') >= 12 ? 'PM' : 'AM'} 
-                  onValueChange={(period) => {
-                    const currentHour = parseInt(startTime.split(':')[0] || '9');
-                    let newHour = currentHour;
-                    if (period === 'PM' && currentHour < 12) newHour = currentHour + 12;
-                    if (period === 'AM' && currentHour >= 12) newHour = currentHour - 12;
-                    setStartTime(`${newHour.toString().padStart(2, '0')}:${startTime.split(':')[1] || '00'}`);
-                  }}
-                >
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="AM/PM" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700">
-                    <SelectItem value="AM">AM</SelectItem>
-                    <SelectItem value="PM">PM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-gray-400 text-sm">End Time (Optional)</Label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <Select value={endTime.split(':')[0] || ''} onValueChange={(h) => setEndTime(`${h}:${endTime.split(':')[1] || '00'}`)}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="Hour" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const hour = (i + 1).toString().padStart(2, '0');
-                      return <SelectItem key={hour} value={hour}>{hour}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-                <Select value={endTime.split(':')[1] || ''} onValueChange={(m) => setEndTime(`${endTime.split(':')[0] || '17'}:${m}`)}>
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="Min" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[200px]">
-                    {['00', '15', '30', '45'].map(min => (
-                      <SelectItem key={min} value={min}>{min}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select 
-                  value={parseInt(endTime.split(':')[0] || '17') >= 12 ? 'PM' : 'AM'} 
-                  onValueChange={(period) => {
-                    const currentHour = parseInt(endTime.split(':')[0] || '17');
-                    let newHour = currentHour;
-                    if (period === 'PM' && currentHour < 12) newHour = currentHour + 12;
-                    if (period === 'AM' && currentHour >= 12) newHour = currentHour - 12;
-                    setEndTime(`${newHour.toString().padStart(2, '0')}:${endTime.split(':')[1] || '00'}`);
-                  }}
-                >
-                  <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white">
-                    <SelectValue placeholder="AM/PM" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-gray-700">
-                    <SelectItem value="AM">AM</SelectItem>
-                    <SelectItem value="PM">PM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Label className="text-gray-400 text-sm">Service Time Slot*</Label>
+              <Select value={startTime} onValueChange={setStartTime}>
+                <SelectTrigger className="bg-[#2a2a2a] border-gray-700 text-white mt-1">
+                  <SelectValue placeholder="Select time slot" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-gray-700 max-h-[300px]">
+                  <SelectItem value="06:00 - 08:00 AM">6:00 AM - 8:00 AM (Early Morning)</SelectItem>
+                  <SelectItem value="08:00 - 10:00 AM">8:00 AM - 10:00 AM (Morning)</SelectItem>
+                  <SelectItem value="10:00 - 12:00 PM">10:00 AM - 12:00 PM (Late Morning)</SelectItem>
+                  <SelectItem value="12:00 - 02:00 PM">12:00 PM - 2:00 PM (Afternoon)</SelectItem>
+                  <SelectItem value="02:00 - 04:00 PM">2:00 PM - 4:00 PM (Mid Afternoon)</SelectItem>
+                  <SelectItem value="04:00 - 06:00 PM">4:00 PM - 6:00 PM (Evening)</SelectItem>
+                  <SelectItem value="06:00 - 08:00 PM">6:00 PM - 8:00 PM (Late Evening)</SelectItem>
+                  <SelectItem value="08:00 - 10:00 PM">8:00 PM - 10:00 PM (Night)</SelectItem>
+                  <SelectItem value="Full Day">Full Day Service</SelectItem>
+                  <SelectItem value="Custom">Custom (Discuss with client)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </section>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
-import { API_ENDPOINTS, ROUTES, getDashboardRoute, getProfileRoute } from '@/lib/config';
+import { API_ENDPOINTS, ROUTES, getDashboardRoute } from '@/lib/config';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -38,8 +38,8 @@ export default function AuthCallback() {
 
         const user = data.user;
 
-        // Check if user has a valid role
-        if (!user.role || !['artist', 'customer', 'admin'].includes(user.role)) {
+        // Check if user has a valid role (not 'user' which is the default)
+        if (!user.role || user.role === 'user') {
           // User needs to select a role - redirect to signup
           router.replace(ROUTES.SIGNUP);
           return;
@@ -51,38 +51,10 @@ export default function AuthCallback() {
           return;
         }
 
-        // Check profile completion for artists and customers using proper validation
-        let isProfileIncomplete = false;
-
-        if (user.role === 'customer') {
-          // Required fields for customer: name, phone, age, height, color, ethnicity, address, city, state, zipCode, country
-          const requiredCustomerFields = [
-            user.name, user.phone, user.age, user.height, user.color, user.ethnicity,
-            user.address, user.city, user.state, user.zipCode, user.country
-          ];
-          isProfileIncomplete = requiredCustomerFields.some(field => 
-            field === null || field === undefined || 
-            (typeof field === 'string' && field.trim() === '')
-          );
-        } else if (user.role === 'artist') {
-          // Required fields for artist: name, bio, specialties, phone, address, city, state, zipCode, country
-          const requiredArtistFields = [
-            user.name, user.bio, user.specialties, user.phone,
-            user.address, user.city, user.state, user.zipCode, user.country
-          ];
-          isProfileIncomplete = requiredArtistFields.some(field => 
-            field === null || field === undefined || 
-            (typeof field === 'string' && field.trim() === '')
-          );
-        }
-
-        if (isProfileIncomplete) {
-          // Redirect to profile completion page
-          router.replace(getProfileRoute(user.role));
-        } else {
-          // Profile is complete, go to dashboard
-          router.replace(getDashboardRoute(user.role));
-        }
+        // For artist/customer - always go to dashboard first
+        // The dashboard/profile pages will handle incomplete profile detection
+        // This prevents redirect loops during onboarding
+        router.replace(getDashboardRoute(user.role));
 
       } catch (error) {
         console.error('Error during auth callback processing:', error);

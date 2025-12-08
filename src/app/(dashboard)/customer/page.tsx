@@ -5,8 +5,9 @@ import { useRouter, useSearchParams as nextUseSearchParams } from 'next/navigati
 import Link from 'next/link';
 import { API_BASE_URL } from '@/types/user';
 import {
-  Search, Home, Calendar, User, ChevronRight, LogOut, FileText, Heart, Share2, BarChart3, Camera
+  Search, Home, Calendar, User, ChevronRight, LogOut, FileText, Heart, Share2, BarChart3
 } from "lucide-react";
+import BookingsView from "@/components/bookings/BookingsView";
 import { BellIcon } from "@/components/icons/bell-filled";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -92,7 +93,6 @@ function CustomerDashboardContent() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [bookingTab, setBookingTab] = useState<'list' | 'calendar'>('list');
 
   // Load quotes from cache or fetch
   const loadQuotes = useCallback(async (forceRefresh = false) => {
@@ -142,8 +142,18 @@ function CustomerDashboardContent() {
 
   const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; };
   const getDaysUntil = (d: string) => { const date = parseISO(d); if (!isValid(date)) return null; const days = differenceInDays(startOfDay(date), startOfDay(new Date())); return days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : days < 0 ? 'Overdue' : `In ${days} Days`; };
-  const upcomingQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime()).slice(0, 5);
-  const filteredQuotes = quotes.filter(q => q.productType.toLowerCase().includes(searchQuery.toLowerCase()) || q.artistName?.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Group quotes by status for proper display
+  const activeQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  const upcomingQuotes = activeQuotes.slice(0, 5);
+  const filteredQuotes = quotes.filter(q => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return true;
+    if (q.productType.toLowerCase().includes(query)) return true;
+    if (q.artistName?.toLowerCase().includes(query)) return true;
+    try { const dateStr = format(parseISO(q.serviceDate), 'dd/MM/yyyy'); if (dateStr.includes(query) || q.serviceDate.includes(query)) return true; } catch { /* ignore */ }
+    if (q.status.toLowerCase().includes(query)) return true;
+    return false;
+  });
 
   if (authLoading || quotesLoading) return <div className="flex items-center justify-center min-h-screen bg-black"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C40F5A]"></div></div>;
 
@@ -158,15 +168,21 @@ function CustomerDashboardContent() {
               const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
               const bookedCount = quotes.filter(q => q.status === 'Booked').length;
               const completedCount = quotes.filter(q => q.status === 'Completed').length;
+              const total = acceptedCount + bookedCount;
               
-              if (acceptedCount === 0 && bookedCount === 0) {
-                sonnerToast.info('No new notifications');
+              if (total === 0) {
+                sonnerToast('No new notifications', { description: 'You\'re all caught up!', duration: 3000 });
               } else {
-                const messages = [];
-                if (acceptedCount > 0) messages.push(`${acceptedCount} awaiting payment`);
-                if (bookedCount > 0) messages.push(`${bookedCount} upcoming booking${bookedCount > 1 ? 's' : ''}`);
-                if (completedCount > 0) messages.push(`${completedCount} completed`);
-                sonnerToast.success(`Activity: ${messages.join(', ')}`);
+                sonnerToast('Activity Summary', {
+                  description: (
+                    <div className="space-y-1 mt-1">
+                      {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
+                      {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} upcoming</div>}
+                      {completedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-gray-400 rounded-full"></span>{completedCount} completed</div>}
+                    </div>
+                  ),
+                  duration: 5000,
+                });
               }
             }}><BellIcon className="h-6 w-6 text-white" />{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#C40F5A] rounded-full"></span>}</button>
         </div>
@@ -196,8 +212,7 @@ function CustomerDashboardContent() {
         )}
         {view === 'bookings' && (
           <motion.div key="bookings" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
-            <div className="flex gap-2 mb-4"><button onClick={() => setBookingTab('list')} className={`flex-1 py-2.5 rounded-full font-medium text-sm transition-colors ${bookingTab === 'list' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}>Bookings</button><button onClick={() => setBookingTab('calendar')} className={`flex-1 py-2.5 rounded-full text-sm transition-colors ${bookingTab === 'calendar' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}>Calendar</button></div>
-            {bookingTab === 'list' ? (filteredQuotes.length === 0 ? <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center mt-4"><div className="flex justify-center mb-4"><CalendarEmptyIcon /></div><p className="text-gray-300">No bookings found</p></div> : <div className="space-y-3">{filteredQuotes.map((q, i) => <Link key={q.id} href={`/quote/${q.id}`} className={`${CARD_COLORS[i % CARD_COLORS.length]} rounded-2xl p-4 block text-black transition-transform active:scale-[0.98]`}><div className="flex gap-2 mb-2 flex-wrap"><span className="bg-black/80 text-white text-xs px-3 py-1 rounded-full font-medium">{getDaysUntil(q.serviceDate)}</span><span className="border border-black/30 text-xs px-3 py-1 rounded-full">$ {q.status}</span></div><p className="text-xs opacity-70 mb-1">Booking # {q.id.slice(0, 8)}</p><h3 className="font-bold text-lg">{q.productType}</h3><p className="text-sm opacity-80">{q.artistName || 'Artist'} | {q.serviceTime}</p></Link>)}</div>) : <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><CalendarView quotes={filteredQuotes} /></div>}
+            <BookingsView quotes={quotes} userRole="customer" />
           </motion.div>
         )}
         {view === 'analytics' && (
@@ -206,18 +221,41 @@ function CustomerDashboardContent() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-white">{quotes.length}</p></div>
               <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">This Month</p><p className="text-2xl font-bold text-white">{quotes.filter(q => { const d = parseISO(q.serviceDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-green-500">{quotes.filter(q => q.status === 'Booked').length}</p></div>
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Upcoming</p><p className="text-2xl font-bold text-yellow-500">{quotes.filter(q => q.status === 'Accepted').length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Completed</p><p className="text-2xl font-bold text-green-500">{quotes.filter(q => q.status === 'Completed').length}</p></div>
+              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><p className="text-gray-400 text-sm">Active</p><p className="text-2xl font-bold text-yellow-500">{quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).length}</p></div>
             </div>
             <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800"><h3 className="text-white font-semibold mb-4">Favorite Services</h3><div className="space-y-3">{Object.entries(quotes.reduce((a, q) => { a[q.productType] = (a[q.productType] || 0) + 1; return a; }, {} as Record<string, number>)).slice(0, 5).map(([s, c]) => <div key={s} className="flex justify-between items-center"><span className="text-white">{s}</span><span className="text-[#C40F5A] font-semibold">{c}</span></div>)}{quotes.length === 0 && <p className="text-gray-500 text-center py-4">No bookings yet</p>}</div></div>
           </motion.div>
         )}
         {view === 'profile' && (
           <motion.div key="profile" variants={pv} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }} className="px-4">
-            <div className="flex flex-col items-center py-6"><div className="relative"><Avatar className="h-24 w-24">{user?.image && <AvatarImage src={user.image} />}<AvatarFallback className="bg-[#C40F5A] text-white text-2xl">{user?.name?.[0] || 'C'}</AvatarFallback></Avatar><button className="absolute bottom-0 right-0 bg-[#C40F5A] p-2 rounded-full"><Camera className="h-4 w-4 text-white" /></button></div><h2 className="text-xl font-bold mt-4">{user?.name || 'Customer'}</h2><p className="text-gray-400 text-sm">{user?.email}</p>{user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}</div>
+            {/* Profile Header - Name left, Avatar right */}
+            <div className="flex items-center justify-between py-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white">{user?.name || 'Customer'}</h2>
+                <p className="text-gray-400 text-sm">{user?.email}</p>
+                {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
+              </div>
+              <div className="relative">
+                <Avatar className="h-16 w-16">
+                  {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
+                  <AvatarFallback className="bg-[#C40F5A] text-white text-xl">{user?.name?.[0] || 'C'}</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
             <div className="flex justify-around mb-6 py-4 border-y border-[#C40F5A]/30"><button className="flex flex-col items-center gap-2 flex-1"><Heart className="h-6 w-6 text-white" /><span className="text-xs text-white">Favorites</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Calendar className="h-6 w-6 text-white" /><span className="text-xs text-white">My Events</span></button><div className="w-px bg-[#C40F5A]/30"></div><button className="flex flex-col items-center gap-2 flex-1"><Share2 className="h-6 w-6 text-white" /><span className="text-xs text-white">Share Profile</span></button></div>
-            <div className="space-y-1"><Link href="/profile/customer?edit=true" className="flex items-center justify-between py-4 border-b border-gray-800 w-full"><span className="text-white">Account Settings</span><div className="flex items-center gap-2"><span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span><ChevronRight className="h-5 w-5 text-gray-500" /></div></Link>{[{ label: 'Payment Methods' }, { label: 'Booking History', href: '/customer?view=bookings' }, { label: 'Disputes' }, { label: 'Privacy Policy' }, { label: 'Terms and Conditions' }].map(i => i.href ? <Link key={i.label} href={i.href} className="flex items-center justify-between py-4 border-b border-gray-800"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></Link> : <button key={i.label} onClick={() => sonnerToast.info('Coming soon!')} className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></button>)}</div>
+            <div className="space-y-1">
+              <Link href="/profile/customer/settings" className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
+                <span className="text-white">Account Settings</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>
+                  <ChevronRight className="h-5 w-5 text-gray-500" />
+                </div>
+              </Link>
+              {[{ label: 'Payment Methods' }, { label: 'Booking History', href: '/customer?view=bookings' }, { label: 'Disputes', href: '/customer/disputes' }, { label: 'Privacy Policy' }, { label: 'Terms and Conditions' }].map(i => i.href ? <Link key={i.label} href={i.href} className="flex items-center justify-between py-4 border-b border-gray-800"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></Link> : <button key={i.label} onClick={() => sonnerToast.info('Coming soon!')} className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left"><span className="text-white">{i.label}</span><ChevronRight className="h-5 w-5 text-gray-500" /></button>)}
+            </div>
             <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 mt-6 py-4"><LogOut className="h-5 w-5" /> Logout</button>
+
           </motion.div>
         )}
       </AnimatePresence>

@@ -90,7 +90,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const userData = await userRes.json();
-      setUser(userData.user);
+      // Filter out base64 images to prevent storage issues
+      const sanitizedUser = {
+        ...userData.user,
+        image: userData.user.image && userData.user.image.startsWith('http') ? userData.user.image : null
+      };
+      setUser(sanitizedUser);
 
       let csrf = null;
       if (csrfRes.ok) {
@@ -99,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCsrfToken(csrf);
       }
 
-      saveToSession(userData.user, csrf);
+      saveToSession(sanitizedUser, csrf);
     } catch {
       clearSession();
     }

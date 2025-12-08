@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { API_BASE_URL } from '@/types/user';
 import {
   Search, Plus, Home, Calendar, User,
-  ChevronRight, LogOut, FileText, Share2, BarChart3, Camera, Image as ImageIcon, Sparkles
+  ChevronRight, LogOut, FileText, Share2, BarChart3, Image as ImageIcon, Sparkles
 } from "lucide-react";
+import BookingsView from "@/components/bookings/BookingsView";
 import { BellIcon } from "@/components/icons/bell-filled";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,93 +53,6 @@ function CalendarEmptyIcon() {
   );
 }
 
-// Calendar view component
-function CalendarView({ quotes }: { quotes: Quote[] }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
-  
-  const bookingsByDate = quotes.reduce((acc, quote) => {
-    const dateKey = format(parseISO(quote.serviceDate), 'yyyy-MM-dd');
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(quote);
-    return acc;
-  }, {} as Record<string, Quote[]>);
-
-  const days = [];
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push(<div key={`empty-${i}`} className="h-10"></div>);
-  }
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = format(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day), 'yyyy-MM-dd');
-    const hasBooking = bookingsByDate[dateKey]?.length > 0;
-    const isToday = format(new Date(), 'yyyy-MM-dd') === dateKey;
-    
-    days.push(
-      <div 
-        key={day} 
-        className={`h-10 flex items-center justify-center rounded-lg text-sm relative
-          ${isToday ? 'bg-[#C40F5A] text-white font-bold' : 'text-gray-300'}
-          ${hasBooking && !isToday ? 'bg-[#C40F5A]/20' : ''}
-        `}
-      >
-        {day}
-        {hasBooking && (
-          <span className="absolute bottom-1 w-1 h-1 bg-[#C40F5A] rounded-full"></span>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <button 
-          onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-          className="text-gray-400 hover:text-white p-2"
-        >
-          ←
-        </button>
-        <h3 className="text-white font-semibold">
-          {format(currentMonth, 'MMMM yyyy')}
-        </h3>
-        <button 
-          onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-          className="text-gray-400 hover:text-white p-2"
-        >
-          →
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-          <div key={d} className="h-8 flex items-center justify-center text-xs text-gray-500">{d}</div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {days}
-      </div>
-      {Object.keys(bookingsByDate).length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-700">
-          <p className="text-xs text-gray-400 mb-2">Bookings this month:</p>
-          <div className="space-y-2">
-            {Object.entries(bookingsByDate)
-              .filter(([date]) => date.startsWith(format(currentMonth, 'yyyy-MM')))
-              .slice(0, 3)
-              .map(([date, bookings]) => (
-                <div key={date} className="flex items-center gap-2 text-sm">
-                  <span className="text-[#C40F5A]">{format(parseISO(date), 'dd')}</span>
-                  <span className="text-gray-300">{bookings[0].productType}</span>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function ArtistDashboardContent() {
   const router = useRouter();
   const searchParams = nextUseSearchParams();
@@ -148,7 +62,6 @@ function ArtistDashboardContent() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [bookingTab, setBookingTab] = useState<'list' | 'calendar'>('list');
 
   // Load quotes from cache or fetch
   const loadQuotes = useCallback(async (forceRefresh = false) => {
@@ -228,15 +141,11 @@ function ArtistDashboardContent() {
     return `In ${days} Days`;
   };
 
-  const upcomingQuotes = quotes
-    .filter(q => ['Pending', 'Accepted', 'Booked'].includes(q.status))
-    .sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime())
-    .slice(0, 5);
-
-  const filteredQuotes = quotes.filter(q => 
-    q.productType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    q.customerName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Group quotes by status
+  const pendingQuotes = quotes.filter(q => q.status === 'Pending').sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  const activeQuotes = quotes.filter(q => ['Accepted', 'Booked'].includes(q.status)).sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+  
+  const upcomingQuotes = [...pendingQuotes, ...activeQuotes].slice(0, 5);
 
   if (authLoading || quotesLoading) {
     return (
@@ -267,15 +176,24 @@ function ArtistDashboardContent() {
               const pendingCount = quotes.filter(q => q.status === 'Pending').length;
               const acceptedCount = quotes.filter(q => q.status === 'Accepted').length;
               const bookedCount = quotes.filter(q => q.status === 'Booked').length;
+              const total = pendingCount + acceptedCount + bookedCount;
               
-              if (pendingCount === 0 && acceptedCount === 0 && bookedCount === 0) {
-                sonnerToast.info('No new notifications');
+              if (total === 0) {
+                sonnerToast('No new notifications', {
+                  description: 'You\'re all caught up!',
+                  duration: 3000,
+                });
               } else {
-                const messages = [];
-                if (pendingCount > 0) messages.push(`${pendingCount} pending quote${pendingCount > 1 ? 's' : ''}`);
-                if (acceptedCount > 0) messages.push(`${acceptedCount} accepted (awaiting payment)`);
-                if (bookedCount > 0) messages.push(`${bookedCount} booked`);
-                sonnerToast.success(`Activity: ${messages.join(', ')}`);
+                sonnerToast('Activity Summary', {
+                  description: (
+                    <div className="space-y-1 mt-1">
+                      {pendingCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-yellow-400 rounded-full"></span>{pendingCount} pending</div>}
+                      {acceptedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-blue-400 rounded-full"></span>{acceptedCount} awaiting payment</div>}
+                      {bookedCount > 0 && <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full"></span>{bookedCount} booked</div>}
+                    </div>
+                  ),
+                  duration: 5000,
+                });
               }
             }}
           >
@@ -416,59 +334,7 @@ function ArtistDashboardContent() {
             transition={{ duration: 0.2 }}
             className="px-4"
           >
-            <div className="flex gap-2 mb-4">
-              <button 
-                onClick={() => setBookingTab('list')}
-                className={`flex-1 py-2.5 rounded-full font-medium text-sm transition-colors ${bookingTab === 'list' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}
-              >
-                Bookings
-              </button>
-              <button 
-                onClick={() => setBookingTab('calendar')}
-                className={`flex-1 py-2.5 rounded-full text-sm transition-colors ${bookingTab === 'calendar' ? 'bg-[#C40F5A] text-white' : 'bg-[#1a1a1a] text-gray-400 border border-gray-700'}`}
-              >
-                Calendar
-              </button>
-            </div>
-
-            {bookingTab === 'list' ? (
-              filteredQuotes.length === 0 ? (
-                <div className="border border-[#C40F5A]/30 rounded-2xl p-8 text-center mt-4">
-                  <div className="flex justify-center mb-4">
-                    <CalendarEmptyIcon />
-                  </div>
-                  <p className="text-gray-300 mb-6">Looks Like you dont have any slots booked yet.</p>
-                  <Link href="/artist/create-quote">
-                    <Button className="bg-[#C40F5A] hover:bg-[#EE2377] px-8 py-3 rounded-xl text-white font-medium">
-                      <Plus className="mr-2 h-5 w-5" /> Add First Booking
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredQuotes.map((quote, idx) => (
-                    <Link key={quote.id} href={`/quote/${quote.id}`}
-                      className={`${CARD_COLORS[idx % CARD_COLORS.length]} rounded-2xl p-4 block text-black transition-transform active:scale-[0.98]`}>
-                      <div className="flex gap-2 mb-2 flex-wrap">
-                        <span className="bg-black/80 text-white text-xs px-3 py-1 rounded-full font-medium">
-                          {getDaysUntil(quote.serviceDate)}
-                        </span>
-                        <span className="border border-black/30 text-xs px-3 py-1 rounded-full">
-                          $ {quote.status}
-                        </span>
-                      </div>
-                      <p className="text-xs opacity-70 mb-1">Booking # {quote.id.slice(0, 8)}</p>
-                      <h3 className="font-bold text-lg">{quote.productType}</h3>
-                      <p className="text-sm opacity-80">{quote.customerName || 'Customer'} | {quote.serviceTime}</p>
-                    </Link>
-                  ))}
-                </div>
-              )
-            ) : (
-              <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-gray-800">
-                <CalendarView quotes={filteredQuotes} />
-              </div>
-            )}
+            <BookingsView quotes={quotes} userRole="artist" createQuoteLink="/artist/create-quote" />
           </motion.div>
         )}
 
@@ -545,22 +411,22 @@ function ArtistDashboardContent() {
             transition={{ duration: 0.2 }}
             className="px-4"
           >
-            {/* Profile Header */}
-            <div className="flex flex-col items-center py-6">
+            {/* Profile Header - Name left, Avatar right */}
+            <div className="flex items-center justify-between py-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white">{user?.name || 'Artist'}</h2>
+                <p className="text-gray-400 text-sm">Makeup Studio</p>
+
+              </div>
               <div className="relative">
-                <Avatar className="h-24 w-24">
-                  {user?.image && <AvatarImage src={user.image} />}
-                  <AvatarFallback className="bg-[#C40F5A] text-white text-2xl">
+                <Avatar className="h-16 w-16">
+                  {user?.image && user.image.startsWith('http') && <AvatarImage src={user.image} />}
+                  <AvatarFallback className="bg-[#C40F5A] text-white text-xl">
                     {user?.name?.[0] || 'A'}
                   </AvatarFallback>
                 </Avatar>
-                <button className="absolute bottom-0 right-0 bg-[#C40F5A] p-2 rounded-full">
-                  <Camera className="h-4 w-4 text-white" />
-                </button>
+  
               </div>
-              <h2 className="text-xl font-bold mt-4">{user?.name || 'Artist'}</h2>
-              <p className="text-gray-400 text-sm">{user?.email}</p>
-              {user?.phone && <p className="text-gray-500 text-sm">+91 {user.phone}</p>}
             </div>
 
             {/* Send Booking Form Button */}
@@ -588,7 +454,7 @@ function ArtistDashboardContent() {
 
             {/* Menu Items */}
             <div className="space-y-1">
-              <Link href="/profile/artist?edit=true"
+              <Link href="/profile/artist/settings"
                 className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
                 <span className="text-white">Account Settings</span>
                 <div className="flex items-center gap-2">
@@ -599,19 +465,30 @@ function ArtistDashboardContent() {
               {[
                 { label: 'Payment Settings', dot: true },
                 { label: 'Transactions' },
-                { label: 'Disputes' },
+                { label: 'Disputes', href: '/artist/disputes' },
                 { label: 'Privacy Policy' },
                 { label: 'Terms and Conditions' },
               ].map(item => (
-                <button key={item.label}
-                  onClick={() => sonnerToast.info('Coming soon!')}
-                  className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left">
-                  <span className="text-white">{item.label}</span>
-                  <div className="flex items-center gap-2">
-                    {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
-                    <ChevronRight className="h-5 w-5 text-gray-500" />
-                  </div>
-                </button>
+                item.href ? (
+                  <Link key={item.label} href={item.href}
+                    className="flex items-center justify-between py-4 border-b border-gray-800 w-full">
+                    <span className="text-white">{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
+                      <ChevronRight className="h-5 w-5 text-gray-500" />
+                    </div>
+                  </Link>
+                ) : (
+                  <button key={item.label}
+                    onClick={() => sonnerToast.info('Coming soon!')}
+                    className="flex items-center justify-between py-4 border-b border-gray-800 w-full text-left">
+                    <span className="text-white">{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      {item.dot && <span className="w-2 h-2 bg-[#C40F5A] rounded-full"></span>}
+                      <ChevronRight className="h-5 w-5 text-gray-500" />
+                    </div>
+                  </button>
+                )
               ))}
             </div>
 
@@ -619,6 +496,8 @@ function ArtistDashboardContent() {
               className="flex items-center gap-2 text-red-500 mt-6 py-4">
               <LogOut className="h-5 w-5" /> Logout
             </button>
+            
+
           </motion.div>
         )}
       </AnimatePresence>

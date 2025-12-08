@@ -83,7 +83,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-black opacity-50 md:opacity-100 z-0"></div>
       
       <div className="relative z-10 text-center max-w-lg">
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+        <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
           Welcome to <span className="text-[#C40F5A]">Laaiqa</span>
         </h1>
         <p className="text-gray-300 text-lg mb-8">
@@ -93,15 +93,14 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             asChild
-            className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white"
+            className="h-12 px-8 text-lg bg-[#C40F5A] hover:bg-[#EE2377] text-white rounded-lg"
           >
             <Link href={ROUTES.SIGNUP}>Sign Up</Link>
           </Button>
           
           <Button
             asChild
-            variant="outline"
-            className="h-12 px-8 text-lg bg-transparent border-[#C40F5A] text-[#C40F5A] hover:bg-[#C40F5A] hover:text-white"
+            className="h-12 px-8 text-lg bg-white hover:bg-gray-100 text-gray-800 rounded-lg"
           >
             <Link href={ROUTES.LOGIN}>Login</Link>
           </Button>
