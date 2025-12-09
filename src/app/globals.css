@@ -150,23 +150,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Smooth page transitions */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Prevent layout shift during loading */
   img, video {
     max-width: 100%;
     height: auto;
   }
 
-  /* Touch-friendly tap targets for mobile */
   button, a, input, select, textarea {
     touch-action: manipulation;
   }
 
-  /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -176,7 +172,7 @@
   }
 }
 
-
+/* Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -194,7 +190,7 @@
   background: var(--color-primary);
 }
 
-/* Calendar dark theme improvements */
+/* Calendar Dark Theme */
 .calendar-dark-theme {
   color: white;
 }
@@ -233,6 +229,7 @@
   border-color: #C40F5A;
 }
 
+/* Modal Scroll Area */
 .modal-scroll-area {
   scrollbar-width: thin;
   scrollbar-color: #C40F5A #2A2428;
@@ -256,14 +253,12 @@
   background: #A00D4A;
 }
 
-/* Force scrollbar to always be visible */
 .force-scrollbar {
   overflow-y: scroll !important;
   scrollbar-gutter: stable;
 }
 
-/* Enhan
-ced ScrollArea for modals */
+/* Radix ScrollArea Styling */
 [data-radix-scroll-area-viewport] {
   scrollbar-width: thin !important;
   scrollbar-color: #C40F5A #2A2428 !important;
@@ -293,12 +288,10 @@ ced ScrollArea for modals */
   background: #2A2428 !important;
 }
 
-/* Force scrollbar visibility */
 .modal-scroll-area [data-radix-scroll-area-viewport] {
   overflow-y: scroll !important;
 }
 
-/* ScrollBar component styling */
 [data-radix-scroll-area-scrollbar] {
   background: #2A2428 !important;
   border-radius: 6px !important;
@@ -315,8 +308,7 @@ ced ScrollArea for modals */
   background: #A00D4A !important;
 }
 
-
-/* React Day Picker native dropdown styling */
+/* React Day Picker Dropdown Styling */
 .rdp-dropdown_root select,
 .rdp select,
 [data-slot="calendar"] select {
@@ -353,14 +345,12 @@ ced ScrollArea for modals */
   padding: 0.5rem !important;
 }
 
-/* Style the dropdown container */
 .rdp-dropdown_root,
 .rdp-dropdowns {
   background-color: transparent !important;
 }
 
-
-/* Sonner Toast Animations & Styling */
+/* Sonner Toast Styling */
 [data-sonner-toaster] {
   --width: calc(100vw - 2rem) !important;
   max-width: calc(100vw - 2rem) !important;
@@ -441,7 +431,6 @@ ced ScrollArea for modals */
   stroke-width: 2.5 !important;
 }
 
-/* Toast enter/exit animations */
 [data-sonner-toast][data-mounted="true"] {
   animation: toast-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -472,44 +461,19 @@ ced ScrollArea for modals */
   }
 }
 
-/* Success toast */
 [data-sonner-toast][data-type="success"] {
   border-left: 3px solid #22c55e !important;
 }
 
-/* Error toast */
 [data-sonner-toast][data-type="error"] {
   border-left: 3px solid #ef4444 !important;
 }
 
-/* Info toast */
 [data-sonner-toast][data-type="info"] {
   border-left: 3px solid #3b82f6 !important;
 }
 
-/* Global button radius - more rectangular */
-.rounded-full {
-  border-radius: 9999px;
-}
-
-.rounded-xl {
-  border-radius: 0.75rem; /* 12px - slightly less rounded */
-}
-
-.rounded-2xl {
-  border-radius: 1rem; /* 16px */
-}
-
-.rounded-lg {
-  border-radius: 0.5rem; /* 8px */
-}
-
-.rounded-md {
-  border-radius: 0.375rem; /* 6px */
-}
-
-
-/* Force white borders on form input fields - exclude search bars */
+/* Form Input Styling */
 input[type]:not(.search-input):not([placeholder*="Search"]),
 input:not([type]):not(.search-input):not([placeholder*="Search"]),
 textarea,
@@ -524,7 +488,6 @@ button[role="combobox"] {
   color: white !important;
 }
 
-/* Search bar specific styling - gray border */
 input.search-input,
 input[placeholder*="Search"] {
   border-color: #333 !important;
@@ -538,7 +501,6 @@ input[placeholder*="Search"]:focus {
   box-shadow: none !important;
 }
 
-/* Focus states for form inputs */
 input:focus:not(.search-input):not([placeholder*="Search"]),
 input:focus-visible:not(.search-input):not([placeholder*="Search"]),
 textarea:focus,
@@ -556,13 +518,11 @@ button[role="combobox"]:focus-visible {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Remove textarea resize handle (white dots in corners) */
 textarea,
 [data-slot="textarea"] {
   resize: none !important;
 }
 
-/* Disabled inputs should be darker */
 input:disabled,
 textarea:disabled,
 [data-slot="input"]:disabled,
@@ -572,31 +532,26 @@ textarea:disabled,
   border-color: #4b5563 !important;
 }
 
-/* Select content dropdown */
 [data-slot="select-content"] {
   border-color: white !important;
   background-color: #1a1a1a !important;
 }
 
-
-/* Prevent body scroll when dialog is open - fixes jitter */
+/* Dialog Scroll Lock */
 body[data-scroll-locked] {
   overflow: hidden !important;
   padding-right: 0 !important;
 }
 
-/* Dialog overlay should not cause layout shift */
 [data-radix-dialog-overlay] {
   position: fixed !important;
 }
 
-/* Ensure dialog content doesn't cause scroll */
 [data-radix-dialog-content] {
   position: fixed !important;
 }
 
-
-/* Safe area insets for iOS devices with notches */
+/* iOS Safe Area Support */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-20 {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
@@ -610,34 +565,32 @@ body[data-scroll-locked] {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important;
   }
   
-  /* Fixed bottom navigation safe area */
   nav.fixed.bottom-0,
   div.fixed.bottom-0 {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-/* Improve touch targets on mobile */
+/* Mobile Touch Targets */
 @media (max-width: 768px) {
   button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }
   
-  /* Exception for inline text links */
   a:not([class*="flex"]):not([class*="button"]):not([class*="btn"]) {
     min-height: auto;
     min-width: auto;
   }
 }
 
-/* Prevent text selection on interactive elements */
+/* Prevent Text Selection on Interactive Elements */
 button, [role="button"] {
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* Smooth momentum scrolling on iOS */
+/* iOS Momentum Scrolling */
 .overflow-y-auto, .overflow-auto {
   -webkit-overflow-scrolling: touch;
 }

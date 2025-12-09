@@ -1,19 +1,14 @@
-/**
- * Input validation utilities for user data (Frontend)
- */
-
 export interface ValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
 }
 
-// Indian phone number regex (exactly 10 digits starting with 6-9)
 const INDIAN_PHONE_REGEX = /^[6-9]\d{9}$/;
-
-// Indian PIN code regex (6 digits)
 const INDIAN_PIN_CODE_REGEX = /^[1-9][0-9]{5}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+const NAME_REGEX = /^[a-zA-Z\s'-]{2,100}$/;
 
-// Indian states list
 export const INDIAN_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
   'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
@@ -24,125 +19,63 @@ export const INDIAN_STATES = [
   'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
 ];
 
-// Email regex
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// URL regex (basic)
-const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
-
-// Name regex (letters, spaces, hyphens, apostrophes)
-const NAME_REGEX = /^[a-zA-Z\s'-]{2,100}$/;
-
-/**
- * Validate phone number (Indian format - exactly 10 digits)
- */
 export function validatePhone(phone: string | null | undefined): string | null {
   if (!phone) return 'Phone number is required';
-
-  // Remove all non-digit characters
   const cleaned = phone.replace(/\D/g, '');
-  
-  // Remove country code if present
   let digits = cleaned;
   if (digits.startsWith('91') && digits.length === 12) digits = digits.slice(2);
   if (digits.startsWith('0') && digits.length === 11) digits = digits.slice(1);
-  
-  if (digits.length !== 10) {
-    return 'Phone number must be exactly 10 digits';
-  }
-  
-  if (!INDIAN_PHONE_REGEX.test(digits)) {
-    return 'Phone number must start with 6, 7, 8, or 9';
-  }
+  if (digits.length !== 10) return 'Phone number must be exactly 10 digits';
+  if (!INDIAN_PHONE_REGEX.test(digits)) return 'Phone number must start with 6, 7, 8, or 9';
   return null;
 }
 
-/**
- * Validate Indian state
- */
 export function validateState(state: string | null | undefined): string | null {
   if (!state) return 'State is required';
-  if (!INDIAN_STATES.includes(state.trim())) {
-    return 'Please select a valid Indian state';
-  }
+  if (!INDIAN_STATES.includes(state.trim())) return 'Please select a valid Indian state';
   return null;
 }
 
-/**
- * Format phone number for display
- */
 export function formatPhone(phone: string): string {
   const cleaned = phone.replace(/[\s-]/g, '');
-  // Remove country code prefix if present
   let digits = cleaned;
   if (digits.startsWith('+91')) digits = digits.slice(3);
   else if (digits.startsWith('91') && digits.length === 12) digits = digits.slice(2);
   else if (digits.startsWith('0')) digits = digits.slice(1);
-
-  // Format as XXX-XXX-XXXX
-  if (digits.length === 10) {
-    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
+  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
   return phone;
 }
 
-/**
- * Validate PIN code (Indian format)
- */
 export function validatePinCode(pinCode: string | null | undefined): string | null {
   if (!pinCode) return 'PIN code is required';
-
   const cleaned = pinCode.replace(/\s/g, '');
-  if (!INDIAN_PIN_CODE_REGEX.test(cleaned)) {
-    return 'Please enter a valid 6-digit PIN code';
-  }
+  if (!INDIAN_PIN_CODE_REGEX.test(cleaned)) return 'Please enter a valid 6-digit PIN code';
   return null;
 }
 
-/**
- * Validate email
- */
+
 export function validateEmail(email: string | null | undefined): string | null {
   if (!email) return 'Email is required';
-  if (!EMAIL_REGEX.test(email)) {
-    return 'Please enter a valid email address';
-  }
+  if (!EMAIL_REGEX.test(email)) return 'Please enter a valid email address';
   return null;
 }
 
-/**
- * Validate URL
- */
-export function validateUrl(
-  url: string | null | undefined,
-  fieldName: string = 'URL'
-): string | null {
-  if (!url) return null; // URLs are often optional
-  if (!URL_REGEX.test(url)) {
-    return `Please enter a valid ${fieldName}`;
-  }
+export function validateUrl(url: string | null | undefined, fieldName: string = 'URL'): string | null {
+  if (!url) return null;
+  if (!URL_REGEX.test(url)) return `Please enter a valid ${fieldName}`;
   return null;
 }
 
-/**
- * Validate name
- */
 export function validateName(name: string | null | undefined): string | null {
   if (!name) return 'Name is required';
   if (name.trim().length < 2) return 'Name must be at least 2 characters';
   if (name.trim().length > 100) return 'Name must be less than 100 characters';
-  if (!NAME_REGEX.test(name.trim())) {
-    return 'Name can only contain letters, spaces, hyphens, and apostrophes';
-  }
+  if (!NAME_REGEX.test(name.trim())) return 'Name can only contain letters, spaces, hyphens, and apostrophes';
   return null;
 }
 
-/**
- * Validate age
- */
 export function validateAge(age: number | string | null | undefined): string | null {
   if (age === null || age === undefined || age === '') return 'Age is required';
-
   const numAge = typeof age === 'string' ? parseInt(age, 10) : age;
   if (isNaN(numAge)) return 'Age must be a number';
   if (!Number.isInteger(numAge)) return 'Age must be a whole number';
@@ -151,73 +84,45 @@ export function validateAge(age: number | string | null | undefined): string | n
   return null;
 }
 
-/**
- * Validate height (in cm)
- */
 export function validateHeight(height: number | string | null | undefined): string | null {
   if (height === null || height === undefined || height === '') return 'Height is required';
-
   const numHeight = typeof height === 'string' ? parseFloat(height) : height;
   if (isNaN(numHeight)) return 'Height must be a number';
-  if (numHeight < 50 || numHeight > 300) {
-    return 'Please enter a valid height in centimeters (50-300 cm)';
-  }
+  if (numHeight < 50 || numHeight > 300) return 'Please enter a valid height in centimeters (50-300 cm)';
   return null;
 }
 
-/**
- * Validate weight (in kg)
- */
 export function validateWeight(weight: number | string | null | undefined): string | null {
-  if (weight === null || weight === undefined || weight === '') return null; // Often optional
-
+  if (weight === null || weight === undefined || weight === '') return null;
   const numWeight = typeof weight === 'string' ? parseFloat(weight) : weight;
   if (isNaN(numWeight)) return 'Weight must be a number';
-  if (numWeight < 20 || numWeight > 500) {
-    return 'Please enter a valid weight in kilograms (20-500 kg)';
-  }
+  if (numWeight < 20 || numWeight > 500) return 'Please enter a valid weight in kilograms (20-500 kg)';
   return null;
 }
 
-/**
- * Validate required string field
- */
 export function validateRequiredString(
   value: string | null | undefined,
   fieldName: string,
   minLength: number = 1,
   maxLength: number = 5000
 ): string | null {
-  if (!value || value.trim().length === 0) {
-    return `${fieldName} is required`;
-  }
-  if (value.trim().length < minLength) {
-    return `${fieldName} must be at least ${minLength} characters`;
-  }
-  if (value.trim().length > maxLength) {
-    return `${fieldName} must be less than ${maxLength} characters`;
-  }
+  if (!value || value.trim().length === 0) return `${fieldName} is required`;
+  if (value.trim().length < minLength) return `${fieldName} must be at least ${minLength} characters`;
+  if (value.trim().length > maxLength) return `${fieldName} must be less than ${maxLength} characters`;
   return null;
 }
 
-/**
- * Validate optional string field
- */
 export function validateOptionalString(
   value: string | null | undefined,
   fieldName: string,
   maxLength: number = 5000
 ): string | null {
   if (!value) return null;
-  if (value.trim().length > maxLength) {
-    return `${fieldName} must be less than ${maxLength} characters`;
-  }
+  if (value.trim().length > maxLength) return `${fieldName} must be less than ${maxLength} characters`;
   return null;
 }
 
-/**
- * Validate address fields
- */
+
 export function validateAddress(data: {
   address?: string | null;
   city?: string | null;
@@ -226,30 +131,18 @@ export function validateAddress(data: {
   country?: string | null;
 }): Record<string, string> {
   const errors: Record<string, string> = {};
-
   const addressError = validateRequiredString(data.address, 'Address', 5, 200);
   if (addressError) errors.address = addressError;
-
   const cityError = validateRequiredString(data.city, 'City', 2, 100);
   if (cityError) errors.city = cityError;
-
   const stateError = validateState(data.state);
   if (stateError) errors.state = stateError;
-
   const zipCodeError = validatePinCode(data.zipCode);
   if (zipCodeError) errors.zipCode = zipCodeError;
-
-  // Country is always India for now
-  if (data.country && data.country !== 'India') {
-    errors.country = 'Currently only India is supported';
-  }
-
+  if (data.country && data.country !== 'India') errors.country = 'Currently only India is supported';
   return errors;
 }
 
-/**
- * Validate artist profile data
- */
 export function validateArtistProfile(data: {
   bio?: string | null;
   specialties?: string | null;
@@ -262,31 +155,18 @@ export function validateArtistProfile(data: {
   portfolioLink?: string | null;
 }): ValidationResult {
   const errors: Record<string, string> = {};
-
   const bioError = validateRequiredString(data.bio, 'Bio', 10, 2000);
   if (bioError) errors.bio = bioError;
-
   const specialtiesError = validateRequiredString(data.specialties, 'Specialties', 3, 500);
   if (specialtiesError) errors.specialties = specialtiesError;
-
   const phoneError = validatePhone(data.phone);
   if (phoneError) errors.phone = phoneError;
-
-  const addressErrors = validateAddress(data);
-  Object.assign(errors, addressErrors);
-
+  Object.assign(errors, validateAddress(data));
   const portfolioError = validateUrl(data.portfolioLink, 'Portfolio link');
   if (portfolioError) errors.portfolioLink = portfolioError;
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
+  return { isValid: Object.keys(errors).length === 0, errors };
 }
 
-/**
- * Validate customer profile data
- */
 export function validateCustomerProfile(data: {
   phone?: string | null;
   age?: number | string | null;
@@ -301,37 +181,22 @@ export function validateCustomerProfile(data: {
   country?: string | null;
 }): ValidationResult {
   const errors: Record<string, string> = {};
-
   const phoneError = validatePhone(data.phone);
   if (phoneError) errors.phone = phoneError;
-
   const ageError = validateAge(data.age);
   if (ageError) errors.age = ageError;
-
   const heightError = validateHeight(data.height);
   if (heightError) errors.height = heightError;
-
   const weightError = validateWeight(data.weight);
   if (weightError) errors.weight = weightError;
-
   const colorError = validateRequiredString(data.color, 'Skin color', 2, 50);
   if (colorError) errors.color = colorError;
-
   const ethnicityError = validateRequiredString(data.ethnicity, 'Ethnicity', 2, 100);
   if (ethnicityError) errors.ethnicity = ethnicityError;
-
-  const addressErrors = validateAddress(data);
-  Object.assign(errors, addressErrors);
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
+  Object.assign(errors, validateAddress(data));
+  return { isValid: Object.keys(errors).length === 0, errors };
 }
 
-/**
- * Field display names for error messages
- */
 export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   name: 'Full Name',
   email: 'Email Address',
@@ -358,23 +223,14 @@ export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   preferredArtists: 'Preferred Artists',
 };
 
-/**
- * Get display name for a field
- */
 export function getFieldDisplayName(field: string): string {
   return FIELD_DISPLAY_NAMES[field] || field;
 }
 
-/**
- * Format validation errors for display
- */
 export function formatValidationErrors(errors: Record<string, string>): string[] {
   return Object.entries(errors).map(([field, error]) => {
     const displayName = getFieldDisplayName(field);
-    // If error already contains field name, return as is
-    if (error.toLowerCase().includes(displayName.toLowerCase())) {
-      return error;
-    }
+    if (error.toLowerCase().includes(displayName.toLowerCase())) return error;
     return `${displayName}: ${error}`;
   });
 }
