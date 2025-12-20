@@ -11,7 +11,6 @@ import {
 import BookingsView from "@/components/bookings/BookingsView";
 import { BellIcon } from "@/components/icons/bell-filled";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast as sonnerToast } from "sonner";
 import { format, parseISO, isValid, differenceInDays, startOfDay } from "date-fns";
@@ -278,9 +277,9 @@ function ArtistDashboardContent() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search event name or date"
-              className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors"
+              className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-14 h-12 rounded-xl focus:border-[#C40F5A] focus:outline-none transition-colors"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2 rounded-lg">
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-2.5 rounded-lg flex items-center justify-center">
               <Search className="h-4 w-4 text-white" />
             </button>
           </div>

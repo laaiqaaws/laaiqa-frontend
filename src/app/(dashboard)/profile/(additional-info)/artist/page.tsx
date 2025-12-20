@@ -38,6 +38,15 @@ const EXPERIENCE_OPTIONS = [
   '0-1 years', '1-3 years', '3-5 years', '5-10 years', '10+ years'
 ];
 
+const SERVICE_SUGGESTIONS = [
+  'Bridal Makeup', 'Bridal Hairstyling', 'Engagement / Occasion Makeup', 'Party Makeup',
+  'HD Makeup', 'Airbrush Makeup', 'Photoshoot / Portfolio Makeup', 'Fashion / Editorial Makeup',
+  'Film / TV Makeup', 'Character / Creative Makeup', 'SFX / Prosthetic Makeup', 'Groom Makeup',
+  'Haircut & Hairstyling', 'Hair Coloring & Highlights', 'Keratin / Smoothening Treatment',
+  'Skin Care & Facial Services', 'Manicure & Pedicure', 'On-Site Event Touch-Up',
+  'Model Shoot Makeup', 'Pre-Wedding Shoot Makeup'
+];
+
 // Section mapping
 const SECTION_MAP: Record<string, number> = {
   'basic': 1,
@@ -171,42 +180,63 @@ function ArtistOnboardingContent() {
     }
   };
 
+  const validateStep1 = (): string | null => {
+    if (!firstName.trim()) return "Please enter your first name";
+    if (firstName.trim().length < 2) return "First name must be at least 2 characters";
+    if (firstName.trim().length > 50) return "First name is too long";
+    if (lastName.trim().length > 50) return "Last name is too long";
+    if (companyName.trim().length > 100) return "Company name is too long";
+    const phoneError = validatePhone(phone);
+    if (phoneError) return phoneError;
+    return null;
+  };
+
+  const validateStep2 = (): string | null => {
+    if (!addressLine1.trim()) return "Please enter your address";
+    if (addressLine1.trim().length < 5) return "Address is too short";
+    if (addressLine1.trim().length > 200) return "Address is too long";
+    if (!state) return "Please select your state";
+    if (!city.trim()) return "Please enter your city";
+    if (city.trim().length < 2) return "City name is too short";
+    if (city.trim().length > 50) return "City name is too long";
+    const pincodeError = validatePinCode(pincode);
+    if (pincodeError) return pincodeError;
+    if (availableLocations.length === 0) return "Please add at least one available location";
+    if (availableLocations.some(loc => loc.length > 100)) return "Location names are too long";
+    return null;
+  };
+
+  const validateStep3 = (): string | null => {
+    if (!category) return "Please select a category";
+    if (selectedServices.length === 0) return "Please select at least one service";
+    if (selectedServices.length > 30) return "Too many services selected (max 30)";
+    if (bio.trim().length > 1000) return "Bio is too long (max 1000 characters)";
+    return null;
+  };
+
+  const validateStep4 = (): string | null => {
+    if (!advanceBookingDays) return "Please select advance booking requirement";
+    if (!bookingType) return "Please select a booking type";
+    if (paymentMethods.length === 0) return "Please select at least one payment method";
+    return null;
+  };
+
   const handleNext = () => {
     if (step === 1) {
-      if (!firstName.trim()) {
-        sonnerToast.error("Please enter your first name");
-        return;
-      }
-      const phoneError = validatePhone(phone);
-      if (phoneError) {
-        sonnerToast.error(phoneError);
-        return;
-      }
+      const error = validateStep1();
+      if (error) { sonnerToast.error(error); return; }
     }
     if (step === 2) {
-      if (!addressLine1.trim()) {
-        sonnerToast.error("Please enter your address");
-        return;
-      }
-      if (!city.trim()) {
-        sonnerToast.error("Please enter your city");
-        return;
-      }
-      if (!state) {
-        sonnerToast.error("Please select your state");
-        return;
-      }
-      const pincodeError = validatePinCode(pincode);
-      if (pincodeError) {
-        sonnerToast.error(pincodeError);
-        return;
-      }
+      const error = validateStep2();
+      if (error) { sonnerToast.error(error); return; }
     }
     if (step === 3) {
-      if (selectedServices.length === 0) {
-        sonnerToast.error("Please select at least one service");
-        return;
-      }
+      const error = validateStep3();
+      if (error) { sonnerToast.error(error); return; }
+    }
+    if (step === 4) {
+      const error = validateStep4();
+      if (error) { sonnerToast.error(error); return; }
     }
     setStep(step + 1);
   };
@@ -217,16 +247,24 @@ function ArtistOnboardingContent() {
       return;
     }
 
-    // Validate before saving
-    const phoneError = validatePhone(phone);
-    if (phoneError) {
-      sonnerToast.error(phoneError);
-      return;
-    }
-    const pincodeError = validatePinCode(pincode);
-    if (pincodeError) {
-      sonnerToast.error(pincodeError);
-      return;
+    // Validate current section in single section mode, or all sections in wizard mode
+    if (isSingleSectionMode) {
+      let error: string | null = null;
+      if (step === 1) error = validateStep1();
+      else if (step === 2) error = validateStep2();
+      else if (step === 3) error = validateStep3();
+      else if (step === 4) error = validateStep4();
+      if (error) { sonnerToast.error(error); return; }
+    } else {
+      // Validate all steps before final submit
+      const step1Error = validateStep1();
+      if (step1Error) { sonnerToast.error(step1Error); return; }
+      const step2Error = validateStep2();
+      if (step2Error) { sonnerToast.error(step2Error); return; }
+      const step3Error = validateStep3();
+      if (step3Error) { sonnerToast.error(step3Error); return; }
+      const step4Error = validateStep4();
+      if (step4Error) { sonnerToast.error(step4Error); return; }
     }
 
     setIsSaving(true);
@@ -460,9 +498,9 @@ function ArtistOnboardingContent() {
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {availableLocations.map(loc => (
-                  <span key={loc} className="bg-[#F46CA4] text-white px-4 py-2 rounded-md text-sm flex items-center gap-2">
+                  <span key={loc} className="bg-[#F46CA4] text-white px-3 py-1.5 rounded-md text-sm flex items-center gap-2">
                     {loc}
-                    <button onClick={() => removeLocation(loc)} className="hover:text-[#EE2377] font-bold text-lg">×</button>
+                    <button onClick={() => removeLocation(loc)} className="hover:text-[#EE2377] font-bold text-lg leading-none">×</button>
                   </span>
                 ))}
               </div>
@@ -511,7 +549,7 @@ function ArtistOnboardingContent() {
                   value={serviceInput} 
                   onChange={e => setServiceInput(e.target.value)}
                   className="bg-[#2a2a2a] border-white text-white" 
-                  placeholder="Type a service and press Enter" 
+                  placeholder="Type or select a service" 
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -538,12 +576,27 @@ function ArtistOnboardingContent() {
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {selectedServices.map(service => (
-                  <span key={service} className="bg-[#F46CA4] text-white px-4 py-2 rounded-md text-sm flex items-center gap-2">
+                  <span key={service} className="bg-[#F46CA4] text-white px-3 py-1.5 rounded-md text-sm flex items-center gap-2">
                     {service}
                     <button onClick={() => setSelectedServices(selectedServices.filter(s => s !== service))} 
-                      className="hover:text-[#EE2377] font-bold text-lg">×</button>
+                      className="hover:text-[#EE2377] font-bold text-lg leading-none">×</button>
                   </span>
                 ))}
+              </div>
+              <div className="mt-4">
+                <p className="text-gray-500 text-xs mb-2">Quick add:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SERVICE_SUGGESTIONS.filter(s => !selectedServices.includes(s)).slice(0, 8).map(service => (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => setSelectedServices([...selectedServices, service])}
+                      className="bg-[#2a2a2a] border border-gray-600 text-gray-300 px-3 py-1.5 rounded-md text-xs hover:border-[#C40F5A] hover:text-white transition-colors"
+                    >
+                      + {service}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             
@@ -580,14 +633,14 @@ function ArtistOnboardingContent() {
             <div>
               <Label className="text-gray-400 text-sm mb-3 block">Booking Type</Label>
               <RadioGroup value={bookingType} onValueChange={(v) => setBookingType(v as 'approval' | 'instant')}
-                className="flex gap-4">
+                className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
-                  <RadioGroupItem value="approval" id="approval" className="border-[#C40F5A] text-[#C40F5A]" />
-                  <Label htmlFor="approval" className="text-white">Approval Needed</Label>
+                  <RadioGroupItem value="approval" id="approval" className="border-[#C40F5A] text-[#C40F5A] h-4 w-4 min-w-4 min-h-4" />
+                  <Label htmlFor="approval" className="text-white text-sm">Approval Needed</Label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <RadioGroupItem value="instant" id="instant" className="border-[#C40F5A] text-[#C40F5A]" />
-                  <Label htmlFor="instant" className="text-white">Instant Booking</Label>
+                  <RadioGroupItem value="instant" id="instant" className="border-[#C40F5A] text-[#C40F5A] h-4 w-4 min-w-4 min-h-4" />
+                  <Label htmlFor="instant" className="text-white text-sm">Instant Booking</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -616,10 +669,10 @@ function ArtistOnboardingContent() {
             </div>
             
             <div className="flex items-center justify-between">
-              <Label className="text-white">Allow Partial payment</Label>
+              <Label className="text-white text-sm">Allow Partial payment</Label>
               <button onClick={() => setAllowPartialPayment(!allowPartialPayment)}
-                className={`w-12 h-6 rounded-full transition-colors ${allowPartialPayment ? 'bg-[#EE2377]' : 'bg-gray-600'}`}>
-                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${allowPartialPayment ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${allowPartialPayment ? 'bg-[#EE2377]' : 'bg-gray-600'}`}>
+                <div className={`w-5 h-5 bg-white rounded-full transition-transform absolute top-0.5 ${allowPartialPayment ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             </div>
           </div>

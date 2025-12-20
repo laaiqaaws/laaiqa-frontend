@@ -150,56 +150,61 @@ function CustomerOnboardingContent() {
     }
   };
 
+  const validateStep1 = (): string | null => {
+    if (!name.trim()) return "Please enter your name";
+    if (name.trim().length < 2) return "Name must be at least 2 characters";
+    if (name.trim().length > 100) return "Name is too long";
+    const phoneError = validatePhone(phone);
+    if (phoneError) return phoneError;
+    const ageError = validateAge(age);
+    if (ageError) return ageError;
+    return null;
+  };
+
+  const validateStep2 = (): string | null => {
+    const heightError = validateHeight(height);
+    if (heightError) return heightError;
+    if (weight && (parseFloat(weight) < 20 || parseFloat(weight) > 300)) return "Please enter a valid weight (20-300 kg)";
+    if (!skinColor.trim()) return "Please select your skin color";
+    if (!ethnicity.trim()) return "Please enter your ethnicity";
+    if (ethnicity.trim().length > 50) return "Ethnicity is too long";
+    return null;
+  };
+
+  const validateStep3 = (): string | null => {
+    if (!address.trim()) return "Please enter your address";
+    if (address.trim().length < 5) return "Address is too short";
+    if (address.trim().length > 200) return "Address is too long";
+    if (!city.trim()) return "Please enter your city";
+    if (city.trim().length < 2) return "City name is too short";
+    if (city.trim().length > 50) return "City name is too long";
+    if (!state) return "Please select your state";
+    const pincodeError = validatePinCode(pincode);
+    if (pincodeError) return pincodeError;
+    return null;
+  };
+
+  const validateStep4 = (): string | null => {
+    if (other.trim().length > 500) return "Additional info is too long (max 500 characters)";
+    return null;
+  };
+
   const handleNext = () => {
     if (step === 1) {
-      if (!name.trim()) {
-        sonnerToast.error("Please enter your name");
-        return;
-      }
-      const phoneError = validatePhone(phone);
-      if (phoneError) {
-        sonnerToast.error(phoneError);
-        return;
-      }
-      const ageError = validateAge(age);
-      if (ageError) {
-        sonnerToast.error(ageError);
-        return;
-      }
+      const error = validateStep1();
+      if (error) { sonnerToast.error(error); return; }
     }
     if (step === 2) {
-      const heightError = validateHeight(height);
-      if (heightError) {
-        sonnerToast.error(heightError);
-        return;
-      }
-      if (!skinColor.trim()) {
-        sonnerToast.error("Please select your skin color");
-        return;
-      }
-      if (!ethnicity.trim()) {
-        sonnerToast.error("Please select your ethnicity");
-        return;
-      }
+      const error = validateStep2();
+      if (error) { sonnerToast.error(error); return; }
     }
     if (step === 3) {
-      if (!address.trim()) {
-        sonnerToast.error("Please enter your address");
-        return;
-      }
-      if (!city.trim()) {
-        sonnerToast.error("Please enter your city");
-        return;
-      }
-      if (!state) {
-        sonnerToast.error("Please select your state");
-        return;
-      }
-      const pincodeError = validatePinCode(pincode);
-      if (pincodeError) {
-        sonnerToast.error(pincodeError);
-        return;
-      }
+      const error = validateStep3();
+      if (error) { sonnerToast.error(error); return; }
+    }
+    if (step === 4) {
+      const error = validateStep4();
+      if (error) { sonnerToast.error(error); return; }
     }
     setStep(step + 1);
   };
@@ -210,26 +215,24 @@ function CustomerOnboardingContent() {
       return;
     }
 
-    // Validate before saving
-    const phoneError = validatePhone(phone);
-    if (phoneError) {
-      sonnerToast.error(phoneError);
-      return;
-    }
-    const ageError = validateAge(age);
-    if (ageError) {
-      sonnerToast.error(ageError);
-      return;
-    }
-    const heightError = validateHeight(height);
-    if (heightError) {
-      sonnerToast.error(heightError);
-      return;
-    }
-    const pincodeError = validatePinCode(pincode);
-    if (pincodeError) {
-      sonnerToast.error(pincodeError);
-      return;
+    // Validate current section in single section mode, or all sections in wizard mode
+    if (isSingleSectionMode) {
+      let error: string | null = null;
+      if (step === 1) error = validateStep1();
+      else if (step === 2) error = validateStep2();
+      else if (step === 3) error = validateStep3();
+      else if (step === 4) error = validateStep4();
+      if (error) { sonnerToast.error(error); return; }
+    } else {
+      // Validate all steps before final submit
+      const step1Error = validateStep1();
+      if (step1Error) { sonnerToast.error(step1Error); return; }
+      const step2Error = validateStep2();
+      if (step2Error) { sonnerToast.error(step2Error); return; }
+      const step3Error = validateStep3();
+      if (step3Error) { sonnerToast.error(step3Error); return; }
+      const step4Error = validateStep4();
+      if (step4Error) { sonnerToast.error(step4Error); return; }
     }
 
     setIsSaving(true);
