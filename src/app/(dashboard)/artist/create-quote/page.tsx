@@ -602,12 +602,12 @@ export default function CreateQuotePage() {
             </div>
 
             <div className="flex items-center justify-between py-2">
-              <Label className="text-white">Extra Add-ons</Label>
+              <Label className="text-white text-sm">Extra Add-ons</Label>
               <button 
                 onClick={() => setExtraAddons(!extraAddons)}
-                className={`w-12 h-6 rounded-full transition-colors ${extraAddons ? 'bg-[#EE2377]' : 'bg-gray-600'}`}
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${extraAddons ? 'bg-[#EE2377]' : 'bg-gray-600'}`}
               >
-                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${extraAddons ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                <div className={`w-5 h-5 bg-white rounded-full transition-transform absolute top-0.5 ${extraAddons ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             </div>
 
