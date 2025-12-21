@@ -605,9 +605,13 @@ export default function CreateQuotePage() {
               <Label className="text-white text-sm">Extra Add-ons</Label>
               <button 
                 onClick={() => setExtraAddons(!extraAddons)}
-                className={`w-[44px] h-[22px] rounded-full transition-colors relative ${extraAddons ? 'bg-[#EE2377]' : 'bg-gray-600'}`}
+                className={`rounded-full transition-colors relative ${extraAddons ? 'bg-[#EE2377]' : 'bg-gray-600'}`}
+                style={{ width: '44px', height: '22px' }}
               >
-                <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all ${extraAddons ? 'left-[23px]' : 'left-[3px]'}`} />
+                <div 
+                  className="bg-white rounded-full absolute transition-all"
+                  style={{ width: '16px', height: '16px', top: '3px', left: extraAddons ? '25px' : '3px' }}
+                />
               </button>
             </div>
 
