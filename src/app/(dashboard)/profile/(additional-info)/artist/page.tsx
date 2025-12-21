@@ -462,6 +462,7 @@ function ArtistOnboardingContent() {
               <div>
                 <Label className="text-gray-400 text-sm">City*</Label>
                 <Input value={city} onChange={e => setCity(e.target.value)}
+                  placeholder="Enter city"
                   className="bg-[#2a2a2a] border-gray-700 text-white mt-1" />
               </div>
             </div>
@@ -685,7 +686,7 @@ function ArtistOnboardingContent() {
       </div>
 
       {/* Bottom Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 flex gap-3 max-w-3xl mx-auto inset-x-0">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 pb-6 flex gap-3 max-w-3xl mx-auto inset-x-0" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
         {isSingleSectionMode ? (
           // Single section mode - just Save button
           <Button onClick={handleSave} disabled={isSaving}
