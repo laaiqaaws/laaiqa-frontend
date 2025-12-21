@@ -220,7 +220,7 @@ function CustomerDashboardContent() {
           </div>
           <div className="relative mb-6">
             <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bookings or artists" className="w-full bg-[#1a1a1a] border border-[#333] text-white pl-4 pr-12 h-10 rounded-lg focus:border-[#C40F5A] focus:outline-none transition-colors" />
-            <button className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-1.5 rounded-md flex items-center justify-center"><Search className="h-4 w-4 text-white" /></button>
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#C40F5A] p-1 rounded flex items-center justify-center"><Search className="h-4 w-4 text-white" /></button>
           </div>
         </div>
       )}

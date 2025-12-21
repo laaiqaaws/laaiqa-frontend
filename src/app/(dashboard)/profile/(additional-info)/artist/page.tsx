@@ -671,8 +671,8 @@ function ArtistOnboardingContent() {
             <div className="flex items-center justify-between">
               <Label className="text-white text-sm">Allow Partial payment</Label>
               <button onClick={() => setAllowPartialPayment(!allowPartialPayment)}
-                className={`w-[44px] h-[24px] rounded-full transition-colors relative ${allowPartialPayment ? 'bg-[#EE2377]' : 'bg-gray-600'}`}>
-                <div className={`w-[20px] h-[20px] bg-white rounded-full absolute top-[2px] transition-all ${allowPartialPayment ? 'left-[22px]' : 'left-[2px]'}`} />
+                className={`w-[44px] h-[22px] rounded-full transition-colors relative ${allowPartialPayment ? 'bg-[#EE2377]' : 'bg-gray-600'}`}>
+                <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all ${allowPartialPayment ? 'left-[23px]' : 'left-[3px]'}`} />
               </button>
             </div>
           </div>
