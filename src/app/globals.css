@@ -571,9 +571,12 @@ body[data-scroll-locked] {
   }
 }
 
-/* Mobile Touch Targets */
+/* Mobile Touch Targets - Only for navigation/action buttons, not form elements */
 @media (max-width: 768px) {
-  button, a, [role="button"] {
+  nav button, nav a, nav [role="button"],
+  .nav-button,
+  button[type="submit"],
+  a.btn, a.button {
     min-height: 44px;
     min-width: 44px;
   }
